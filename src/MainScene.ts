@@ -56,7 +56,7 @@ export class MainScene {
 
     loadTexture() {
         const myDynamicTexture = new BABYLON.DynamicTexture("DynamicTexture",
-            { width: 100, height: 100},  this.scene);
+            { width: 512, height: 512},  this.scene);
 
         const img = new Image();
         img.src = GrassTexture;
