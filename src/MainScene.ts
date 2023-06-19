@@ -1,5 +1,5 @@
-import * as BABYLON from 'babylonjs'
-import GrassTexture from './static/grass.png';
+import * as BABYLON from "@babylonjs/core/Legacy/legacy";
+import { Terrain } from './Terrain';
 
 export class MainScene {
     canvas: HTMLCanvasElement;
@@ -13,6 +13,8 @@ export class MainScene {
         this.engine = engine;
         let scene = this.createScene();
         this.scene = scene;
+
+        new Terrain(this);
 
         engine.runRenderLoop(function () {
             scene.render();
@@ -28,44 +30,16 @@ export class MainScene {
         const scene = new BABYLON.Scene(engine);
 
         const camera = new BABYLON.FreeCamera("camera1",
-            new BABYLON.Vector3(0, 5, -10), scene);
+            new BABYLON.Vector3(50, 30, 40), scene);
 
-        camera.setTarget(BABYLON.Vector3.Zero());
+        camera.setTarget(new BABYLON.Vector3(50, 0, 50));
 
         camera.attachControl(this.canvas, true);
 
-        const light = new BABYLON.HemisphericLight("light",
+        let light = new BABYLON.HemisphericLight("light",
             new BABYLON.Vector3(0, 1, 0), scene);
-
         light.intensity = 0.7;
-
-        const sphere = BABYLON.MeshBuilder.CreateSphere("sphere",
-            { diameter: 2, segments: 32 }, scene);
-
-        sphere.position.y = 1;
-
-        const mat = new BABYLON.StandardMaterial("mat", scene);
-        mat.diffuseTexture = this.loadTexture();
-
-        const ground = BABYLON.MeshBuilder.CreateGround("ground",
-            { width: 6, height: 6 }, scene);
-        ground.material = mat;
-
         return scene;
     };
 
-    loadTexture() {
-        const myDynamicTexture = new BABYLON.DynamicTexture("DynamicTexture",
-            { width: 512, height: 512},  this.scene);
-
-        const img = new Image();
-        img.src = GrassTexture;
-        img.onload = function () {
-            const ctx = myDynamicTexture.getContext();
-            ctx.drawImage(this, 0, 0);
-            myDynamicTexture.update();
-        }
-
-        return myDynamicTexture;
-    }
 }
