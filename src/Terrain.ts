@@ -1,36 +1,29 @@
 import { MainScene } from './MainScene';
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import GrassTexture from './static/grass.png';
-import GrassNTexture from './static/grassn.png';
 import RockTexture from './static/rock.png';
-import RockNTexture from './static/rockn.png';
-// import GroundTexture from './static/ground.png';
 import FloorTexture from './static/floor.png';
-
-import {
-    TerrainMaterial,
-    TriPlanarMaterial
-} from '@babylonjs/materials';
-import { StandardMaterial } from 'babylonjs';
 
 export class Terrain {
     heights: number[][] = [];
     mapsize = 100;
     mainScene: MainScene;
+    mat;
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
+        this.mat = this.loadStdMat();
 
         this.initHeights();
         this.randomTerrainHeight(500);
         this.drawTerrain();
 
+        /* TODO : Make water mesh */
     }
 
     loadTexture(imgurl: string) {
         const myDynamicTexture = new BABYLON.DynamicTexture("DynamicTexture",
             512, this.mainScene.scene);
-
 
         const img = new Image();
         img.src = imgurl;
@@ -43,60 +36,18 @@ export class Terrain {
         return myDynamicTexture;
     }
 
-    loadTextureHighres(imgurl: string, imgSize: number, mag: number) {
-        const myDynamicTexture = new BABYLON.DynamicTexture("DynamicTexture",
-            mag * imgSize, this.mainScene.scene);
-
-        const img = new Image();
-        img.src = imgurl;
-        img.onload = function () {
-            const ctx = myDynamicTexture.getContext();
-            for (let x = 0; x < mag; x++) {
-                for (let y = 0; y < mag; y++) {
-                    ctx.drawImage(this,
-                        0 /* Image Start x */,
-                        0 /* image start y */, 
-                        imgSize /* image width */,
-                        imgSize /* image height */,
-                        x * imgSize /* canvas to x */, 
-                        y * imgSize /* canvas to y */, 
-                        imgSize /* destination width */, 
-                        imgSize /* destination height*/ );
-                }
-            }
-            myDynamicTexture.update();
-        }
-
-        return myDynamicTexture;
-    }
-
     loadStdMat() {
         let std = new BABYLON.StandardMaterial("standard", this.mainScene.scene);
-        // std.diffuseTexture = this.loadTexture(FloorTexture);
-        std.diffuseTexture = this.loadTextureHighres(GrassTexture, 512, 10);
-
+        std.diffuseTexture = this.loadTexture(GrassTexture);
+        std.specularColor = new BABYLON.Color3(0, 0, 0);
         return std;
     }
 
-    loadTriMat() {
-        let triPlanarMaterial = new TriPlanarMaterial("triplanar", this.mainScene.scene);
-        triPlanarMaterial.diffuseTextureX = this.loadTexture(RockTexture);
-        triPlanarMaterial.diffuseTextureY = this.loadTexture(GrassTexture);
-        triPlanarMaterial.diffuseTextureZ = this.loadTexture(FloorTexture);
-        // triPlanarMaterial.normalTextureX = this.loadTexture(RockNTexture);
-        // triPlanarMaterial.normalTextureY = this.loadTexture(RockNTexture);
-        // triPlanarMaterial.normalTextureZ = this.loadTexture(RockNTexture);
-        triPlanarMaterial.specularPower = 32;
-        triPlanarMaterial.tileSize = 1.5;
-
-        return triPlanarMaterial;
-    }
-
-    drawTerrain() {
+    drawTile(xstart: number, xend: number, ystart: number, yend: number) {
         let paths: BABYLON.Vector3[][] = [];
-        for (let i = 0; i < this.mapsize; i++) {
+        for (let i = xstart; i <= xend; i++) {
             let onePath: BABYLON.Vector3[] = [];
-            for (let j = 0; j < this.mapsize; j++) {
+            for (let j = ystart; j <= yend; j++) {
                 onePath.push(new BABYLON.Vector3(
                     i,
                     this.heights[i][j],
@@ -108,8 +59,19 @@ export class Terrain {
             { pathArray: paths, sideOrientation: BABYLON.Mesh.DOUBLESIDE },
             this.mainScene.scene);
 
-        // terrain.material = this.loadTriMat();
-        terrain.material = this.loadStdMat();
+        terrain.material = this.mat;
+    }
+
+    drawTerrain() {
+        const tilesize = 10;
+        const fragsize = (this.mapsize / tilesize);
+        for (let xtile = 0; xtile < fragsize; xtile++) {
+            for (let ytile = 0; ytile < fragsize; ytile++) {
+                this.drawTile(
+                    xtile * tilesize, (xtile + 1) * tilesize,
+                    ytile * tilesize, (ytile + 1) * tilesize);
+            }
+        }
     }
 
     randomTerrainHeight(num: number) {
@@ -132,7 +94,6 @@ export class Terrain {
         for (let i = 0; i < this.mapsize + 1; i++) {
             let xarr: number[] = [];
             for (let j = 0; j < this.mapsize + 1; j++) {
-                // xarr.push(Math.random() + 10);
                 xarr.push(0);
             }
             this.heights.push(xarr);
@@ -160,5 +121,4 @@ export class Terrain {
             }
         }
     }
-
 }

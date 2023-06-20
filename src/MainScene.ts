@@ -14,7 +14,7 @@ export class MainScene {
         let scene = this.createScene();
         this.scene = scene;
 
-        // new Terrain(this);
+        new Terrain(this);
 
         engine.runRenderLoop(function () {
             scene.render();
@@ -36,9 +36,11 @@ export class MainScene {
 
         camera.attachControl(this.canvas, true);
 
-        let light = new BABYLON.HemisphericLight("light",
-            new BABYLON.Vector3(0, 1, 0), scene);
-        light.intensity = 0.7;
+        // let light = new BABYLON.HemisphericLight("light",
+        //     new BABYLON.Vector3(0, 1, 0), scene);
+        // light.intensity = 1.0;
+        const light = new BABYLON.DirectionalLight("DirectionalLight",
+            new BABYLON.Vector3(0, -1, 0.1), scene);
         return scene;
     };
 
