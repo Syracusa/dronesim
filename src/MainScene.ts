@@ -14,7 +14,7 @@ export class MainScene {
         let scene = this.createScene();
         this.scene = scene;
 
-        new Terrain(this);
+        // new Terrain(this);
 
         engine.runRenderLoop(function () {
             scene.render();

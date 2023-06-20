@@ -30,7 +30,7 @@ export class Terrain {
     loadTexture(imgurl: string) {
         const myDynamicTexture = new BABYLON.DynamicTexture("DynamicTexture",
             512, this.mainScene.scene);
-        myDynamicTexture.updateSamplingMode(9);
+
 
         const img = new Image();
         img.src = imgurl;
@@ -43,9 +43,37 @@ export class Terrain {
         return myDynamicTexture;
     }
 
+    loadTextureHighres(imgurl: string, imgSize: number, mag: number) {
+        const myDynamicTexture = new BABYLON.DynamicTexture("DynamicTexture",
+            mag * imgSize, this.mainScene.scene);
+
+        const img = new Image();
+        img.src = imgurl;
+        img.onload = function () {
+            const ctx = myDynamicTexture.getContext();
+            for (let x = 0; x < mag; x++) {
+                for (let y = 0; y < mag; y++) {
+                    ctx.drawImage(this,
+                        0 /* Image Start x */,
+                        0 /* image start y */, 
+                        imgSize /* image width */,
+                        imgSize /* image height */,
+                        x * imgSize /* canvas to x */, 
+                        y * imgSize /* canvas to y */, 
+                        imgSize /* destination width */, 
+                        imgSize /* destination height*/ );
+                }
+            }
+            myDynamicTexture.update();
+        }
+
+        return myDynamicTexture;
+    }
+
     loadStdMat() {
         let std = new BABYLON.StandardMaterial("standard", this.mainScene.scene);
-        std.diffuseTexture = this.loadTexture(FloorTexture);
+        // std.diffuseTexture = this.loadTexture(FloorTexture);
+        std.diffuseTexture = this.loadTextureHighres(GrassTexture, 512, 10);
 
         return std;
     }
