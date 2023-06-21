@@ -19,6 +19,20 @@ export class Terrain {
         this.drawTerrain();
 
         /* TODO : Make water mesh */
+        this.createOcean();
+    }
+
+    /* Create ocean mesh */
+    createOcean() {
+        const ocean = BABYLON.MeshBuilder.CreateGround("ocean",
+            { width: 100, height: 100 }, this.mainScene.scene);
+        ocean.position.x = 50;
+        ocean.position.z = 50;
+        ocean.position.y = -0.5;
+        const oceanMat = new BABYLON.StandardMaterial("oceanMat", this.mainScene.scene);
+        oceanMat.diffuseColor = new BABYLON.Color3(0.11, 0.11, 0.4);
+        oceanMat.alpha = 0.8;
+        ocean.material = oceanMat;
     }
 
     loadTexture(imgurl: string) {
