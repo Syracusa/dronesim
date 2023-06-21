@@ -33,14 +33,11 @@ export class MainScene {
             new BABYLON.Vector3(50, 30, 40), scene);
 
         camera.setTarget(new BABYLON.Vector3(50, 0, 50));
-
         camera.attachControl(this.canvas, true);
 
-        // let light = new BABYLON.HemisphericLight("light",
-        //     new BABYLON.Vector3(0, 1, 0), scene);
-        // light.intensity = 1.0;
         const light = new BABYLON.DirectionalLight("DirectionalLight",
             new BABYLON.Vector3(0, -1, 0.1), scene);
+        light.intensity = 1.0;
         return scene;
     };
 

@@ -1,8 +1,6 @@
 import { MainScene } from './MainScene';
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import GrassTexture from './static/grass.png';
-import RockTexture from './static/rock.png';
-import FloorTexture from './static/floor.png';
 
 export class Terrain {
     heights: number[][] = [];
@@ -18,7 +16,6 @@ export class Terrain {
         this.randomTerrainHeight(500);
         this.drawTerrain();
 
-        /* TODO : Make water mesh */
         this.createOcean();
     }
 
