@@ -1,5 +1,5 @@
 import './index.css';
 
-import { MainScene } from './MainScene';
+import { MainScene } from './scene/MainScene';
 
 new MainScene();

@@ -1,5 +1,7 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { Terrain } from './Terrain';
+import { Drone } from "./Drone";
+import { Panel } from "./Panel";
 
 export class MainScene {
     canvas: HTMLCanvasElement;
@@ -15,7 +17,9 @@ export class MainScene {
         this.scene = scene;
 
         new Terrain(this);
-
+        new Drone(this);
+        new Panel(this);
+        
         engine.runRenderLoop(function () {
             scene.render();
         });

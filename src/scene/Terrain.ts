@@ -1,13 +1,13 @@
 import { MainScene } from './MainScene';
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
-import GrassTexture from './static/grass.png';
+import GrassTexture from '../static/grass.png';
 
-import SkyboxNx from './static/skybox/skybox_nx.jpg';
-import SkyboxNy from './static/skybox/skybox_ny.jpg';
-import SkyboxNz from './static/skybox/skybox_nz.jpg';
-import SkyboxPx from './static/skybox/skybox_px.jpg';
-import SkyboxPy from './static/skybox/skybox_py.jpg';
-import SkyboxPz from './static/skybox/skybox_pz.jpg';
+import SkyboxNx from '../static/skybox/skybox_nx.jpg';
+import SkyboxNy from '../static/skybox/skybox_ny.jpg';
+import SkyboxNz from '../static/skybox/skybox_nz.jpg';
+import SkyboxPx from '../static/skybox/skybox_px.jpg';
+import SkyboxPy from '../static/skybox/skybox_py.jpg';
+import SkyboxPz from '../static/skybox/skybox_pz.jpg';
 
 export class Terrain {
     heights: number[][] = [];
@@ -25,6 +25,7 @@ export class Terrain {
 
         this.createOcean();
         this.createSkyBox();
+        console.log(GrassTexture);
     }
     /* Create SkyBox */
     createSkyBox() {

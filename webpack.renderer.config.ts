@@ -8,7 +8,7 @@ rules.push({
   use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
 });
 rules.push({
-  test: /\.(png|svg|jpg|jpeg|gif)$/i,
+  test: /\.(png|svg|jpg|jpeg|gif|glb)$/i,
   type: 'asset/resource',
 });
 export const rendererConfig: Configuration = {
