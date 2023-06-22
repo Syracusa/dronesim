@@ -37,7 +37,7 @@ export class MainScene {
 
         const light = new BABYLON.DirectionalLight("DirectionalLight",
             new BABYLON.Vector3(0, -1, 0.1), scene);
-        light.intensity = 1.0;
+        light.intensity = 1.5;
         return scene;
     };
 

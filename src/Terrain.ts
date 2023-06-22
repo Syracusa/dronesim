@@ -2,6 +2,13 @@ import { MainScene } from './MainScene';
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import GrassTexture from './static/grass.png';
 
+import SkyboxNx from './static/skybox/skybox_nx.jpg';
+import SkyboxNy from './static/skybox/skybox_ny.jpg';
+import SkyboxNz from './static/skybox/skybox_nz.jpg';
+import SkyboxPx from './static/skybox/skybox_px.jpg';
+import SkyboxPy from './static/skybox/skybox_py.jpg';
+import SkyboxPz from './static/skybox/skybox_pz.jpg';
+
 export class Terrain {
     heights: number[][] = [];
     mapsize = 100;
@@ -17,6 +24,23 @@ export class Terrain {
         this.drawTerrain();
 
         this.createOcean();
+        this.createSkyBox();
+    }
+    /* Create SkyBox */
+    createSkyBox() {
+        const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, this.mainScene.scene);
+        const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.mainScene.scene);
+        skyboxMaterial.backFaceCulling = false;
+        skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(
+            "", 
+            this.mainScene.scene,
+            [], true, [SkyboxPx, SkyboxPy, SkyboxPz, SkyboxNx, SkyboxNy, SkyboxNz]
+            );
+        skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        skyboxMaterial.disableLighting = true;
+        skybox.material = skyboxMaterial;
     }
 
     /* Create ocean mesh */
@@ -32,24 +56,10 @@ export class Terrain {
         ocean.material = oceanMat;
     }
 
-    loadTexture(imgurl: string) {
-        const myDynamicTexture = new BABYLON.DynamicTexture("DynamicTexture",
-            512, this.mainScene.scene);
-
-        const img = new Image();
-        img.src = imgurl;
-        img.onload = function () {
-            const ctx = myDynamicTexture.getContext();
-            ctx.drawImage(this, 0, 0);
-            myDynamicTexture.update();
-        }
-
-        return myDynamicTexture;
-    }
-
     loadStdMat() {
         let std = new BABYLON.StandardMaterial("standard", this.mainScene.scene);
-        std.diffuseTexture = this.loadTexture(GrassTexture);
+        std.diffuseTexture = new BABYLON.Texture(GrassTexture, this.mainScene.scene);
+        
         std.specularColor = new BABYLON.Color3(0, 0, 0);
         return std;
     }
