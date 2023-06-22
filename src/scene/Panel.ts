@@ -1,9 +1,6 @@
 import { MainScene } from "./MainScene";
-// import { GUI } from "@babylonjs/gui"
-import * as BABYLON from "@babylonjs/core/Legacy/legacy";
-import "@babylonjs/gui"
-// import { AdvancedDynamicTexture } from '@babylonjs/gui/2D';
 import * as GUI from "@babylonjs/gui/Legacy/legacy";
+
 export class Panel {
     mainScene: MainScene;
 
