@@ -3,6 +3,7 @@ import { Terrain } from './Terrain';
 import { Drone } from "./Drone";
 import { Panel } from "./Panel";
 import { Controller } from "./Controller";
+import { ShiftHelper } from "./ShiftHelper";
 
 export class MainScene {
     canvas: HTMLCanvasElement;
@@ -11,6 +12,7 @@ export class MainScene {
     panel: Panel;
     controller: Controller;
     drone: Drone;
+    shiftHelper: ShiftHelper;
 
     lastRender = performance.now();
 
@@ -28,6 +30,7 @@ export class MainScene {
         this.drone = new Drone(this);
         this.panel = new Panel(this);
         this.controller = new Controller(this);
+        this.shiftHelper = new ShiftHelper(this);
 
         this.startRenderLoop();
 
