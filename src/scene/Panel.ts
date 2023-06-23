@@ -12,7 +12,7 @@ export class Panel {
     }
 
     updatePanelText() {
-        this.textblock.text = "FPS: " + this.mainScene.engine.getFps().toFixed();
+        this.textblock.text = "FPS: " + this.mainScene.engine.getFps().toFixed() + "\n";
     }
 
     makePanel() {
@@ -25,17 +25,20 @@ export class Panel {
     
         // Panel
         let panel = new GUI.StackPanel();   
-        panel.left = "-40%";
+        panel.left = "0%";
+        panel.top = "0%";
+        panel.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        panel.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
         panel.isVertical = true; 
         advancedTexture.addControl(panel);   
     
         let text1 = new GUI.TextBlock();
-
-        text1.text = "Hello world (no style)";
+        text1.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        text1.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        text1.text = "N/A";
         text1.color = "white";
-        text1.height = "30px";
+        text1.height = "300px";
         text1.fontSize = 10;
-        text1.fontStyle = "bold";
         panel.addControl(text1);     
 
         this.textblock = text1;

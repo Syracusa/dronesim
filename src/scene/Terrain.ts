@@ -27,6 +27,7 @@ export class Terrain {
         this.createSkyBox();
         console.log(GrassTexture);
     }
+    
     /* Create SkyBox */
     createSkyBox() {
         const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, this.mainScene.scene);
