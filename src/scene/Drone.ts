@@ -3,6 +3,7 @@ import "@babylonjs/loaders/glTF";
 
 import { MainScene } from './MainScene';
 import DroneModel from '../static/Drone.glb';
+import { BabylonFileLoaderConfiguration } from "babylonjs";
 
 export class Drone {
     mainScene: MainScene;
@@ -15,13 +16,12 @@ export class Drone {
 
     loadDroneModel() {
         const that = this;
-        console.log(DroneModel);
 
         BABYLON.SceneLoader.ImportMesh("",
             "/", DroneModel.split('\\').pop().split('/').pop(),
             this.mainScene.scene,
             function (newMeshes) {
-                let drone = newMeshes[0] as BABYLON.Mesh;
+                let droneMesh = newMeshes[0] as BABYLON.Mesh;
                 
                 for (let i = 1; i < newMeshes.length; i++) {
                     let mesh = newMeshes[i] as any;
@@ -37,25 +37,38 @@ export class Drone {
                     }
                 }
 
-                drone.position = new BABYLON.Vector3(0, 0, 0);
+                droneMesh.position = new BABYLON.Vector3(0, 0, 0);
 
-                drone.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
-                drone.rotation.y = Math.PI / 2;
-                drone.rotation.x = Math.PI / 2;
-                drone.rotation.z = Math.PI / 2;
+                droneMesh.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
+                droneMesh.rotation.y = Math.PI / 2;
+                droneMesh.rotation.x = Math.PI / 2;
+                droneMesh.rotation.z = Math.PI / 2;
 
-
-                const sphere = BABYLON.MeshBuilder.CreateSphere("sphere",
+                const droneSelector = BABYLON.MeshBuilder.CreateSphere("sphere",
                     { diameter: 1.5, segments: 4 },
                     that.mainScene.scene);
-                sphere.position = new BABYLON.Vector3(50, 5, 50);
-                sphere.metadata = "drone";
-                sphere.material = new BABYLON.StandardMaterial("mat", that.mainScene.scene);
-                sphere.material.wireframe = true;
+                droneSelector.position = new BABYLON.Vector3(50, 5, 50);
+                droneSelector.metadata = "drone";
+                droneSelector.material = new BABYLON.StandardMaterial("mat", that.mainScene.scene);
+                // droneSelector.material.wireframe = true;
+                droneSelector.material.alpha = 0;
 
-                drone.parent = sphere;
+                droneMesh.parent = droneSelector;
 
-                that.drone = drone;
+                /* TODO : Instantiate drone
+                let testmesh = newMeshes[1] as BABYLON.Mesh;
+                for (let i = 2; i < newMeshes.length; i++) {
+                    let mesh = newMeshes[i] as BABYLON.Mesh;
+                    mesh.parent = testmesh;
+                }
+
+                for (let index = 0; index < 100; index++) {
+                    let newInstance = testmesh.createInstance("i" + index);
+                    newInstance.position = new BABYLON.Vector3(40 + index / 10, 6, 30 + index % 10);
+                }
+                */
+
+                that.drone = droneMesh;
             });
     }
 }
