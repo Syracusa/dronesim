@@ -22,8 +22,7 @@ export class Drone {
             this.mainScene.scene,
             function (newMeshes) {
                 let drone = newMeshes[0] as BABYLON.Mesh;
-                console.log(newMeshes.length);
-
+                
                 for (let i = 1; i < newMeshes.length; i++) {
                     let mesh = newMeshes[i] as any;
                     if (mesh._geometry._totalVertices > 1000) {

@@ -69,7 +69,7 @@ export class Controller {
         const sphere = BABYLON.MeshBuilder.CreateSphere("sphere",
             { diameter: 1, segments: 16 },
             this.mainScene.scene);
-        sphere.position = new BABYLON.Vector3(50, 5, 50);
+        sphere.position = new BABYLON.Vector3(40, 10, 40);
         sphere.isVisible = false;
         this.lookTarget = sphere;
     }
@@ -78,16 +78,16 @@ export class Controller {
         this.createLookTarget();
 
         let campos = this.lookTarget.position.clone();
-        campos.addInPlace(new BABYLON.Vector3(10, 10, 10));
+        campos.addInPlace(new BABYLON.Vector3(3, 3, 3));
 
         const camera = new BABYLON.FollowCamera(
             "FollowCam",
             campos,
             this.mainScene.scene);
 
-        camera.radius = 14;
+        camera.radius = 11;
         camera.heightOffset = 8;
-        camera.rotationOffset = 45;
+        camera.rotationOffset = 225;
         camera.cameraAcceleration = 0.05;
         camera.maxCameraSpeed = 10;
         camera.lockedTarget = this.lookTarget;
