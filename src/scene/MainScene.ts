@@ -10,13 +10,14 @@ export class MainScene {
     scene: BABYLON.Scene;
     panel: Panel;
     controller: Controller;
+    drone: Drone;
 
     lastRender = performance.now();
 
     constructor() {
         const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
         this.canvas = canvas;
-        const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+        const engine = new BABYLON.Engine(canvas, true);
         this.engine = engine;
         const scene = new BABYLON.Scene(engine);
         this.scene = scene;
@@ -24,11 +25,11 @@ export class MainScene {
         this.createLight();
 
         new Terrain(this);
-        new Drone(this);
+        this.drone = new Drone(this);
         this.panel = new Panel(this);
         this.controller = new Controller(this);
 
-        this.setRenderLoop();
+        this.startRenderLoop();
 
         window.addEventListener("resize", function () {
             engine.resize();
@@ -39,7 +40,7 @@ export class MainScene {
         this.controller.update(delta);
     }
 
-    setRenderLoop() {
+    startRenderLoop() {
         let scene = this.scene;
         const that = this;
 

@@ -62,7 +62,7 @@ export class Terrain {
         let std = new BABYLON.StandardMaterial("standard", this.mainScene.scene);
         std.diffuseTexture = new BABYLON.Texture(GrassTexture, this.mainScene.scene);
         
-        std.specularColor = new BABYLON.Color3(0, 0, 0);
+        std.specularColor = new BABYLON.Color3(0.04, 0.04, 0.04);
         return std;
     }
 

@@ -6,9 +6,11 @@ export class Controller {
     keystate: any;
     lookTarget: BABYLON.Mesh;
     camera: BABYLON.FollowCamera;
+    scene: BABYLON.Scene;
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
+        this.scene = this.mainScene.scene;
         this.keystate = {};
         this.createCamera();
 
@@ -18,6 +20,49 @@ export class Controller {
         window.onkeyup = (e) => {
             this.keystate[e.key] = 0;
         }
+
+        this.setMouseHandler();
+    }
+
+    handleMouseDown() {
+        const scene = this.scene;
+        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY,
+            BABYLON.Matrix.Identity(), this.camera, false);
+        var hit = scene.pickWithRay(ray);
+
+        if (hit.pickedMesh) {
+            console.log("picked");
+            console.log(hit.pickedMesh);
+        }
+    }
+
+    setMouseHandler() {
+        const that = this;
+        this.mainScene.scene.onPointerObservable.add((pointerInfo) => {
+            switch (pointerInfo.type) {
+                case BABYLON.PointerEventTypes.POINTERDOWN:
+                    that.handleMouseDown();
+                    break;
+                case BABYLON.PointerEventTypes.POINTERUP:
+
+                    break;
+                case BABYLON.PointerEventTypes.POINTERMOVE:
+
+                    break;
+                case BABYLON.PointerEventTypes.POINTERWHEEL:
+
+                    break;
+                case BABYLON.PointerEventTypes.POINTERPICK:
+
+                    break;
+                case BABYLON.PointerEventTypes.POINTERTAP:
+
+                    break;
+                case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
+
+                    break;
+            }
+        });
     }
 
     createLookTarget() {
@@ -83,13 +128,13 @@ export class Controller {
         if (this.isKeyPressed("2"))
             this.camera.radius -= 0.02 * delta;
 
-        if (this.isKeyPressed("3")){
+        if (this.isKeyPressed("3")) {
             this.camera.fov += 0.002 * delta;
             if (this.camera.fov > 1.5)
                 this.camera.fov = 1.5;
         }
 
-        if (this.isKeyPressed("4")){
+        if (this.isKeyPressed("4")) {
             this.camera.fov -= 0.002 * delta;
             if (this.camera.fov < 0.1)
                 this.camera.fov = 0.1;
