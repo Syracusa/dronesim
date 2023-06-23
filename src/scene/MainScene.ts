@@ -3,10 +3,19 @@ import { Terrain } from './Terrain';
 import { Drone } from "./Drone";
 import { Panel } from "./Panel";
 
+interface Stats {
+    fps: number;
+}
+
 export class MainScene {
     canvas: HTMLCanvasElement;
     engine: BABYLON.Engine;
     scene: BABYLON.Scene;
+    panel: Panel;
+    stats: Stats = {
+        fps: 0
+    }
+    lastRender = performance.now();
 
     constructor() {
         let canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
@@ -18,10 +27,18 @@ export class MainScene {
 
         new Terrain(this);
         new Drone(this);
-        new Panel(this);
-        
+        this.panel = new Panel(this);
+
+        const that = this;
+
         engine.runRenderLoop(function () {
             scene.render();
+            /* Calculate Time betwween frames */
+            let curr = performance.now();
+            let delta = curr - that.lastRender;
+            that.lastRender = curr;
+
+            that.panel.updatePanelText();
         });
 
         window.addEventListener("resize", function () {

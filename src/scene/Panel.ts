@@ -3,10 +3,16 @@ import * as GUI from "@babylonjs/gui/Legacy/legacy";
 
 export class Panel {
     mainScene: MainScene;
+    textblock: GUI.TextBlock;
+    updateIntervalMs = 100;
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
         this.makePanel();
+    }
+
+    updatePanelText() {
+        this.textblock.text = "FPS: " + this.mainScene.engine.getFps().toFixed();
     }
 
     makePanel() {
@@ -19,7 +25,7 @@ export class Panel {
     
         // Panel
         let panel = new GUI.StackPanel();   
-        panel.left = "-45%";
+        panel.left = "-40%";
         panel.isVertical = true; 
         advancedTexture.addControl(panel);   
     
@@ -28,9 +34,11 @@ export class Panel {
         text1.text = "Hello world (no style)";
         text1.color = "white";
         text1.height = "30px";
-        text1.fontSize = 5;
+        text1.fontSize = 10;
         text1.fontStyle = "bold";
         panel.addControl(text1);     
+
+        this.textblock = text1;
     }
     
 }
