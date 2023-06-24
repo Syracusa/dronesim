@@ -1,5 +1,6 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { MainScene } from "./MainScene";
+import { ShiftHelper } from "./ShiftHelper";
 
 export class Controller {
     mainScene: MainScene;
@@ -7,6 +8,10 @@ export class Controller {
     lookTarget: BABYLON.Mesh;
     camera: BABYLON.FollowCamera;
     scene: BABYLON.Scene;
+    shiftHelper: ShiftHelper;
+    dragStartX: number;
+    dragStartY: number;
+    dragTarget: BABYLON.Mesh;
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
@@ -22,46 +27,71 @@ export class Controller {
         }
 
         this.setMouseHandler();
+        this.shiftHelper = new ShiftHelper(mainScene, this);
     }
 
     handleMouseDown() {
+        this.dragStartX = this.scene.pointerX;
+        this.dragStartY = this.scene.pointerY;
+
         const scene = this.scene;
-        var ray = scene.createPickingRay(scene.pointerX, scene.pointerY,
+        const ray = scene.createPickingRay(scene.pointerX, scene.pointerY,
             BABYLON.Matrix.Identity(), this.camera, false);
-        var hit = scene.pickWithRay(ray);
+        const hit = scene.pickWithRay(ray);
 
         if (hit.pickedMesh) {
-            console.log("picked");
-            console.log(hit.pickedMesh);
+            if (hit.pickedMesh.metadata) {
+                if (hit.pickedMesh.metadata.onMouseDown)
+                    hit.pickedMesh.metadata.onMouseDown();
+            }
+
+            this.dragTarget = hit.pickedMesh as BABYLON.Mesh;
+        }
+    }
+
+    handleMouseUp() {
+        this.dragTarget = null;
+    }
+
+    handleMouseMove() {
+        if (this.dragTarget) {
+            if (this.dragTarget.metadata) {
+                if (this.dragTarget.metadata.onMouseDrag)
+                    this.dragTarget.metadata.onMouseDrag();
+           }
+        }
+    }
+
+    setMouseHandlerInContext(pointerInfo: BABYLON.PointerInfo) {
+        switch (pointerInfo.type) {
+            case BABYLON.PointerEventTypes.POINTERDOWN:
+                this.handleMouseDown();
+                break;
+            case BABYLON.PointerEventTypes.POINTERUP:
+                this.handleMouseUp();
+                break;
+            case BABYLON.PointerEventTypes.POINTERMOVE:
+                this.handleMouseMove();
+                break;
+            case BABYLON.PointerEventTypes.POINTERWHEEL:
+
+                break;
+            case BABYLON.PointerEventTypes.POINTERPICK:
+
+                break;
+            case BABYLON.PointerEventTypes.POINTERTAP:
+
+                break;
+            case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
+
+                break;
         }
     }
 
     setMouseHandler() {
         const that = this;
         this.mainScene.scene.onPointerObservable.add((pointerInfo) => {
-            switch (pointerInfo.type) {
-                case BABYLON.PointerEventTypes.POINTERDOWN:
-                    that.handleMouseDown();
-                    break;
-                case BABYLON.PointerEventTypes.POINTERUP:
-
-                    break;
-                case BABYLON.PointerEventTypes.POINTERMOVE:
-
-                    break;
-                case BABYLON.PointerEventTypes.POINTERWHEEL:
-
-                    break;
-                case BABYLON.PointerEventTypes.POINTERPICK:
-
-                    break;
-                case BABYLON.PointerEventTypes.POINTERTAP:
-
-                    break;
-                case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
-
-                    break;
-            }
+            that.setMouseHandlerInContext(pointerInfo);
         });
     }
 

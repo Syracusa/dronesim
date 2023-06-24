@@ -12,26 +12,32 @@ export class Panel {
     }
 
     updatePanelText() {
-        this.textblock.text = "FPS: " + this.mainScene.engine.getFps().toFixed() + "\n";
+        let text = "";
+        text += "FPS: " + this.mainScene.engine.getFps().toFixed() + "\n";
+        text += "Pointer: "
+            + this.mainScene.scene.pointerX + " " + this.mainScene.scene.pointerY + "\n";
+
+
+        this.textblock.text = text;
     }
 
     makePanel() {
         let advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        
+
         // Style
         let style = advancedTexture.createStyle();
         style.fontSize = 3;
         style.fontStyle = "bold";
-    
+
         // Panel
-        let panel = new GUI.StackPanel();   
+        let panel = new GUI.StackPanel();
         panel.left = "0%";
         panel.top = "0%";
         panel.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
         panel.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-        panel.isVertical = true; 
-        advancedTexture.addControl(panel);   
-    
+        panel.isVertical = true;
+        advancedTexture.addControl(panel);
+
         let text1 = new GUI.TextBlock();
         text1.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
         text1.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
@@ -39,9 +45,9 @@ export class Panel {
         text1.color = "white";
         text1.height = "300px";
         text1.fontSize = 10;
-        panel.addControl(text1);     
+        panel.addControl(text1);
 
         this.textblock = text1;
     }
-    
+
 }

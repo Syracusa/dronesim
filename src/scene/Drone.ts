@@ -50,8 +50,8 @@ export class Drone {
                 droneSelector.position = new BABYLON.Vector3(50, 5, 50);
                 droneSelector.metadata = "drone";
                 droneSelector.material = new BABYLON.StandardMaterial("mat", that.mainScene.scene);
-                // droneSelector.material.wireframe = true;
-                droneSelector.material.alpha = 0;
+                droneSelector.material.wireframe = true;
+                // droneSelector.material.alpha = 0;
 
                 droneMesh.parent = droneSelector;
 

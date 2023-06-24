@@ -1,17 +1,82 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { MainScene } from "./MainScene";
+import { Controller } from "./Controller";
 
 export class ShiftHelper {
     mainScene: MainScene;
-    arrow: BABYLON.Mesh;
+    controller: Controller;
+    arrowOrigin: BABYLON.Mesh;
+    target: BABYLON.Mesh;
+    dragStartPos: BABYLON.Vector3;
+    arrowLength: number = 4;
 
-    constructor(mainScene: MainScene) {
+    constructor(mainScene: MainScene,
+        controller: Controller) {
         this.mainScene = mainScene;
+        this.controller = controller;
         this.drawArrow();
     }
 
+    setTarget(target: BABYLON.Mesh) {
+        this.target = target;
+    }
+
+    releaseTarget() {
+        this.target = null;
+    }
+
+    arrowMouseDown() {
+        this.dragStartPos = this.arrowOrigin.position.clone();
+    }
+
+    arrowMouseDrag() {
+        const scene = this.mainScene.scene;
+
+        const arrowStartClient = this.worldVec3toClient(this.dragStartPos);
+        arrowStartClient.z = 0;
+        console.log(arrowStartClient);
+        const arrowEndClient = this.worldVec3toClient(this.dragStartPos.add(new BABYLON.Vector3(this.arrowLength, 0, 0)));
+        arrowEndClient.z = 0;
+
+        const clientX = scene.pointerX;
+        const clientY = scene.pointerY;
+
+        const cameraProjectedArrowRay =
+            new BABYLON.Ray(
+                arrowStartClient,
+                arrowEndClient.subtract(arrowStartClient),
+                1);
+
+        let cspoint = this.closestPointOnRay(
+            cameraProjectedArrowRay,
+            new BABYLON.Vector3(
+                this.controller.dragStartX,
+                this.controller.dragStartY,
+                0));
+
+        let ccpoint = this.closestPointOnRay(
+            cameraProjectedArrowRay,
+            new BABYLON.Vector3(
+                clientX,
+                clientY,
+                0));
+
+        const dist = BABYLON.Vector3.Distance(ccpoint, cspoint);
+        const arrowDistClient = BABYLON.Vector3.Distance(arrowStartClient, arrowEndClient);
+        console.log(dist / arrowDistClient);
+
+        const dot = BABYLON.Vector3.Dot(ccpoint.subtract(cspoint), arrowEndClient.subtract(arrowStartClient));
+        let worldDist = dist / arrowDistClient * this.arrowLength;
+        if (dot > 0) {
+            this.arrowOrigin.position.x = this.dragStartPos.x + worldDist;
+        } else {
+            this.arrowOrigin.position.x = this.dragStartPos.x - worldDist;
+        }
+
+    }
+
     drawArrow() {
-        const allowLen = 4;
+        const allowLen = this.arrowLength;
         const scene = this.mainScene.scene;
 
         const arrowTip = BABYLON.MeshBuilder.CreateCylinder("arrow",
@@ -19,7 +84,6 @@ export class ShiftHelper {
         arrowTip.position = new BABYLON.Vector3(0, allowLen / 2, 0);
         arrowTip.rotation = new BABYLON.Vector3(0, 0, 0);
         arrowTip.scaling = new BABYLON.Vector3(1, 1, 1);
-
 
         const arrowBody = BABYLON.MeshBuilder.CreateCylinder("arrow",
             { height: allowLen, diameterTop: 0.2, diameterBottom: 0.2 });
@@ -48,25 +112,104 @@ export class ShiftHelper {
         matBlue.backFaceCulling = false;
 
         arrow.metadata = "arrow";
-        arrow.position = new BABYLON.Vector3(40, 10, 40);
+        arrow.position = BABYLON.Vector3.Zero();
+        const that = this;
 
         let arrowX = arrow.clone("arrowX");
         arrowX.rotation.z += Math.PI / 2 * 3;
         arrowX.position.x += allowLen / 2;
         arrowX.material = matRed;
+        arrowX.metadata = {
+            type: "ShiftArrow",
+            dir: "x",
+            onMouseDown: () => {
+                that.arrowMouseDown();
+            },
+            onMouseDrag: () => {
+                that.arrowMouseDrag();
+            }
+        };
 
         let arrowY = arrow.clone("arrowY");
         arrowY.rotation.y += Math.PI / 2;
         arrowY.position.y += allowLen / 2;
         arrowY.material = matGreen;
+        arrowY.metadata = {
+            type: "ShiftArrow",
+            dir: "y",
+            onMouseDown: () => {
+                console.log("ArrowY Mouse Down");
+            }
+        };
 
         let arrowZ = arrow.clone("arrowZ");
         arrowZ.rotation.x = Math.PI / 2;
         arrowZ.position.z += allowLen / 2;
         arrowZ.material = matBlue;
-
+        arrowZ.metadata = {
+            type: "ShiftArrow",
+            dir: "z",
+            onMouseDown: () => {
+                console.log("ArrowZ Mouse Down");
+            }
+        };
         arrow.isVisible = false;
-        this.arrow = arrow;
+
+        const arrowOrigin = BABYLON.MeshBuilder.CreateSphere("sphere",
+            { diameter: 0.5, segments: 4 },
+            this.mainScene.scene);
+        arrowOrigin.position = new BABYLON.Vector3(40, 8, 40);
+        arrowOrigin.metadata = "arrowOrigin";
+        arrowOrigin.material = new BABYLON.StandardMaterial("mat", this.mainScene.scene);
+        arrowOrigin.material.wireframe = true;
+
+        arrowX.parent = arrowOrigin;
+        arrowY.parent = arrowOrigin;
+        arrowZ.parent = arrowOrigin;
+
+        this.arrowOrigin = arrowOrigin;
     }
 
+    closestPointOnRay(ray: BABYLON.Ray, point: BABYLON.Vector3): BABYLON.Vector3 {
+        const rayDir = ray.direction.normalize();
+        const v = point.subtract(ray.origin);
+        // console.log("v" + v);
+        const d = BABYLON.Vector3.Dot(v, rayDir);
+        // console.log("d" + d);
+        // console.log("RayDir" + rayDir.scale(d));
+        const p = ray.origin.add(rayDir.scale(d));
+        return p;
+    }
+
+    /* Calculate cloest point on line to a point */
+    closestPointOnLine(lineP1: BABYLON.Vector3, lineP2: BABYLON.Vector3, point: BABYLON.Vector3): BABYLON.Vector3 {
+        const lineDir = lineP2.subtract(lineP1).normalize();
+        const v = point.subtract(lineP1);
+        const d = BABYLON.Vector3.Dot(v, lineDir);
+        const p = lineP1.add(lineDir.scale(d));
+        return p;
+    }
+
+    clientXYtoWorldXY(clientX: number, clientY: number): BABYLON.Vector3 {
+        const scene = this.mainScene.scene;
+        const pickResult = scene.pick(scene.pointerX, scene.pointerY);
+        if (pickResult.hit) {
+            return pickResult.pickedPoint;
+        }
+        return null;
+    }
+
+    /* Vec3 to Client */
+    worldVec3toClient(vec3: BABYLON.Vector3): BABYLON.Vector3 {
+        const scene = this.mainScene.scene;
+        const camera = scene.activeCamera;
+        const transform = BABYLON.Vector3.Project(
+            vec3,
+            BABYLON.Matrix.Identity(),
+            scene.getTransformMatrix(),
+            camera.viewport.toGlobal(
+                scene.getEngine().getRenderWidth(true),
+                scene.getEngine().getRenderHeight(true)));
+        return transform;
+    }
 }
