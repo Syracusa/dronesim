@@ -21,6 +21,12 @@ export class MainScene {
         this.engine = engine;
         const scene = new BABYLON.Scene(engine);
         this.scene = scene;
+        
+        var options = new BABYLON.SceneOptimizerOptions();
+        options.addOptimization(new BABYLON.HardwareScalingOptimization(0, 1));
+        
+        // Optimizer
+        var optimizer = new BABYLON.SceneOptimizer(scene, options);
 
         this.createLight();
 
@@ -29,7 +35,8 @@ export class MainScene {
         this.panel = new Panel(this);
         this.controller = new Controller(this);
 
-
+        scene.autoClear = false;
+        scene.autoClearDepthAndStencil = false;
         this.startRenderLoop();
 
         window.addEventListener("resize", function () {
