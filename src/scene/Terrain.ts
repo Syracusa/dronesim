@@ -11,7 +11,7 @@ import SkyboxPz from '../static/skybox/skybox_pz.jpg';
 
 export class Terrain {
     heights: number[][] = [];
-    mapsize = 100;
+    mapsize = 200;
     mainScene: MainScene;
     mat;
 
@@ -20,7 +20,7 @@ export class Terrain {
         this.mat = this.loadStdMat();
 
         this.initHeights();
-        this.randomTerrainHeight(500);
+        this.randomTerrainHeight(100);
         this.drawTerrain();
 
         this.createOcean();
@@ -48,10 +48,10 @@ export class Terrain {
     /* Create ocean mesh */
     createOcean() {
         const ocean = BABYLON.MeshBuilder.CreateGround("ocean",
-            { width: 100, height: 100 }, this.mainScene.scene);
-        ocean.position.x = 50;
-        ocean.position.z = 50;
-        ocean.position.y = -0.5;
+            { width: this.mapsize, height: this.mapsize }, this.mainScene.scene);
+        ocean.position.x = this.mapsize / 2;
+        ocean.position.z = this.mapsize / 2;
+        ocean.position.y = 0.1;
         const oceanMat = new BABYLON.StandardMaterial("oceanMat", this.mainScene.scene);
         oceanMat.diffuseColor = new BABYLON.Color3(0.11, 0.11, 0.4);
         oceanMat.alpha = 0.8;
@@ -98,8 +98,8 @@ export class Terrain {
     }
 
     randomTerrainHeight(num: number) {
-        for (let i = 0; i < this.mapsize; i++) {
-            for (let j = 0; j < this.mapsize; j++) {
+        for (let i = 20; i < this.mapsize; i++) {
+            for (let j = 20; j < this.mapsize; j++) {
                 this.raiseHeightPoint(
                     i, j, Math.random() * 0.3 - 0.15);
             }
@@ -107,8 +107,8 @@ export class Terrain {
 
         for (let i = 0; i < num; i++) {
             this.raiseHeightPoint(
-                (Math.random() * this.mapsize) | 0,
-                (Math.random() * this.mapsize) | 0,
+                ((Math.random() * (this.mapsize - 40)) + 20) | 0,
+                ((Math.random() * (this.mapsize - 40)) + 20) | 0,
                 Math.random() * 3.0 - 1);
         }
     }
@@ -139,7 +139,8 @@ export class Terrain {
 
                     let diff = Math.sqrt(xdiff * xdiff + ydiff * ydiff);
 
-                    this.heights[i][j] += intensity * (this.sigmoid(diff * -1 + 3)) * 2;
+                    // this.heights[i][j] += intensity * ((this.sigmoid(diff * -1 - 10)) + 0.5);
+                    this.heights[i][j] += Math.cos(diff / 15 * 2 / Math.PI) * intensity;
                 }
             }
         }

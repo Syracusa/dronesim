@@ -29,13 +29,13 @@ export class ShiftHelper {
         this.dragStartPos = this.arrowOrigin.position.clone();
     }
 
-    arrowMouseDrag() {
+    arrowMouseDrag(arrowVec: BABYLON.Vector3) {
         const scene = this.mainScene.scene;
 
         const arrowStartClient = this.worldVec3toClient(this.dragStartPos);
         arrowStartClient.z = 0;
         console.log(arrowStartClient);
-        const arrowEndClient = this.worldVec3toClient(this.dragStartPos.add(new BABYLON.Vector3(this.arrowLength, 0, 0)));
+        const arrowEndClient = this.worldVec3toClient(this.dragStartPos.add(arrowVec));
         arrowEndClient.z = 0;
 
         const clientX = scene.pointerX;
@@ -68,9 +68,9 @@ export class ShiftHelper {
         const dot = BABYLON.Vector3.Dot(ccpoint.subtract(cspoint), arrowEndClient.subtract(arrowStartClient));
         let worldDist = dist / arrowDistClient * this.arrowLength;
         if (dot > 0) {
-            this.arrowOrigin.position.x = this.dragStartPos.x + worldDist;
+            this.arrowOrigin.position = this.dragStartPos.add(arrowVec.normalize().scale(worldDist));
         } else {
-            this.arrowOrigin.position.x = this.dragStartPos.x - worldDist;
+            this.arrowOrigin.position = this.dragStartPos.subtract(arrowVec.normalize().scale(worldDist));
         }
 
     }
@@ -126,7 +126,7 @@ export class ShiftHelper {
                 that.arrowMouseDown();
             },
             onMouseDrag: () => {
-                that.arrowMouseDrag();
+                that.arrowMouseDrag(new BABYLON.Vector3(this.arrowLength, 0, 0));
             }
         };
 
@@ -138,7 +138,10 @@ export class ShiftHelper {
             type: "ShiftArrow",
             dir: "y",
             onMouseDown: () => {
-                console.log("ArrowY Mouse Down");
+                that.arrowMouseDown();
+            },
+            onMouseDrag: () => {
+                that.arrowMouseDrag(new BABYLON.Vector3(0, this.arrowLength, 0));
             }
         };
 
@@ -150,7 +153,10 @@ export class ShiftHelper {
             type: "ShiftArrow",
             dir: "z",
             onMouseDown: () => {
-                console.log("ArrowZ Mouse Down");
+                that.arrowMouseDown();
+            },
+            onMouseDrag: () => {
+                that.arrowMouseDrag(new BABYLON.Vector3(0, 0, this.arrowLength));
             }
         };
         arrow.isVisible = false;
