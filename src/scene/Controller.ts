@@ -39,13 +39,18 @@ export class Controller {
             BABYLON.Matrix.Identity(), this.camera, false);
         const hit = scene.pickWithRay(ray);
 
-        if (hit.pickedMesh) {
-            if (hit.pickedMesh.metadata) {
-                if (hit.pickedMesh.metadata.onMouseDown)
-                    hit.pickedMesh.metadata.onMouseDown();
+        const mesh = hit.pickedMesh;
+        if (mesh) {
+            let meta = mesh.metadata;
+            if (meta) {
+                if (meta.onMouseDown)
+                    meta.onMouseDown();
+                if (meta.draggable) {
+                    this.shiftHelper.setTarget(mesh as BABYLON.Mesh);
+                    this.dragTarget = mesh as BABYLON.Mesh;
+                }
             }
 
-            this.dragTarget = hit.pickedMesh as BABYLON.Mesh;
         }
     }
 
@@ -58,7 +63,7 @@ export class Controller {
             if (this.dragTarget.metadata) {
                 if (this.dragTarget.metadata.onMouseDrag)
                     this.dragTarget.metadata.onMouseDrag();
-           }
+            }
         }
     }
 

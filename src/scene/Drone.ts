@@ -23,8 +23,8 @@ export class Drone {
         const that = this;
 
         BABYLON.SceneLoader.ImportMesh("",
-        DroneModel.replace(DroneModel.split('\\').pop().split('/').pop(), ''), 
-        DroneModel.split('\\').pop().split('/').pop(),
+            DroneModel.replace(DroneModel.split('\\').pop().split('/').pop(), ''),
+            DroneModel.split('\\').pop().split('/').pop(),
             this.mainScene.scene,
             function (newMeshes) {
                 let droneMesh = newMeshes[0] as BABYLON.Mesh;
@@ -62,13 +62,13 @@ export class Drone {
                 droneSelector.material.alpha = 0;
                 droneMesh.parent = droneSelector;
 
-
-
                 that.drone = droneSelector;
-                console.log(droneMesh); 
-                for (let i = 0; i < 50; i++) {
+                console.log(droneMesh);
+                for (let i = 0; i < 3; i++) {
                     // let newDrone = that.drone.clone("drone", null, false);
                     let newDrone = that.drone.createInstance("drone");
+                    newDrone.metadata = {draggable: true};
+
                     let childMeshes = that.drone.getChildMeshes();
 
                     console.log(childMeshes.length);
@@ -76,14 +76,15 @@ export class Drone {
                         let child = childMeshes[meshidx] as BABYLON.Mesh;
                         let instancedChild = child.createInstance("drone" + meshidx);
                         instancedChild.parent = newDrone;
-                        
+
                         instancedChild.scaling = child.absoluteScaling.clone();
                         instancedChild.position = child.absolutePosition.clone();
                         instancedChild.rotation = child.absoluteRotationQuaternion.toEulerAngles();
                     }
-                    
-                    newDrone.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2); 
-                    newDrone.position = new BABYLON.Vector3(52 + (3 * i) / 30, 5, 52 + (3 * i) % 30);
+
+                    newDrone.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
+                    newDrone.position =
+                        new BABYLON.Vector3(52 + (3 * i) / 30, 5, 52 + (3 * i) % 30);
                 }
 
             });

@@ -27,17 +27,19 @@ export class Terrain {
         this.createSkyBox();
         console.log(GrassTexture);
     }
-    
+
     /* Create SkyBox */
     createSkyBox() {
-        const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, this.mainScene.scene);
+        const skybox = BABYLON.MeshBuilder.CreateBox("skyBox",
+            { size: 1000.0 },
+            this.mainScene.scene);
         const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.mainScene.scene);
         skyboxMaterial.backFaceCulling = false;
         skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(
-            "", 
+            "",
             this.mainScene.scene,
             [], true, [SkyboxPx, SkyboxPy, SkyboxPz, SkyboxNx, SkyboxNy, SkyboxNz]
-            );
+        );
         skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
         skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
         skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
@@ -61,7 +63,7 @@ export class Terrain {
     loadStdMat() {
         let std = new BABYLON.StandardMaterial("standard", this.mainScene.scene);
         std.diffuseTexture = new BABYLON.Texture(GrassTexture, this.mainScene.scene);
-        
+
         std.specularColor = new BABYLON.Color3(0.04, 0.04, 0.04);
         return std;
     }

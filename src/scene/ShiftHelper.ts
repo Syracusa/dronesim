@@ -18,10 +18,13 @@ export class ShiftHelper {
     }
 
     setTarget(target: BABYLON.Mesh) {
+        this.arrowOrigin.isVisible = true;
+        this.arrowOrigin.position = target.position;
         this.target = target;
     }
 
     releaseTarget() {
+        this.arrowOrigin.isVisible = false;
         this.target = null;
     }
 
@@ -65,12 +68,19 @@ export class ShiftHelper {
         const arrowDistClient = BABYLON.Vector3.Distance(arrowStartClient, arrowEndClient);
         console.log(dist / arrowDistClient);
 
-        const dot = BABYLON.Vector3.Dot(ccpoint.subtract(cspoint), arrowEndClient.subtract(arrowStartClient));
+        const dot = BABYLON.Vector3.Dot(ccpoint.subtract(cspoint),
+            arrowEndClient.subtract(arrowStartClient));
         let worldDist = dist / arrowDistClient * this.arrowLength;
         if (dot > 0) {
-            this.arrowOrigin.position = this.dragStartPos.add(arrowVec.normalize().scale(worldDist));
+            this.arrowOrigin.position =
+                this.dragStartPos.add(arrowVec.normalize().scale(worldDist));
         } else {
-            this.arrowOrigin.position = this.dragStartPos.subtract(arrowVec.normalize().scale(worldDist));
+            this.arrowOrigin.position =
+                this.dragStartPos.subtract(arrowVec.normalize().scale(worldDist));
+        }
+
+        if (this.target) {
+            this.target.position = this.arrowOrigin.position;
         }
 
     }
@@ -91,7 +101,8 @@ export class ShiftHelper {
         arrowBody.rotation = new BABYLON.Vector3(0, 0, 0);
         arrowBody.scaling = new BABYLON.Vector3(1, 1, 1);
 
-        const arrow = BABYLON.Mesh.MergeMeshes([arrowTip, arrowBody], true, true, undefined, false, true);
+        const arrow = BABYLON.Mesh.MergeMeshes(
+            [arrowTip, arrowBody], true, true, undefined, false, true);
 
         const matGreen = new BABYLON.StandardMaterial("arrowMat", scene);
         matGreen.diffuseColor = new BABYLON.Color3(0.0, 1.0, 0.0);
@@ -188,7 +199,11 @@ export class ShiftHelper {
     }
 
     /* Calculate cloest point on line to a point */
-    closestPointOnLine(lineP1: BABYLON.Vector3, lineP2: BABYLON.Vector3, point: BABYLON.Vector3): BABYLON.Vector3 {
+    closestPointOnLine(
+        lineP1: BABYLON.Vector3,
+        lineP2: BABYLON.Vector3,
+        point: BABYLON.Vector3)
+        : BABYLON.Vector3 {
         const lineDir = lineP2.subtract(lineP1).normalize();
         const v = point.subtract(lineP1);
         const d = BABYLON.Vector3.Dot(v, lineDir);

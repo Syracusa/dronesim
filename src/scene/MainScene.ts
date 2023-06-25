@@ -21,10 +21,10 @@ export class MainScene {
         this.engine = engine;
         const scene = new BABYLON.Scene(engine);
         this.scene = scene;
-        
+
         var options = new BABYLON.SceneOptimizerOptions();
         options.addOptimization(new BABYLON.HardwareScalingOptimization(0, 1));
-        
+
         // Optimizer
         var optimizer = new BABYLON.SceneOptimizer(scene, options);
 
@@ -46,7 +46,7 @@ export class MainScene {
 
     updateScene(delta: number) {
         this.controller.update(delta);
-        
+
     }
 
     startRenderLoop() {
