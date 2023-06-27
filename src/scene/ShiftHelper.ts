@@ -15,6 +15,7 @@ export class ShiftHelper {
         this.mainScene = mainScene;
         this.controller = controller;
         this.drawArrow();
+        this.releaseTarget();
     }
 
     setTarget(target: BABYLON.Mesh) {
@@ -41,12 +42,10 @@ export class ShiftHelper {
     }
 
     arrowMouseDrag(arrowVec: BABYLON.Vector3) {
-        console.log("ShiftHelper.arrowMouseDrag " + arrowVec);
         const scene = this.mainScene.scene;
 
         const arrowStartClient = this.worldVec3toClient(this.dragStartPos);
         arrowStartClient.z = 0;
-        // console.log(arrowStartClient);
         const arrowEndClient = this.worldVec3toClient(this.dragStartPos.add(arrowVec));
         arrowEndClient.z = 0;
 
@@ -75,7 +74,6 @@ export class ShiftHelper {
 
         const dist = BABYLON.Vector3.Distance(ccpoint, cspoint);
         const arrowDistClient = BABYLON.Vector3.Distance(arrowStartClient, arrowEndClient);
-        // console.log(dist / arrowDistClient);
 
         const dot = BABYLON.Vector3.Dot(ccpoint.subtract(cspoint),
             arrowEndClient.subtract(arrowStartClient));
@@ -200,10 +198,7 @@ export class ShiftHelper {
     closestPointOnRay(ray: BABYLON.Ray, point: BABYLON.Vector3): BABYLON.Vector3 {
         const rayDir = ray.direction.normalize();
         const v = point.subtract(ray.origin);
-        // console.log("v" + v);
         const d = BABYLON.Vector3.Dot(v, rayDir);
-        // console.log("d" + d);
-        // console.log("RayDir" + rayDir.scale(d));
         const p = ray.origin.add(rayDir.scale(d));
         return p;
     }

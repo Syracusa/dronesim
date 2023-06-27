@@ -1,14 +1,13 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { Terrain } from './Terrain';
 import { Drone } from "./Drone";
-import { Panel } from "./Panel";
+import { GuiLayer } from "./GuiLayer";
 import { Controller } from "./Controller";
 
 export class MainScene {
     canvas: HTMLCanvasElement;
     engine: BABYLON.Engine;
     scene: BABYLON.Scene;
-    panel: Panel;
     controller: Controller;
     drone: Drone;
 
@@ -32,7 +31,6 @@ export class MainScene {
 
         new Terrain(this);
         this.drone = new Drone(this);
-        this.panel = new Panel(this);
         this.controller = new Controller(this);
 
         scene.autoClear = false;
@@ -46,7 +44,6 @@ export class MainScene {
 
     updateScene(delta: number) {
         this.controller.update(delta);
-
     }
 
     startRenderLoop() {
@@ -61,7 +58,6 @@ export class MainScene {
             that.updateScene(delta);
             that.lastRender = curr;
 
-            that.panel.updatePanelText();
         });
     }
 

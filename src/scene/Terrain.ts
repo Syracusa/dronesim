@@ -25,7 +25,6 @@ export class Terrain {
 
         this.createOcean();
         this.createSkyBox();
-        console.log(GrassTexture);
     }
 
     /* Create SkyBox */

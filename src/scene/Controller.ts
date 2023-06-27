@@ -1,6 +1,7 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { MainScene } from "./MainScene";
 import { ShiftHelper } from "./ShiftHelper";
+import { GuiLayer } from "./GuiLayer";
 
 export class Controller {
     mainScene: MainScene;
@@ -11,9 +12,9 @@ export class Controller {
     shiftHelper: ShiftHelper;
     dragStartX: number;
     dragStartY: number;
-    dragTarget: BABYLON.Mesh;
     selTarget: BABYLON.Mesh;
     isDragging: boolean = false;
+    guiLayer: GuiLayer;
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
@@ -30,6 +31,8 @@ export class Controller {
 
         this.setMouseHandler();
         this.shiftHelper = new ShiftHelper(mainScene, this);
+
+        this.guiLayer = new GuiLayer(mainScene);
     }
 
     handleMouseDown() {
@@ -51,11 +54,10 @@ export class Controller {
                     meta.onMouseDown();
                 if (meta.draggable) {
                     this.shiftHelper.setTarget(mesh as BABYLON.Mesh);
-                    this.dragTarget = mesh as BABYLON.Mesh;
                 } else {
                     console.log('Not draggable');
                 }
-                if (meta.type){
+                if (meta.type) {
                     if (meta.type == 'terrain')
                         this.shiftHelper.releaseTarget();
                     console.log(meta.type);
@@ -70,15 +72,24 @@ export class Controller {
 
     handleMouseUp() {
         this.isDragging = false;
-        this.dragTarget = null;
+        this.guiLayer.updateDragIndicator(0,0,0,0);
     }
 
     handleMouseMove() {
+        let handlerExist = 0;
         if (this.selTarget) {
             if (this.selTarget.metadata) {
-                if (this.selTarget.metadata.onMouseDrag && this.isDragging)
+                if (this.selTarget.metadata.onMouseDrag && this.isDragging) {
                     this.selTarget.metadata.onMouseDrag();
+                    handlerExist = 1;
+                }
             }
+        }
+
+        if (!handlerExist && this.isDragging) {
+            this.guiLayer.updateDragIndicator(
+                this.dragStartX, this.dragStartY,
+                this.scene.pointerX, this.scene.pointerY);
         }
     }
 
@@ -204,6 +215,7 @@ export class Controller {
     }
 
     update(delta: number) {
+        this.guiLayer.updatePanelText();
         this.camUpdate(delta);
     }
 

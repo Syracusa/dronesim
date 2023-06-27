@@ -9,7 +9,6 @@ export class Drone {
     droneMesh: BABYLON.Mesh;
 
     constructor(mainScene: MainScene) {
-        console.log(DroneModel);
         this.mainScene = mainScene;
         this.loadDroneModel();
     }
@@ -65,7 +64,6 @@ export class Drone {
 
                     let childMeshes = droneMesh.getChildMeshes();
 
-                    console.log(childMeshes.length);
                     for (let meshidx = 1; meshidx < childMeshes.length; meshidx++) {
                         let child = childMeshes[meshidx] as BABYLON.Mesh;
                         let instancedChild = child.createInstance("drone" + meshidx);
