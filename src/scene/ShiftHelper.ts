@@ -37,7 +37,7 @@ export class ShiftHelper {
 
         const arrowStartClient = this.worldVec3toClient(this.dragStartPos);
         arrowStartClient.z = 0;
-        console.log(arrowStartClient);
+        // console.log(arrowStartClient);
         const arrowEndClient = this.worldVec3toClient(this.dragStartPos.add(arrowVec));
         arrowEndClient.z = 0;
 
@@ -66,7 +66,7 @@ export class ShiftHelper {
 
         const dist = BABYLON.Vector3.Distance(ccpoint, cspoint);
         const arrowDistClient = BABYLON.Vector3.Distance(arrowStartClient, arrowEndClient);
-        console.log(dist / arrowDistClient);
+        // console.log(dist / arrowDistClient);
 
         const dot = BABYLON.Vector3.Dot(ccpoint.subtract(cspoint),
             arrowEndClient.subtract(arrowStartClient));
@@ -137,7 +137,7 @@ export class ShiftHelper {
                 that.arrowMouseDown();
             },
             onMouseDrag: () => {
-                that.arrowMouseDrag(new BABYLON.Vector3(this.arrowLength, 0, 0));
+                that.arrowMouseDrag(new BABYLON.Vector3(that.arrowLength, 0, 0));
             }
         };
 
@@ -152,7 +152,7 @@ export class ShiftHelper {
                 that.arrowMouseDown();
             },
             onMouseDrag: () => {
-                that.arrowMouseDrag(new BABYLON.Vector3(0, this.arrowLength, 0));
+                that.arrowMouseDrag(new BABYLON.Vector3(0, that.arrowLength, 0));
             }
         };
 
@@ -167,7 +167,7 @@ export class ShiftHelper {
                 that.arrowMouseDown();
             },
             onMouseDrag: () => {
-                that.arrowMouseDrag(new BABYLON.Vector3(0, 0, this.arrowLength));
+                that.arrowMouseDrag(new BABYLON.Vector3(0, 0, that.arrowLength));
             }
         };
         arrow.isVisible = false;

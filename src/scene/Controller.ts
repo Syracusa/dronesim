@@ -48,9 +48,17 @@ export class Controller {
                 if (meta.draggable) {
                     this.shiftHelper.setTarget(mesh as BABYLON.Mesh);
                     this.dragTarget = mesh as BABYLON.Mesh;
+                } else {
+                    console.log('Not draggable');
                 }
+                if (meta.type){
+                    console.log(meta.type);
+                }
+            } else {
+                console.log('No metadata');
             }
-
+        } else {
+            console.log('No mesh');
         }
     }
 
@@ -164,15 +172,15 @@ export class Controller {
             this.camera.radius -= 0.02 * delta;
 
         if (this.isKeyPressed("3")) {
-            this.camera.fov += 0.002 * delta;
-            if (this.camera.fov > 1.5)
-                this.camera.fov = 1.5;
-        }
-
-        if (this.isKeyPressed("4")) {
             this.camera.fov -= 0.002 * delta;
             if (this.camera.fov < 0.1)
                 this.camera.fov = 0.1;
+        }
+
+        if (this.isKeyPressed("4")) {
+            this.camera.fov += 0.002 * delta;
+            if (this.camera.fov > 1.5)
+                this.camera.fov = 1.5;
         }
 
         if (this.isKeyPressed("ArrowUp"))
