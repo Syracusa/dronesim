@@ -60,8 +60,8 @@ export class Drone {
                     droneSelector.position = new BABYLON.Vector3(50, 5, 50);
                     droneSelector.metadata = {draggable: true, type: "drone-new"};
                     droneSelector.material = new BABYLON.StandardMaterial("mat", that.mainScene.scene);
-                    droneSelector.material.wireframe = true;
-                    droneSelector.material.alpha = 0.1;
+                    // droneSelector.material.wireframe = true;
+                    droneSelector.material.alpha = 0.0;
 
                     let childMeshes = droneMesh.getChildMeshes();
 

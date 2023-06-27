@@ -12,6 +12,8 @@ export class Controller {
     dragStartX: number;
     dragStartY: number;
     dragTarget: BABYLON.Mesh;
+    selTarget: BABYLON.Mesh;
+    isDragging: boolean = false;
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
@@ -31,6 +33,7 @@ export class Controller {
     }
 
     handleMouseDown() {
+        this.isDragging = true;
         this.dragStartX = this.scene.pointerX;
         this.dragStartY = this.scene.pointerY;
 
@@ -43,6 +46,7 @@ export class Controller {
         if (mesh) {
             let meta = mesh.metadata;
             if (meta) {
+                this.selTarget = mesh as BABYLON.Mesh;
                 if (meta.onMouseDown)
                     meta.onMouseDown();
                 if (meta.draggable) {
@@ -52,6 +56,8 @@ export class Controller {
                     console.log('Not draggable');
                 }
                 if (meta.type){
+                    if (meta.type == 'terrain')
+                        this.shiftHelper.releaseTarget();
                     console.log(meta.type);
                 }
             } else {
@@ -63,14 +69,15 @@ export class Controller {
     }
 
     handleMouseUp() {
+        this.isDragging = false;
         this.dragTarget = null;
     }
 
     handleMouseMove() {
-        if (this.dragTarget) {
-            if (this.dragTarget.metadata) {
-                if (this.dragTarget.metadata.onMouseDrag)
-                    this.dragTarget.metadata.onMouseDrag();
+        if (this.selTarget) {
+            if (this.selTarget.metadata) {
+                if (this.selTarget.metadata.onMouseDrag && this.isDragging)
+                    this.selTarget.metadata.onMouseDrag();
             }
         }
     }

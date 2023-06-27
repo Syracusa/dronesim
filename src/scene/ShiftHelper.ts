@@ -18,13 +18,21 @@ export class ShiftHelper {
     }
 
     setTarget(target: BABYLON.Mesh) {
-        this.arrowOrigin.isVisible = true;
+        let childs = this.arrowOrigin.getChildren();
+        for (let i = 0; i < childs.length; i++) {
+            let onechild = childs[i] as BABYLON.Mesh;
+            onechild.isVisible = true;
+        }
         this.arrowOrigin.position = target.position;
         this.target = target;
     }
 
     releaseTarget() {
-        this.arrowOrigin.isVisible = false;
+        let childs = this.arrowOrigin.getChildren();
+        for (let i = 0; i < childs.length; i++) {
+            let onechild = childs[i] as BABYLON.Mesh;
+            onechild.isVisible = false;
+        }
         this.target = null;
     }
 
@@ -33,6 +41,7 @@ export class ShiftHelper {
     }
 
     arrowMouseDrag(arrowVec: BABYLON.Vector3) {
+        console.log("ShiftHelper.arrowMouseDrag " + arrowVec);
         const scene = this.mainScene.scene;
 
         const arrowStartClient = this.worldVec3toClient(this.dragStartPos);
@@ -178,7 +187,8 @@ export class ShiftHelper {
         arrowOrigin.position = new BABYLON.Vector3(40, 8, 40);
         arrowOrigin.metadata = "arrowOrigin";
         arrowOrigin.material = new BABYLON.StandardMaterial("mat", this.mainScene.scene);
-        arrowOrigin.material.wireframe = true;
+        // arrowOrigin.material.wireframe = true;
+        arrowOrigin.isVisible = false;
 
         arrowX.parent = arrowOrigin;
         arrowY.parent = arrowOrigin;

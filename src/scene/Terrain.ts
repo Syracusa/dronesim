@@ -85,6 +85,7 @@ export class Terrain {
             this.mainScene.scene);
 
         terrain.material = this.mat;
+        terrain.metadata = { type: "terrain" };
     }
 
     drawTerrain() {
