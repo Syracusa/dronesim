@@ -2,7 +2,7 @@ import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { MainScene } from "./MainScene";
 import { ShiftHelper } from "./ShiftHelper";
 import { GuiLayer } from "./GuiLayer";
-
+import { DroneManager } from "./DroneManager";
 export class Controller {
     mainScene: MainScene;
     keystate: any;
@@ -15,6 +15,7 @@ export class Controller {
     selTarget: BABYLON.Mesh;
     isDragging: boolean = false;
     guiLayer: GuiLayer;
+    droneManager: DroneManager;
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
@@ -33,6 +34,8 @@ export class Controller {
         this.shiftHelper = new ShiftHelper(mainScene, this);
 
         this.guiLayer = new GuiLayer(mainScene);
+
+        this.droneManager = new DroneManager(mainScene);
     }
 
     handleMouseDown() {
@@ -70,9 +73,41 @@ export class Controller {
         }
     }
 
+    getDraggedDrones(): BABYLON.Mesh[] {
+        let dragedDrones: BABYLON.Mesh[] = [];
+        let droneList = this.droneManager.droneList;
+        for (let i = 0; i < droneList.length; i++) {
+            let clientPos = this.mainScene.worldVec3toClient(droneList[i].position);
+            let x1, x2, y1, y2;
+            if (this.dragStartX < this.scene.pointerX) {
+                x1 = this.dragStartX;
+                x2 = this.scene.pointerX;
+            } else {
+                x1 = this.scene.pointerX;
+                x2 = this.dragStartX;
+            }
+            if (this.dragStartY < this.scene.pointerY) {
+                y1 = this.dragStartY;
+                y2 = this.scene.pointerY;
+            } else {
+                y1 = this.scene.pointerY;
+                y2 = this.dragStartY;
+            }
+
+            if (clientPos.x > x1 && clientPos.x < x2 &&
+                clientPos.y > y1 && clientPos.y < y2) {
+                dragedDrones.push(droneList[i]);
+            }
+        }
+        return dragedDrones;
+    }
+
     handleMouseUp() {
         this.isDragging = false;
-        this.guiLayer.updateDragIndicator(0,0,0,0);
+        /* Get Meshes in the drag range */
+        this.shiftHelper.setMultiTarget(this.getDraggedDrones());
+
+        this.guiLayer.updateDragIndicator(0, 0, 0, 0);
     }
 
     handleMouseMove() {

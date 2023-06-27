@@ -4,9 +4,10 @@ import "@babylonjs/loaders/glTF";
 import { MainScene } from './MainScene';
 import DroneModel from '../static/drone.glb';
 
-export class Drone {
+export class DroneManager {
     mainScene: MainScene;
     droneMesh: BABYLON.Mesh;
+    droneList: BABYLON.Mesh[] = [];
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
@@ -57,7 +58,7 @@ export class Drone {
                         { diameter: 6, segments: 4 },
                         that.mainScene.scene);
                     droneSelector.position = new BABYLON.Vector3(50, 5, 50);
-                    droneSelector.metadata = {draggable: true, type: "drone-new"};
+                    droneSelector.metadata = {draggable: true, type: "drone", idx: i};
                     droneSelector.material = new BABYLON.StandardMaterial("mat", that.mainScene.scene);
                     // droneSelector.material.wireframe = true;
                     droneSelector.material.alpha = 0.0;
@@ -66,7 +67,7 @@ export class Drone {
 
                     for (let meshidx = 1; meshidx < childMeshes.length; meshidx++) {
                         let child = childMeshes[meshidx] as BABYLON.Mesh;
-                        let instancedChild = child.createInstance("drone" + meshidx);
+                        let instancedChild = child.createInstance("dronechild");
                         instancedChild.parent = droneSelector;
 
                         instancedChild.scaling = child.absoluteScaling.clone();
@@ -76,6 +77,8 @@ export class Drone {
                     droneSelector.position =
                         new BABYLON.Vector3(52 + (3 * i) / 30, 5, 52 + (3 * i) % 30);
                     droneSelector.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
+
+                    that.droneList.push(droneSelector);
                 }
 
             });

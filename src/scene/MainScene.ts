@@ -1,6 +1,6 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { Terrain } from './Terrain';
-import { Drone } from "./Drone";
+import { DroneManager } from "./DroneManager";
 import { GuiLayer } from "./GuiLayer";
 import { Controller } from "./Controller";
 
@@ -9,7 +9,6 @@ export class MainScene {
     engine: BABYLON.Engine;
     scene: BABYLON.Scene;
     controller: Controller;
-    drone: Drone;
 
     lastRender = performance.now();
 
@@ -30,7 +29,6 @@ export class MainScene {
         this.createLight();
 
         new Terrain(this);
-        this.drone = new Drone(this);
         this.controller = new Controller(this);
 
         scene.autoClear = false;
@@ -67,5 +65,17 @@ export class MainScene {
         light.intensity = 1.5;
     };
 
-
+    /* Vec3 to Client */
+    worldVec3toClient(vec3: BABYLON.Vector3): BABYLON.Vector3 {
+        const scene = this.scene;
+        const camera = scene.activeCamera;
+        const transform = BABYLON.Vector3.Project(
+            vec3,
+            BABYLON.Matrix.Identity(),
+            scene.getTransformMatrix(),
+            camera.viewport.toGlobal(
+                scene.getEngine().getRenderWidth(true),
+                scene.getEngine().getRenderHeight(true)));
+        return transform;
+    }
 }

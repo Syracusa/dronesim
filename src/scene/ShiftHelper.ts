@@ -9,6 +9,9 @@ export class ShiftHelper {
     target: BABYLON.Mesh;
     dragStartPos: BABYLON.Vector3;
     arrowLength: number = 4;
+    isMultiTarget: boolean = false;
+    multiTargetRelPos: BABYLON.Vector3[] = [];
+    targets: BABYLON.Mesh[] = [];
 
     constructor(mainScene: MainScene,
         controller: Controller) {
@@ -18,7 +21,33 @@ export class ShiftHelper {
         this.releaseTarget();
     }
 
+    setMultiTarget(targets: BABYLON.Mesh[]) {
+        this.targets = targets;
+        this.isMultiTarget = true;
+        let childs = this.arrowOrigin.getChildren();
+        for (let i = 0; i < childs.length; i++) {
+            let onechild = childs[i] as BABYLON.Mesh;
+            onechild.isVisible = true;
+        }
+        let targetPos = BABYLON.Vector3.Zero();
+        for (let i = 0; i < targets.length; i++) {
+            let oneTarget = targets[i];
+            targetPos.addInPlace(oneTarget.position);
+        }
+        targetPos.scaleInPlace(1 / targets.length);
+        this.arrowOrigin.position = targetPos;
+        this.target = null;
+
+        // calc relative pos
+        this.multiTargetRelPos = [];
+        for (let i = 0; i < targets.length; i++) {
+            let oneTarget = targets[i];
+            this.multiTargetRelPos.push(oneTarget.position.subtract(targetPos));
+        }
+    }
+
     setTarget(target: BABYLON.Mesh) {
+        this.isMultiTarget = false;
         let childs = this.arrowOrigin.getChildren();
         for (let i = 0; i < childs.length; i++) {
             let onechild = childs[i] as BABYLON.Mesh;
@@ -35,6 +64,8 @@ export class ShiftHelper {
             onechild.isVisible = false;
         }
         this.target = null;
+        this.isMultiTarget = false;
+        this.multiTargetRelPos = [];
     }
 
     arrowMouseDown() {
@@ -44,9 +75,9 @@ export class ShiftHelper {
     arrowMouseDrag(arrowVec: BABYLON.Vector3) {
         const scene = this.mainScene.scene;
 
-        const arrowStartClient = this.worldVec3toClient(this.dragStartPos);
+        const arrowStartClient = this.mainScene.worldVec3toClient(this.dragStartPos);
         arrowStartClient.z = 0;
-        const arrowEndClient = this.worldVec3toClient(this.dragStartPos.add(arrowVec));
+        const arrowEndClient = this.mainScene.worldVec3toClient(this.dragStartPos.add(arrowVec));
         arrowEndClient.z = 0;
 
         const clientX = scene.pointerX;
@@ -88,6 +119,13 @@ export class ShiftHelper {
 
         if (this.target) {
             this.target.position = this.arrowOrigin.position;
+        }
+
+        if (this.isMultiTarget) {
+            for (let i = 0; i < this.targets.length; i++) {
+                let oneTarget = this.targets[i];
+                oneTarget.position = this.arrowOrigin.position.add(this.multiTargetRelPos[i]);
+            }
         }
 
     }
@@ -225,17 +263,4 @@ export class ShiftHelper {
         return null;
     }
 
-    /* Vec3 to Client */
-    worldVec3toClient(vec3: BABYLON.Vector3): BABYLON.Vector3 {
-        const scene = this.mainScene.scene;
-        const camera = scene.activeCamera;
-        const transform = BABYLON.Vector3.Project(
-            vec3,
-            BABYLON.Matrix.Identity(),
-            scene.getTransformMatrix(),
-            camera.viewport.toGlobal(
-                scene.getEngine().getRenderWidth(true),
-                scene.getEngine().getRenderHeight(true)));
-        return transform;
-    }
 }
