@@ -58,7 +58,7 @@ export class DroneManager {
                         { diameter: 6, segments: 4 },
                         that.mainScene.scene);
                     droneSelector.position = new BABYLON.Vector3(50, 5, 50);
-                    droneSelector.metadata = {draggable: true, type: "drone", idx: i};
+                    droneSelector.metadata = { draggable: true, type: "drone", idx: i };
                     droneSelector.material = new BABYLON.StandardMaterial("mat", that.mainScene.scene);
                     // droneSelector.material.wireframe = true;
                     droneSelector.material.alpha = 0.0;
@@ -81,6 +81,7 @@ export class DroneManager {
                     that.droneList.push(droneSelector);
                 }
 
-            });
+            }
+        );
     }
 }
