@@ -57,6 +57,7 @@ export class Terrain {
         oceanMat.diffuseColor = new BABYLON.Color3(0.11, 0.11, 0.4);
         oceanMat.alpha = 0.8;
         ocean.material = oceanMat;
+        ocean.metadata = { type: "terrain" };
     }
 
     loadStdMat() {

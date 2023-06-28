@@ -8,6 +8,9 @@ export class DroneManager {
     mainScene: MainScene;
     droneMesh: BABYLON.Mesh;
     droneList: BABYLON.Mesh[] = [];
+    focusedDroneList: BABYLON.Mesh[] = [];
+    droneCount: number = 0;
+    modelLoaded: boolean = false;
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
@@ -19,6 +22,113 @@ export class DroneManager {
         newDrone.position = new BABYLON.Vector3(0, 0, 0);
     }
 
+    focusDrone(drone: BABYLON.Mesh) {
+        console.log("Drone selected. idx : " + drone.metadata.idx);
+        drone.metadata.selectionIndicator.isVisible = true;
+        this.focusedDroneList.push(drone);
+    }
+
+    unfocusAllDrones() {
+        for (let i = 0; i < this.focusedDroneList.length; i++) {
+            let drone = this.focusedDroneList[i];
+            this.unfocusDrone(drone);
+        }
+        this.focusedDroneList = [];
+    }
+
+    unfocusDrone(drone: BABYLON.Mesh) {
+        console.log("Drone out selected. idx : " + drone.metadata.idx);
+        drone.metadata.selectionIndicator.isVisible = false;
+    }
+
+    instanciateDrone() {
+        if (!this.modelLoaded) {
+            console.log("Drone model not loaded yet");
+            return;
+        }
+
+        let droneMesh = this.droneMesh;
+
+        const droneSelector = BABYLON.MeshBuilder.CreateSphere("sphere",
+            { diameter: 6, segments: 4 },
+            this.mainScene.scene);
+        droneSelector.position = new BABYLON.Vector3(0, 0, 0);
+
+        let torus = BABYLON.MeshBuilder.CreateTorus("torus",
+            { diameter: 6, thickness: 0.2, tessellation: 32 },
+            this.mainScene.scene);
+        const mat = new BABYLON.StandardMaterial("mat", this.mainScene.scene);
+        mat.diffuseColor = new BABYLON.Color3(0, 1, 0);
+        torus.material = mat;
+
+        torus.position = new BABYLON.Vector3(0, 0.1, 0);
+        torus.setParent(droneSelector);
+        torus.isVisible = false;
+
+        droneSelector.metadata = {
+            draggable: true,
+            type: "drone",
+            idx: this.droneCount,
+            selectionIndicator: torus
+        };
+
+        droneSelector.material = new BABYLON.StandardMaterial("mat", this.mainScene.scene);
+        // droneSelector.material.wireframe = true;
+        droneSelector.material.alpha = 0.0;
+
+        let childMeshes = droneMesh.getChildMeshes();
+
+        for (let meshidx = 1; meshidx < childMeshes.length; meshidx++) {
+            let child = childMeshes[meshidx] as BABYLON.Mesh;
+            let instancedChild = child.createInstance("dronechild");
+            instancedChild.parent = droneSelector;
+
+            instancedChild.scaling = child.absoluteScaling.clone();
+            instancedChild.position = child.absolutePosition.clone();
+            instancedChild.rotation = child.absoluteRotationQuaternion.toEulerAngles();
+        }
+        droneSelector.position = new BABYLON.Vector3(
+            52 + (3 * this.droneCount) / 30,
+            5,
+            52 + (3 * this.droneCount) % 30);
+        droneSelector.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
+
+        this.droneList.push(droneSelector);
+        this.droneCount++;
+    }
+
+    afterLoad(newMeshes: BABYLON.AbstractMesh[]) {
+        let droneMesh = newMeshes[0] as BABYLON.Mesh;
+
+        if (0) {
+            for (let i = 1; i < newMeshes.length; i++) {
+                let mesh = newMeshes[i] as any;
+                if (mesh._geometry._totalVertices > 500) {
+                    mesh.simplify([
+                        {
+                            quality: 0.1,
+                            distance: 1
+                        }
+                    ], true, BABYLON.SimplificationType.QUADRATIC, function () {
+                        console.log("Simplification finished");
+                    });
+                }
+            }
+        }
+
+        droneMesh.position = new BABYLON.Vector3(0, 0, 0);
+        droneMesh.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
+        droneMesh.rotation.y = Math.PI / 2;
+        droneMesh.rotation.x = Math.PI / 2;
+        droneMesh.rotation.z = Math.PI / 2;
+
+        this.droneMesh = droneMesh;
+        this.modelLoaded = true;
+        for (let i = 0; i < 3; i++) {
+            this.instanciateDrone();
+        }
+    }
+
     loadDroneModel() {
         const that = this;
 
@@ -27,60 +137,7 @@ export class DroneManager {
             DroneModel.split('\\').pop().split('/').pop(),
             this.mainScene.scene,
             function (newMeshes) {
-                let droneMesh = newMeshes[0] as BABYLON.Mesh;
-
-                if (0) {
-                    for (let i = 1; i < newMeshes.length; i++) {
-                        let mesh = newMeshes[i] as any;
-                        if (mesh._geometry._totalVertices > 500) {
-                            mesh.simplify([
-                                {
-                                    quality: 0.1,
-                                    distance: 1
-                                }
-                            ], true, BABYLON.SimplificationType.QUADRATIC, function () {
-                                console.log("Simplification finished");
-                            });
-                        }
-                    }
-                }
-
-                droneMesh.position = new BABYLON.Vector3(0, 0, 0);
-                droneMesh.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
-                droneMesh.rotation.y = Math.PI / 2;
-                droneMesh.rotation.x = Math.PI / 2;
-                droneMesh.rotation.z = Math.PI / 2;
-                that.droneMesh = droneMesh;
-
-                for (let i = 0; i < 3; i++) {
-                    // let newDrone = that.drone.clone("drone", null, false);
-                    const droneSelector = BABYLON.MeshBuilder.CreateSphere("sphere",
-                        { diameter: 6, segments: 4 },
-                        that.mainScene.scene);
-                    droneSelector.position = new BABYLON.Vector3(50, 5, 50);
-                    droneSelector.metadata = { draggable: true, type: "drone", idx: i };
-                    droneSelector.material = new BABYLON.StandardMaterial("mat", that.mainScene.scene);
-                    // droneSelector.material.wireframe = true;
-                    droneSelector.material.alpha = 0.0;
-
-                    let childMeshes = droneMesh.getChildMeshes();
-
-                    for (let meshidx = 1; meshidx < childMeshes.length; meshidx++) {
-                        let child = childMeshes[meshidx] as BABYLON.Mesh;
-                        let instancedChild = child.createInstance("dronechild");
-                        instancedChild.parent = droneSelector;
-
-                        instancedChild.scaling = child.absoluteScaling.clone();
-                        instancedChild.position = child.absolutePosition.clone();
-                        instancedChild.rotation = child.absoluteRotationQuaternion.toEulerAngles();
-                    }
-                    droneSelector.position =
-                        new BABYLON.Vector3(52 + (3 * i) / 30, 5, 52 + (3 * i) % 30);
-                    droneSelector.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
-
-                    that.droneList.push(droneSelector);
-                }
-
+                that.afterLoad(newMeshes);
             }
         );
     }

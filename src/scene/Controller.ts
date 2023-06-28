@@ -61,8 +61,12 @@ export class Controller {
                     console.log('Not draggable');
                 }
                 if (meta.type) {
-                    if (meta.type == 'terrain')
+                    if (meta.type == 'terrain') {
                         this.shiftHelper.releaseTarget();
+                        this.droneManager.unfocusAllDrones();
+                    } else if (meta.type == 'drone') {
+                        this.droneManager.focusDrone(mesh as BABYLON.Mesh);
+                    }
                     console.log(meta.type);
                 }
             } else {
@@ -77,7 +81,9 @@ export class Controller {
         let dragedDrones: BABYLON.Mesh[] = [];
         let droneList = this.droneManager.droneList;
         for (let i = 0; i < droneList.length; i++) {
-            let clientPos = this.mainScene.worldVec3toClient(droneList[i].position);
+            let clientPos = this.mainScene.worldVec3toClient(
+                droneList[i].position);
+                
             let x1, x2, y1, y2;
             if (this.dragStartX < this.scene.pointerX) {
                 x1 = this.dragStartX;
@@ -104,9 +110,14 @@ export class Controller {
 
     handleMouseUp() {
         this.isDragging = false;
-        /* Get Meshes in the drag range */
-        this.shiftHelper.setMultiTarget(this.getDraggedDrones());
 
+        let dragedDrones = this.getDraggedDrones();
+        if (dragedDrones.length > 0) {
+            this.shiftHelper.setMultiTarget(dragedDrones);
+            this.droneManager.unfocusAllDrones();
+            for (let i = 0; i < dragedDrones.length; i++)
+                this.droneManager.focusDrone(dragedDrones[i]);
+        }
         this.guiLayer.updateDragIndicator(0, 0, 0, 0);
     }
 
