@@ -64,6 +64,20 @@ export class DroneManager {
         torus.setParent(droneSelector);
         torus.isVisible = false;
 
+        const line = BABYLON.MeshBuilder.CreateLines("lines",
+            {
+                points:
+                    [
+                        new BABYLON.Vector3(0, 0, 0),
+                        new BABYLON.Vector3(0, -100, 0),
+                    ],
+                // updatable: true
+            }
+        );
+        line.color = new BABYLON.Color3(0, 0, 0);
+        line.alpha = 0.5;
+        line.setParent(droneSelector);
+
         droneSelector.metadata = {
             draggable: true,
             type: "drone",

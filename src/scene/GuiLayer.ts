@@ -21,6 +21,8 @@ export class GuiLayer {
     dragIndicator: GUI.Rectangle;
     droneGUIs: DroneGUI[] = [];
     testDroneRec: GUI.Rectangle;
+    nodeInfoTarget: BABYLON.Mesh;
+    
 
     droneManager: DroneManager;
     updateIntervalMs = 100;
@@ -102,7 +104,29 @@ export class GuiLayer {
         }
     }
 
+    updateNodeInfo(target: BABYLON.Mesh) {
+        console.log(target);
+        if (target == null) {
+            this.nodeInfo.text = "No target";
+            return;
+        }
+
+        const meta = target.metadata;
+
+        if (!meta) {
+            console.log('No meta');
+            return;
+        }
+
+        if (meta.type == "drone") {
+            this.nodeInfo.text = "Node Index : " + meta.idx + "\n";        
+        } else {
+            console.log('type :' + meta.type);
+        }
+    }
+
     updateDroneNameCards() {
+        const that = this;
         const drones = this.droneManager.droneList;
 
         if (this.droneGUIs.length < drones.length) {
@@ -120,6 +144,13 @@ export class GuiLayer {
                 card.background = "yellow";
                 card.fontSize = 10;
                 card.alpha = 0.5;
+                card.zIndex = 5;
+                // card.metadata = drones[i];
+                card.onPointerUpObservable.add(function() {
+                    that.updateNodeInfo(drones[i]);
+                });
+
+                // card.isPointerBlocker = true;
                 this.advencedTexture.addControl(card);
 
                 droneGUI.nameCard = card;

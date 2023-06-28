@@ -203,6 +203,8 @@ export class Controller {
         camera.maxCameraSpeed = 10;
         camera.lockedTarget = this.lookTarget;
 
+        // camera.attachControl(true);
+        // camera.inputs.clear();
         this.camera = camera;
     }
 
