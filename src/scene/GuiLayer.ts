@@ -8,6 +8,7 @@ export class GuiLayer {
     nodeInfo: GUI.TextBlock;
     dragIndicator: GUI.Rectangle;
     droneNameCards: GUI.Button[] = [];
+    droneLinkLines: GUI.Line[] = [];
     testDroneRec: GUI.Rectangle;
 
     droneManager: DroneManager;
@@ -18,6 +19,10 @@ export class GuiLayer {
         this.mainScene = mainScene;
         this.droneManager = droneManager;
         this.makePanel();
+    }
+
+    updateDroneLinkLines() {
+
     }
 
     updateDroneNameCards() {
@@ -97,6 +102,19 @@ export class GuiLayer {
         advancedTexture.addControl(infoPanel);
 
         this.infoPanel = infoPanel;
+
+        let nodeInfo = new GUI.TextBlock();
+        nodeInfo.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+        nodeInfo.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        nodeInfo.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+        nodeInfo.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        nodeInfo.text = "No node selected";
+        nodeInfo.color = "white";
+        nodeInfo.height = "300px";
+        nodeInfo.fontSize = 10;
+        advancedTexture.addControl(nodeInfo);
+
+        this.nodeInfo = nodeInfo;
 
         let dragIndicator = new GUI.Rectangle();
         dragIndicator.width = "1px";

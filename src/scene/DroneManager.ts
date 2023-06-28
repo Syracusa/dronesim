@@ -56,7 +56,8 @@ export class DroneManager {
             { diameter: 6, thickness: 0.2, tessellation: 32 },
             this.mainScene.scene);
         const mat = new BABYLON.StandardMaterial("mat", this.mainScene.scene);
-        mat.diffuseColor = new BABYLON.Color3(0, 1, 0);
+        mat.emissiveColor = new BABYLON.Color3(0, 1, 0);
+        mat.disableLighting = true;
         torus.material = mat;
 
         torus.position = new BABYLON.Vector3(0, 0.1, 0);
