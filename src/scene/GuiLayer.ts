@@ -4,9 +4,10 @@ import * as GUI from "@babylonjs/gui/Legacy/legacy";
 
 export class GuiLayer {
     mainScene: MainScene;
-    textblock: GUI.TextBlock;
+    infoPanel: GUI.TextBlock;
+    nodeInfo: GUI.TextBlock;
     dragIndicator: GUI.Rectangle;
-    droneNameCards: GUI.TextBlock[] = [];
+    droneNameCards: GUI.Button[] = [];
     testDroneRec: GUI.Rectangle;
 
     droneManager: DroneManager;
@@ -24,16 +25,19 @@ export class GuiLayer {
 
         if (this.droneNameCards.length < drones.length) {
             for (let i = this.droneNameCards.length; i < drones.length; i++) {
-                let card = new GUI.TextBlock();
+                let card = GUI.Button.CreateSimpleButton("but " + i, "Drone " + i);
                 card.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                 card.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-                card.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-                card.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-                card.text = "Drone " + i;
-                card.color = "white";
-                card.height = "50px";
-                card.width = "100px";
+                // card.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                // card.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+                // card.text = "Drone " + i;
+                card.color = "black";
+                card.height = "12px";
+                card.width = "45px";
+                card.cornerRadius = 3;
+                card.background = "yellow";
                 card.fontSize = 10;
+                card.alpha = 0.5;
                 this.advencedTexture.addControl(card);
                 this.droneNameCards.push(card);
             }
@@ -43,8 +47,8 @@ export class GuiLayer {
             const onedrone = drones[i];
             const clientDronePos = this.mainScene.worldVec3toClient(onedrone.position);
             
-            this.droneNameCards[i].left = (clientDronePos.x | 0)+ "px";
-            this.droneNameCards[i].top = (clientDronePos.y | 0) + "px";
+            this.droneNameCards[i].left = ((clientDronePos.x | 0) - 20) + "px";
+            this.droneNameCards[i].top = ((clientDronePos.y | 0) - 30) + "px";
         }
     }
 
@@ -53,7 +57,7 @@ export class GuiLayer {
         text += "FPS: " + this.mainScene.engine.getFps().toFixed() + "\n";
         text += "Pointer: "
             + this.mainScene.scene.pointerX + " " + this.mainScene.scene.pointerY + "\n";
-        this.textblock.text = text;
+        this.infoPanel.text = text;
     }
 
     updateDragIndicator(x1: number, y1: number, x2: number, y2: number) {
@@ -81,25 +85,18 @@ export class GuiLayer {
         style.fontSize = 3;
         style.fontStyle = "bold";
 
-        // Panel
-        let panel = new GUI.StackPanel();
-        panel.left = "0%";
-        panel.top = "0%";
-        panel.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-        panel.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-        panel.isVertical = true;
-        advancedTexture.addControl(panel);
+        let infoPanel = new GUI.TextBlock();
+        infoPanel.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        infoPanel.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        infoPanel.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        infoPanel.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        infoPanel.text = "N/A";
+        infoPanel.color = "white";
+        infoPanel.height = "300px";
+        infoPanel.fontSize = 10;
+        advancedTexture.addControl(infoPanel);
 
-        let text1 = new GUI.TextBlock();
-        text1.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-        text1.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-        text1.text = "N/A";
-        text1.color = "white";
-        text1.height = "300px";
-        text1.fontSize = 10;
-        panel.addControl(text1);
-
-        this.textblock = text1;
+        this.infoPanel = infoPanel;
 
         let dragIndicator = new GUI.Rectangle();
         dragIndicator.width = "1px";
