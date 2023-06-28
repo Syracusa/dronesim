@@ -240,27 +240,4 @@ export class ShiftHelper {
         const p = ray.origin.add(rayDir.scale(d));
         return p;
     }
-
-    /* Calculate cloest point on line to a point */
-    closestPointOnLine(
-        lineP1: BABYLON.Vector3,
-        lineP2: BABYLON.Vector3,
-        point: BABYLON.Vector3)
-        : BABYLON.Vector3 {
-        const lineDir = lineP2.subtract(lineP1).normalize();
-        const v = point.subtract(lineP1);
-        const d = BABYLON.Vector3.Dot(v, lineDir);
-        const p = lineP1.add(lineDir.scale(d));
-        return p;
-    }
-
-    clientXYtoWorldXY(clientX: number, clientY: number): BABYLON.Vector3 {
-        const scene = this.mainScene.scene;
-        const pickResult = scene.pick(scene.pointerX, scene.pointerY);
-        if (pickResult.hit) {
-            return pickResult.pickedPoint;
-        }
-        return null;
-    }
-
 }
