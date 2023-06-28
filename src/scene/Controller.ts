@@ -210,9 +210,9 @@ export class Controller {
 
     camUpdate(delta: number) {
         let lookXZDir = this.lookTarget.position.clone()
-            .subtractInPlace(this.camera.position)
-            .normalize();
+            .subtractInPlace(this.camera.position);
         lookXZDir.y = 0;
+        lookXZDir.normalize();
 
         let angle = Math.atan2(lookXZDir.z, lookXZDir.x) + Math.PI / 2;
         let sideDir = new BABYLON.Vector3(Math.cos(angle), 0, Math.sin(angle));
@@ -235,13 +235,15 @@ export class Controller {
         if (this.isKeyPressed("e") || this.isKeyPressed("E"))
             this.camera.rotationOffset += 0.1 * delta;
 
-        if (this.isKeyPressed("1"))
-            this.camera.radius += 0.02 * delta;
+        if (this.isKeyPressed("1")){
+            if (this.camera.radius > 0.02 * delta)
+                this.camera.radius -= 0.02 * delta;
+        }
 
         if (this.isKeyPressed("2"))
-            this.camera.radius -= 0.02 * delta;
+            this.camera.radius += 0.02 * delta;
 
-        if (this.isKeyPressed("3")) {
+            if (this.isKeyPressed("3")) {
             this.camera.fov -= 0.002 * delta;
             if (this.camera.fov < 0.1)
                 this.camera.fov = 0.1;

@@ -1,7 +1,5 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { Terrain } from './Terrain';
-import { DroneManager } from "./DroneManager";
-import { GuiLayer } from "./GuiLayer";
 import { Controller } from "./Controller";
 
 export class MainScene {

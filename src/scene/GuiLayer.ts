@@ -23,7 +23,6 @@ export class GuiLayer {
     testDroneRec: GUI.Rectangle;
     nodeInfoTarget: BABYLON.Mesh;
     
-
     droneManager: DroneManager;
     updateIntervalMs = 100;
     advencedTexture: GUI.AdvancedDynamicTexture;
