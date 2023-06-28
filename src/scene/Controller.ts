@@ -16,6 +16,7 @@ export class Controller {
     isDragging: boolean = false;
     guiLayer: GuiLayer;
     droneManager: DroneManager;
+    dragHandlerExist: boolean = false;
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
@@ -65,6 +66,7 @@ export class Controller {
                         this.shiftHelper.releaseTarget();
                         this.droneManager.unfocusAllDrones();
                     } else if (meta.type == 'drone') {
+                        this.droneManager.unfocusAllDrones();
                         this.droneManager.focusDrone(mesh as BABYLON.Mesh);
                     }
                     console.log(meta.type);
@@ -83,7 +85,7 @@ export class Controller {
         for (let i = 0; i < droneList.length; i++) {
             let clientPos = this.mainScene.worldVec3toClient(
                 droneList[i].position);
-                
+
             let x1, x2, y1, y2;
             if (this.dragStartX < this.scene.pointerX) {
                 x1 = this.dragStartX;
@@ -111,28 +113,30 @@ export class Controller {
     handleMouseUp() {
         this.isDragging = false;
 
-        let dragedDrones = this.getDraggedDrones();
-        if (dragedDrones.length > 0) {
-            this.shiftHelper.setMultiTarget(dragedDrones);
-            this.droneManager.unfocusAllDrones();
-            for (let i = 0; i < dragedDrones.length; i++)
-                this.droneManager.focusDrone(dragedDrones[i]);
+        if (!this.dragHandlerExist) {
+            let dragedDrones = this.getDraggedDrones();
+            if (dragedDrones.length > 0) {
+                this.shiftHelper.setMultiTarget(dragedDrones);
+                this.droneManager.unfocusAllDrones();
+                for (let i = 0; i < dragedDrones.length; i++)
+                    this.droneManager.focusDrone(dragedDrones[i]);
+            }
         }
         this.guiLayer.updateDragIndicator(0, 0, 0, 0);
     }
 
     handleMouseMove() {
-        let handlerExist = 0;
+        this.dragHandlerExist = false;
         if (this.selTarget) {
             if (this.selTarget.metadata) {
                 if (this.selTarget.metadata.onMouseDrag && this.isDragging) {
                     this.selTarget.metadata.onMouseDrag();
-                    handlerExist = 1;
+                    this.dragHandlerExist = true;
                 }
             }
         }
 
-        if (!handlerExist && this.isDragging) {
+        if (!this.dragHandlerExist && this.isDragging) {
             this.guiLayer.updateDragIndicator(
                 this.dragStartX, this.dragStartY,
                 this.scene.pointerX, this.scene.pointerY);
