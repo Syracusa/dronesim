@@ -19,11 +19,14 @@ export class MainScene {
         const scene = new BABYLON.Scene(engine);
         this.scene = scene;
 
-        var options = new BABYLON.SceneOptimizerOptions();
-        options.addOptimization(new BABYLON.HardwareScalingOptimization(0, 1));
+        const USE_OPTIMIZER = false;
+        if (USE_OPTIMIZER){
+            const options = new BABYLON.SceneOptimizerOptions();
+            options.addOptimization(new BABYLON.HardwareScalingOptimization(0, 1));
 
-        // Optimizer
-        var optimizer = new BABYLON.SceneOptimizer(scene, options);
+            const optimizer = new BABYLON.SceneOptimizer(scene, options);
+            optimizer.start();
+        }
 
         this.createLight();
 
