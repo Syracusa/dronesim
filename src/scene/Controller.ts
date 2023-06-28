@@ -34,9 +34,9 @@ export class Controller {
         this.setMouseHandler();
         this.shiftHelper = new ShiftHelper(mainScene, this);
 
-        this.guiLayer = new GuiLayer(mainScene);
-
         this.droneManager = new DroneManager(mainScene);
+
+        this.guiLayer = new GuiLayer(mainScene, this.droneManager);
     }
 
     handleMouseDown() {
@@ -266,6 +266,7 @@ export class Controller {
 
     update(delta: number) {
         this.guiLayer.updatePanelText();
+        this.guiLayer.updateDroneNameCards();
         this.camUpdate(delta);
     }
 

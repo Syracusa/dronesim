@@ -1,3 +1,4 @@
+import { DroneManager } from "./DroneManager";
 import { MainScene } from "./MainScene";
 import * as GUI from "@babylonjs/gui/Legacy/legacy";
 
@@ -5,11 +6,46 @@ export class GuiLayer {
     mainScene: MainScene;
     textblock: GUI.TextBlock;
     dragIndicator: GUI.Rectangle;
+    droneNameCards: GUI.TextBlock[] = [];
+    droneManager: DroneManager;
     updateIntervalMs = 100;
+    advencedTexture: GUI.AdvancedDynamicTexture;
 
-    constructor(mainScene: MainScene) {
+    constructor(mainScene: MainScene, droneManager: DroneManager) {
         this.mainScene = mainScene;
+        this.droneManager = droneManager;
         this.makePanel();
+    }
+
+    updateDroneNameCards() {
+        const drones = this.droneManager.droneList;
+
+        if (this.droneNameCards.length < drones.length) {
+            for (let i = this.droneNameCards.length; i < drones.length; i++) {
+                let card = new GUI.TextBlock();
+                card.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                card.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+                card.text = "Drone " + i;
+                card.color = "white";
+                card.height = "50px";
+                card.width = "100px";
+                card.fontSize = 10;
+                this.advencedTexture.addControl(card);
+                this.droneNameCards.push(card);
+            }
+        }
+
+        for (let i = 0; i < drones.length; i++) {
+            const onedrone = drones[i];
+            const clientDronePos = this.mainScene.worldVec3toClient(onedrone.position);
+            
+            this.droneNameCards[i].left = (clientDronePos.x | 0) + "px";
+            this.droneNameCards[i].top = (clientDronePos.y | 0) + "px";
+            if (i == 0) {
+                console.log("drone 0 pos : " + this.droneNameCards[i].left + " " + this.droneNameCards[i].top);
+            }
+        }
+
     }
 
     updatePanelText() {
@@ -78,5 +114,8 @@ export class GuiLayer {
         dragIndicator.isVisible = true;
         advancedTexture.addControl(dragIndicator);
         this.dragIndicator = dragIndicator;
+
+
+        this.advencedTexture = advancedTexture;
     }
 }
