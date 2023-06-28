@@ -37,7 +37,6 @@ const createWindow = (): void => {
 app.on('ready', createWindow)
 
 app.whenReady().then(async () => {
-  console.log("whenReady");
   const worker = new BrowserWindow({
     // show: false,
     webPreferences: { nodeIntegration: true }
@@ -45,7 +44,6 @@ app.whenReady().then(async () => {
   worker.webContents.openDevTools();
   console.log(SOCKET_WORKER_WEBPACK_ENTRY);
   await worker.loadURL(SOCKET_WORKER_WEBPACK_ENTRY)
-  console.log("WhenReady hook done");
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
