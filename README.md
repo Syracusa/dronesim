@@ -5,6 +5,14 @@ cd dronesim
 npm install babylonjs --save
 ``
 
+# Enable main process log
+```
+* Windows
+> set ELECTRON_ENABLE_LOGGING=true
+* POSIX Shell
+$ export ELECTRON_ENABLE_LOGGING=true
+```
+
 
 # Ref
 ## Babylon.js Docs

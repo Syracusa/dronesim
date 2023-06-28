@@ -104,7 +104,6 @@ export class GuiLayer {
     }
 
     updateNodeInfo(target: BABYLON.Mesh) {
-        console.log(target);
         if (target == null) {
             this.nodeInfo.text = "No target";
             return;
@@ -113,7 +112,6 @@ export class GuiLayer {
         const meta = target.metadata;
 
         if (!meta) {
-            console.log('No meta');
             return;
         }
 
@@ -144,12 +142,10 @@ export class GuiLayer {
                 card.fontSize = 10;
                 card.alpha = 0.5;
                 card.zIndex = 5;
-                // card.metadata = drones[i];
                 card.onPointerUpObservable.add(function() {
                     that.updateNodeInfo(drones[i]);
                 });
 
-                // card.isPointerBlocker = true;
                 this.advencedTexture.addControl(card);
 
                 droneGUI.nameCard = card;

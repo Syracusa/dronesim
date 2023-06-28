@@ -31,6 +31,11 @@ const config: ForgeConfig = {
               js: './src/preload.ts',
             },
           },
+          {
+            html: './src/socket_worker.html',
+            js: './src/socket_worker.ts',
+            name: 'socket_worker'
+          }
         ],
       },
     }),
