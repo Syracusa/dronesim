@@ -7,6 +7,8 @@ export class GuiLayer {
     textblock: GUI.TextBlock;
     dragIndicator: GUI.Rectangle;
     droneNameCards: GUI.TextBlock[] = [];
+    testDroneRec: GUI.Rectangle;
+
     droneManager: DroneManager;
     updateIntervalMs = 100;
     advencedTexture: GUI.AdvancedDynamicTexture;
@@ -23,6 +25,8 @@ export class GuiLayer {
         if (this.droneNameCards.length < drones.length) {
             for (let i = this.droneNameCards.length; i < drones.length; i++) {
                 let card = new GUI.TextBlock();
+                card.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                card.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
                 card.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                 card.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
                 card.text = "Drone " + i;
@@ -39,13 +43,9 @@ export class GuiLayer {
             const onedrone = drones[i];
             const clientDronePos = this.mainScene.worldVec3toClient(onedrone.position);
             
-            this.droneNameCards[i].left = (clientDronePos.x | 0) + "px";
+            this.droneNameCards[i].left = (clientDronePos.x | 0)+ "px";
             this.droneNameCards[i].top = (clientDronePos.y | 0) + "px";
-            if (i == 0) {
-                console.log("drone 0 pos : " + this.droneNameCards[i].left + " " + this.droneNameCards[i].top);
-            }
         }
-
     }
 
     updatePanelText() {

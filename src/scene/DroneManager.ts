@@ -23,7 +23,6 @@ export class DroneManager {
     }
 
     focusDrone(drone: BABYLON.Mesh) {
-        console.log("Drone selected. idx : " + drone.metadata.idx);
         drone.metadata.selectionIndicator.isVisible = true;
         this.focusedDroneList.push(drone);
     }
@@ -37,7 +36,6 @@ export class DroneManager {
     }
 
     unfocusDrone(drone: BABYLON.Mesh) {
-        console.log("Drone out selected. idx : " + drone.metadata.idx);
         drone.metadata.selectionIndicator.isVisible = false;
     }
 
