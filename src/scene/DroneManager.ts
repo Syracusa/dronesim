@@ -86,6 +86,8 @@ export class DroneManager {
             instancedChild.scaling = child.absoluteScaling.clone();
             instancedChild.position = child.absolutePosition.clone();
             instancedChild.rotation = child.absoluteRotationQuaternion.toEulerAngles();
+
+            this.mainScene.shadowGenerator.getShadowMap().renderList.push(instancedChild);
         }
         droneSelector.position = new BABYLON.Vector3(
             52 + (3 * this.droneCount) / 30,
@@ -124,7 +126,7 @@ export class DroneManager {
 
         this.droneMesh = droneMesh;
         this.modelLoaded = true;
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 50; i++) {
             this.instanciateDrone();
         }
     }

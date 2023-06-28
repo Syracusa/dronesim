@@ -9,6 +9,7 @@ export class MainScene {
     engine: BABYLON.Engine;
     scene: BABYLON.Scene;
     controller: Controller;
+    shadowGenerator: BABYLON.ShadowGenerator;
 
     lastRender = performance.now();
 
@@ -63,6 +64,19 @@ export class MainScene {
         const light = new BABYLON.DirectionalLight("DirectionalLight",
             new BABYLON.Vector3(0, -1, 0.1), this.scene);
         light.intensity = 1.5;
+        light.position = new BABYLON.Vector3(0, 100, 0);
+        light.shadowMinZ = 0.1;
+        light.shadowMaxZ = 1000;
+
+        const shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
+        shadowGenerator.useBlurExponentialShadowMap = true;
+        this.shadowGenerator = shadowGenerator;
+
+        /* Ambient Light */
+        const ambientLight = new BABYLON.HemisphericLight("ambientLight",
+            new BABYLON.Vector3(0, 1, 0), this.scene);
+        ambientLight.intensity = 0.2;
+
     };
 
     /* Vec3 to Client */

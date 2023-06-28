@@ -58,6 +58,7 @@ export class Terrain {
         oceanMat.alpha = 0.8;
         ocean.material = oceanMat;
         ocean.metadata = { type: "terrain" };
+        ocean.receiveShadows = true;
     }
 
     loadStdMat() {
@@ -86,6 +87,7 @@ export class Terrain {
 
         terrain.material = this.mat;
         terrain.metadata = { type: "terrain" };
+        terrain.receiveShadows = true;
     }
 
     drawTerrain() {
