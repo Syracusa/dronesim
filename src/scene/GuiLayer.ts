@@ -50,20 +50,43 @@ export class GuiLayer {
                         link.linkLine.lineWidth = 1.0;
                         link.linkLine.color = "white";
                         this.advencedTexture.addControl(link.linkLine);
+
+                        link.linkText = new GUI.TextBlock();
+                        link.linkText.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                        link.linkText.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+                        link.linkText.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+                        link.linkText.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+
+                        link.linkText.text = "Link"; 
+                        link.linkText.color = "white";
+                        link.linkText.height = "15px";
+                        link.linkText.alpha = 0.5;
+                        link.linkText.fontSize = 10;
+                        this.advencedTexture.addControl(link.linkText);
+
                         this.droneGUIs[i].links.push(link);
                     }
                 }
                 
+
                 const linkLine = this.droneGUIs[i].links[j - i - 1].linkLine;
                 linkLine.x1 = clientDrone1Pos.x | 0;
                 linkLine.y1 = clientDrone1Pos.y | 0;
                 linkLine.x2 = clientDrone2Pos.x | 0;
                 linkLine.y2 = clientDrone2Pos.y | 0;
 
+                const linkText = this.droneGUIs[i].links[j - i - 1].linkText;
+                linkText.top = ((clientDrone1Pos.y + clientDrone2Pos.y) / 2) | 0;
+                linkText.left = ((clientDrone1Pos.x + clientDrone2Pos.x) / 2) | 0;
+                linkText.text = droneDistance.toFixed(1);
+
+
                 if (droneDistance > 15){
                     linkLine.isVisible = false;
+                    linkText.isVisible = false;
                 } else {
                     linkLine.isVisible = true;
+                    linkText.isVisible = true;
                     if (droneDistance < 10){
                         linkLine.color = "green";
                         linkLine.alpha = 1.0;
@@ -100,6 +123,7 @@ export class GuiLayer {
                 this.advencedTexture.addControl(card);
 
                 droneGUI.nameCard = card;
+                
                 this.droneGUIs.push(droneGUI);
             }
         }
