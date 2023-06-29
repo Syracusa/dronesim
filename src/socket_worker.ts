@@ -18,11 +18,22 @@ ipcRenderer.on('new-client', (event) => {
 import net from 'net';
 import stream from 'node:stream';
 
+let connected = false;
+
 const streambuf = new stream.PassThrough();
- 
+
 const client = new net.Socket();
 client.connect(12123, '127.0.0.1', function () {
     console.log('TCP Connected');
+    connected = true;
+});
+
+client.setTimeout(3000);
+
+client.on('timeout', function () {
+    console.log('Socket Timeout');
+    client.end();
+    connected = false;
 });
 
 client.on('data', function (data) {
@@ -37,12 +48,13 @@ client.on('data', function (data) {
         } else {
             streambuf.unshift(buf);
             break;
-        } 
+        }
     }
 });
 
 client.on('close', function () {
-    console.log('Connection closed');
+    connected = false;
+    console.log('Connection closed... Retry');
 });
 
 socketloop();
@@ -59,9 +71,16 @@ async function socketloop() {
     while (1) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         if (port) {
-            writeJsonOnSocket({type: "Status"});
+            writeJsonOnSocket({ type: "Status" });
         } else {
-            console.log('No port'); 
+            console.log('No port');
+        }
+        if (!connected) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            client.connect(12123, '127.0.0.1', function () {
+                console.log('TCP Connected');
+                connected = true;
+            });
         }
     }
 }

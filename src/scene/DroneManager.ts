@@ -139,7 +139,7 @@ export class DroneManager {
 
         this.droneMesh = droneMesh;
         this.modelLoaded = true;
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 4; i++) {
             this.instanciateDrone();
         }
     }
