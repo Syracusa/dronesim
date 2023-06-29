@@ -3,6 +3,8 @@ import { MainScene } from "./MainScene";
 import { ShiftHelper } from "./ShiftHelper";
 import { GuiLayer } from "./GuiLayer";
 import { DroneManager } from "./DroneManager";
+import { ServerConnection } from "./ServerConnection";
+
 export class Controller {
     mainScene: MainScene;
     keystate: any;
@@ -37,6 +39,8 @@ export class Controller {
         this.droneManager = new DroneManager(mainScene);
 
         this.guiLayer = new GuiLayer(mainScene, this.droneManager);
+
+        new ServerConnection(this.droneManager);
     }
 
     handleMouseDown() {

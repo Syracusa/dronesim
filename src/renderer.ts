@@ -7,18 +7,4 @@ declare global {
     }
 }
 
-let workerConnected = false;
-
-window.electronAPI.requestWorkerChannel((data: any) => {
-    workerConnected = true;
-});
-
-async function waitWorkerConnection() {
-    while (!workerConnected) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    console.log("worker connected");
-    new MainScene();
-}
-
-waitWorkerConnection();
+new MainScene();
