@@ -6,8 +6,9 @@ let port: MessagePort;
 ipcRenderer.on('new-client', (event) => {
     console.log(event.ports);
     port = event.ports[0]
+    port.postMessage('init');
     port.onmessage = (event) => {
-        // console.log('socket worker received message:', event.data)
+        console.log('socket worker received message:', event.data)
     }
 })
 
@@ -58,6 +59,8 @@ async function socketloop() {
         if (port) {
             port.postMessage({ test: 42 });
             writeJsonOnSocket({type: "Test"});
+        } else {
+            console.log('No port');
         }
     }
 }

@@ -8,7 +8,8 @@ ipcRenderer.on('provide-worker-channel', (event) => {
     workerChannel = event.ports[0];
     workerChannel.onmessage = (event: MessageEvent) => {
         let reply = workerCallback(event.data);
-        workerChannel.postMessage(reply);
+        if (reply)
+            workerChannel.postMessage(reply);
     };
 });
 
@@ -17,5 +18,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ) => {
         ipcRenderer.send('request-worker-channel');
         workerCallback = callback;
+    },
+    sendWorkerChannel: (data: any) => {
+        if (workerChannel)
+            workerChannel.postMessage(data);
     }
-})
+});
