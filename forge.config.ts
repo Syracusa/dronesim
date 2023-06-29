@@ -22,6 +22,7 @@ const config: ForgeConfig = {
       mainConfig,
       renderer: {
         config: rendererConfig,
+        nodeIntegration : false,
         entryPoints: [
           {
             html: './src/index.html',
@@ -34,7 +35,8 @@ const config: ForgeConfig = {
           {
             html: './src/socket_worker.html',
             js: './src/socket_worker.ts',
-            name: 'socket_worker'
+            name: 'socket_worker',
+            nodeIntegration : true,
           }
         ],
       },

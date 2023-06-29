@@ -29,6 +29,24 @@ const createWindow = (): void => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+
+  const worker = new BrowserWindow({
+    // show: false,
+    webPreferences: {
+      contextIsolation: false,
+      nodeIntegration: true
+    }
+  })
+  worker.webContents.openDevTools();
+  console.log(SOCKET_WORKER_WEBPACK_ENTRY);
+  worker.loadURL(SOCKET_WORKER_WEBPACK_ENTRY)
+
+  console.log("test");
+  mainWindow.webContents.mainFrame.ipc.on('request-worker-channel', (event) => {
+    const { port1, port2 } = new MessageChannelMain()
+    worker.webContents.postMessage('new-client', null, [port1])
+    event.senderFrame.postMessage('provide-worker-channel', null, [port2])
+  })
 };
 
 // This method will be called when Electron has finished
@@ -37,13 +55,7 @@ const createWindow = (): void => {
 app.on('ready', createWindow)
 
 app.whenReady().then(async () => {
-  const worker = new BrowserWindow({
-    // show: false,
-    webPreferences: { nodeIntegration: true }
-  })
-  worker.webContents.openDevTools();
-  console.log(SOCKET_WORKER_WEBPACK_ENTRY);
-  await worker.loadURL(SOCKET_WORKER_WEBPACK_ENTRY)
+
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
