@@ -23,7 +23,7 @@ const createWindow = (): void => {
     mainWindow.webContents.openDevTools();
 
     const worker = new BrowserWindow({
-        // show: false,
+        show: false,
         webPreferences: {
             contextIsolation: false,
             nodeIntegration: true
