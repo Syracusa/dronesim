@@ -9,20 +9,40 @@ export class ServerConnection {
 
         window.electronAPI.requestWorkerChannel((data: any) => {
             ServerConnection.workerConnected = true;
-            console.log('From worker:');
-            console.log(data);
+            this.handleWorkerMessage(data);
         });
 
         ServerConnection.waitWorkerConnection(this);
-        // this.sendStartSimulation();
+
     }
 
     static async waitWorkerConnection(that: ServerConnection) {
         while (!ServerConnection.workerConnected) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
-        console.log("worker connected");
         that.sendStartSimulation();
+    }
+
+    handleWorkerMessage(data: any) {
+        if (data.hasOwnProperty("type")) {
+            switch (data.type) {
+                case "TcpOnConnect":
+                    this.sendStartSimulation();
+                    break;
+                case "TRx":
+                    // console.log(data);
+                    break;
+                case "Status":
+                    console.log(data);
+                    break;
+                case "Route":
+                    console.log(data);
+                    break;
+                default:
+                    console.log("Unknown message type from worker " + data.type);
+                    break;
+            }
+        }
     }
 
     sendtoServer(json: any) {

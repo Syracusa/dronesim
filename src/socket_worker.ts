@@ -25,6 +25,7 @@ const streambuf = new stream.PassThrough();
 const client = new net.Socket();
 client.connect(12123, '127.0.0.1', function () {
     console.log('TCP Connected');
+    port.postMessage({type: "TcpOnConnect"});
     connected = true;
 });
 
@@ -78,7 +79,8 @@ async function socketloop() {
         if (!connected) {
             await new Promise(resolve => setTimeout(resolve, 2000));
             client.connect(12123, '127.0.0.1', function () {
-                console.log('TCP Connected');
+                console.log('TCP Reconnected');
+                port.postMessage({type: "TcpOnConnect"});
                 connected = true;
             });
         }

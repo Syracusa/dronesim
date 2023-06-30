@@ -4,6 +4,15 @@ import "@babylonjs/loaders/glTF";
 import { MainScene } from './MainScene';
 import DroneModel from '../static/drone.glb';
 
+export interface DroneMetadata {
+    selectionIndicator: BABYLON.Mesh;
+    type: 'drone';
+    idx: number;
+    draggable: true;
+    txBytes: number;
+    rxBtyes: number;
+}
+
 export class DroneManager {
     mainScene: MainScene;
     droneMesh: BABYLON.Mesh;
@@ -82,8 +91,10 @@ export class DroneManager {
             draggable: true,
             type: "drone",
             idx: this.droneCount,
-            selectionIndicator: torus
-        };
+            selectionIndicator: torus,
+            txBytes: 0,
+            rxBtyes: 0
+        } as DroneMetadata;
 
         droneSelector.material = new BABYLON.StandardMaterial("mat", this.mainScene.scene);
         // droneSelector.material.wireframe = true;
