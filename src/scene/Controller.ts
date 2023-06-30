@@ -273,9 +273,7 @@ export class Controller {
     }
 
     update(delta: number) {
-        this.guiLayer.updatePanelText();
-        this.guiLayer.updateDroneNameCards();
-        this.guiLayer.updateDroneLinkLines();
+        this.guiLayer.update();
         this.camUpdate(delta);
     }
 

@@ -52,7 +52,7 @@ export class MainScene {
 
         this.engine.runRenderLoop(function () {
             scene.render();
-            /* Calculate Time betwween frames */
+            /* Calculate Time between frames */
             let curr = performance.now();
             let delta = curr - that.lastRender;
             that.updateScene(delta);

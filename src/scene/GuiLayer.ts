@@ -22,15 +22,32 @@ export class GuiLayer {
     droneGUIs: DroneGUI[] = [];
     testDroneRec: GUI.Rectangle;
     nodeInfoTarget: BABYLON.Mesh;
-    
+
     droneManager: DroneManager;
-    updateIntervalMs = 100;
+    useUpdateInterval = false;
+    updateIntervalMs = 50;
     advencedTexture: GUI.AdvancedDynamicTexture;
+
+    lastUpdate = 0;
+    
 
     constructor(mainScene: MainScene, droneManager: DroneManager) {
         this.mainScene = mainScene;
         this.droneManager = droneManager;
         this.makePanel();
+    }
+
+    update() {
+        if (this.useUpdateInterval) {
+            if (performance.now() - this.lastUpdate < this.updateIntervalMs)
+                return;
+        }
+
+        this.lastUpdate = performance.now();
+
+        this.updatePanelText();
+        this.updateDroneNameCards();
+        this.updateDroneLinkLines();
     }
 
     updateDroneLinkLines() {
@@ -41,7 +58,7 @@ export class GuiLayer {
                 const drone2 = drones[j];
                 const clientDrone1Pos = this.mainScene.worldVec3toClient(drone1.position);
                 const clientDrone2Pos = this.mainScene.worldVec3toClient(drone2.position);
-                
+
                 const droneDistance = BABYLON.Vector3.Distance(drone1.position, drone2.position);
 
                 if (this.droneGUIs[i].links.length < j - i) {
@@ -58,7 +75,7 @@ export class GuiLayer {
                         link.linkText.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                         link.linkText.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
 
-                        link.linkText.text = "Link"; 
+                        link.linkText.text = "Link";
                         link.linkText.color = "white";
                         link.linkText.height = "15px";
                         link.linkText.alpha = 0.5;
@@ -68,7 +85,7 @@ export class GuiLayer {
                         this.droneGUIs[i].links.push(link);
                     }
                 }
-                
+
 
                 const linkLine = this.droneGUIs[i].links[j - i - 1].linkLine;
                 linkLine.x1 = clientDrone1Pos.x | 0;
@@ -82,16 +99,16 @@ export class GuiLayer {
                 linkText.text = droneDistance.toFixed(1);
 
 
-                if (droneDistance > 15){
+                if (droneDistance > 15) {
                     linkLine.isVisible = false;
                     linkText.isVisible = false;
                 } else {
                     linkLine.isVisible = true;
                     linkText.isVisible = true;
-                    if (droneDistance < 10){
+                    if (droneDistance < 10) {
                         linkLine.color = "green";
                         linkLine.alpha = 1.0;
-                    } else if (droneDistance < 13){
+                    } else if (droneDistance < 13) {
                         linkLine.color = "yellow";
                         linkLine.alpha = 0.5;
                     } else {
@@ -116,7 +133,7 @@ export class GuiLayer {
         }
 
         if (meta.type == "drone") {
-            this.nodeInfo.text = "Node Index : " + meta.idx + "\n";        
+            this.nodeInfo.text = "Node Index : " + meta.idx + "\n";
         } else {
             console.log('type :' + meta.type);
         }
@@ -142,14 +159,14 @@ export class GuiLayer {
                 card.fontSize = 10;
                 card.alpha = 0.5;
                 card.zIndex = 5;
-                card.onPointerUpObservable.add(function() {
+                card.onPointerUpObservable.add(function () {
                     that.updateNodeInfo(drones[i]);
                 });
 
                 this.advencedTexture.addControl(card);
 
                 droneGUI.nameCard = card;
-                
+
                 this.droneGUIs.push(droneGUI);
             }
         }
@@ -157,7 +174,7 @@ export class GuiLayer {
         for (let i = 0; i < drones.length; i++) {
             const onedrone = drones[i];
             const clientDronePos = this.mainScene.worldVec3toClient(onedrone.position);
-            
+
             this.droneGUIs[i].nameCard.left = ((clientDronePos.x | 0) - 20) + "px";
             this.droneGUIs[i].nameCard.top = ((clientDronePos.y | 0) - 30) + "px";
         }
