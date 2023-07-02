@@ -26,24 +26,27 @@ export class GuiLayer {
     droneManager: DroneManager;
     useUpdateInterval = false;
     updateIntervalMs = 50;
-    advencedTexture: GUI.AdvancedDynamicTexture;
+    advancedTexture: GUI.AdvancedDynamicTexture;
+
+    menuButtons: GUI.Button[] = [];
+    menuOpened: boolean = true;
+    menuButtonOffset = 0;
 
     lastUpdate = 0;
-    
+
 
     constructor(mainScene: MainScene, droneManager: DroneManager) {
         this.mainScene = mainScene;
         this.droneManager = droneManager;
-        this.makePanel();
+        this.makeControls();
     }
 
     update() {
         if (this.useUpdateInterval) {
             if (performance.now() - this.lastUpdate < this.updateIntervalMs)
                 return;
+            this.lastUpdate = performance.now();
         }
-
-        this.lastUpdate = performance.now();
 
         this.updatePanelText();
         this.updateDroneNameCards();
@@ -67,7 +70,7 @@ export class GuiLayer {
                         link.linkLine = new GUI.Line();
                         link.linkLine.lineWidth = 1.0;
                         link.linkLine.color = "white";
-                        this.advencedTexture.addControl(link.linkLine);
+                        this.advancedTexture.addControl(link.linkLine);
 
                         link.linkText = new GUI.TextBlock();
                         link.linkText.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -80,7 +83,7 @@ export class GuiLayer {
                         link.linkText.height = "15px";
                         link.linkText.alpha = 0.5;
                         link.linkText.fontSize = 10;
-                        this.advencedTexture.addControl(link.linkText);
+                        this.advancedTexture.addControl(link.linkText);
 
                         this.droneGUIs[i].links.push(link);
                     }
@@ -163,7 +166,7 @@ export class GuiLayer {
                     that.updateNodeInfo(drones[i]);
                 });
 
-                this.advencedTexture.addControl(card);
+                this.advancedTexture.addControl(card);
 
                 droneGUI.nameCard = card;
 
@@ -205,8 +208,45 @@ export class GuiLayer {
         this.dragIndicator.height = (y2 - y1) + "px";
     }
 
-    makePanel() {
-        let advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    sceneSaveButtonClicked() {
+
+    }
+
+    menuViewToggleButtonClicked() {
+        this.menuOpened = !this.menuOpened;
+        for (let i = 0; i < this.menuButtons.length; i++) {
+            this.menuButtons[i].isVisible = this.menuOpened;
+        }
+    }
+
+    createMenuButton(name: string, callback: () => void) {
+        const sceneSaveButton = GUI.Button.CreateSimpleButton("but", name);
+        sceneSaveButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+        sceneSaveButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        sceneSaveButton.color = "black";
+        sceneSaveButton.height = "12px";
+        sceneSaveButton.width = "45px";
+        sceneSaveButton.top = this.menuButtonOffset + "px";
+        sceneSaveButton.cornerRadius = 3;
+        sceneSaveButton.background = "#d4d4d4";
+        sceneSaveButton.fontSize = 10;
+        sceneSaveButton.alpha = 1.0
+        sceneSaveButton.zIndex = 5;
+        sceneSaveButton.isVisible = this.menuOpened;
+        sceneSaveButton.onPointerUpObservable.add(function () {
+            callback();
+        });
+
+        this.advancedTexture.addControl(sceneSaveButton);
+        this.menuButtons.push(sceneSaveButton);
+
+        this.menuButtonOffset += 12;
+    }
+
+    makeControls() {
+        const that = this;
+        const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        this.advancedTexture = advancedTexture;
 
         // Style
         let style = advancedTexture.createStyle();
@@ -228,12 +268,13 @@ export class GuiLayer {
 
         let nodeInfo = new GUI.TextBlock();
         nodeInfo.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        nodeInfo.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        nodeInfo.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
         nodeInfo.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
         nodeInfo.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
         nodeInfo.text = "No node selected";
         nodeInfo.color = "white";
-        nodeInfo.height = "300px";
+        // nodeInfo.height = "300px";
+        nodeInfo.resizeToFit = true;
         nodeInfo.fontSize = 10;
         advancedTexture.addControl(nodeInfo);
 
@@ -254,6 +295,32 @@ export class GuiLayer {
         this.dragIndicator = dragIndicator;
 
 
-        this.advencedTexture = advancedTexture;
+        const menuViewToggleButton = GUI.Button.CreateSimpleButton("but", "Menu");
+        menuViewToggleButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+        menuViewToggleButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        menuViewToggleButton.color = "black";
+        menuViewToggleButton.height = "12px";
+        menuViewToggleButton.width = "45px";
+        menuViewToggleButton.cornerRadius = 3;
+        menuViewToggleButton.background = "grey";
+        menuViewToggleButton.fontSize = 10;
+        menuViewToggleButton.alpha = 1.0
+        menuViewToggleButton.zIndex = 5;
+        menuViewToggleButton.onPointerUpObservable.add(function () {
+            that.menuViewToggleButtonClicked();
+        });
+        advancedTexture.addControl(menuViewToggleButton);
+
+        this.menuButtonOffset = 12;
+
+        this.createMenuButton("Save", function () {
+            that.mainScene.saveScene();
+        });
+
+        this.createMenuButton("Load", function () {
+            that.mainScene.loadScene();
+        });
+
+
     }
 }

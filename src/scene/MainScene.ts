@@ -77,7 +77,6 @@ export class MainScene {
         const ambientLight = new BABYLON.HemisphericLight("ambientLight",
             new BABYLON.Vector3(0, 1, 0), this.scene);
         ambientLight.intensity = 0.2;
-
     };
 
     /* Vec3 to Client */
@@ -93,6 +92,37 @@ export class MainScene {
                 scene.getEngine().getRenderWidth(true),
                 scene.getEngine().getRenderHeight(true)));
         return transform;
-        
+    }
+    async saveFile() {
+        // create a new handle
+        const newHandle = await window.showSaveFilePicker();
+
+        await newHandle.requestPermission();
+      
+        // create a FileSystemWritableFileStream to write to
+        const writableStream = await newHandle.createWritable();
+      
+        // write our file
+        await writableStream.write('test');
+      
+        // close the file and write the contents to disk.
+        await writableStream.close();
+      }
+
+    saveScene(){
+        console.log('Save Scene');
+        this.saveFile();
+    }
+
+    loadScene(){
+        console.log('Load Scene');
+        let input = document.createElement('input') as HTMLInputElement;
+        input.type = 'file';
+        input.onchange = _this => {
+                  let files =   Array.from(input.files);
+                  console.log(files);
+              };
+        input.click();
+        input.remove();
     }
 }
