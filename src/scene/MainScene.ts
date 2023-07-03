@@ -7,6 +7,7 @@ export class MainScene {
     engine: BABYLON.Engine;
     scene: BABYLON.Scene;
     controller: Controller;
+    terrain: Terrain;
     shadowGenerator: BABYLON.ShadowGenerator;
 
     lastRender = performance.now();
@@ -20,7 +21,7 @@ export class MainScene {
         this.scene = scene;
 
         const USE_OPTIMIZER = false;
-        if (USE_OPTIMIZER){
+        if (USE_OPTIMIZER) {
             const options = new BABYLON.SceneOptimizerOptions();
             options.addOptimization(new BABYLON.HardwareScalingOptimization(0, 1));
 
@@ -30,7 +31,7 @@ export class MainScene {
 
         this.createLight();
 
-        new Terrain(this);
+        this.terrain = new Terrain(this);
         this.controller = new Controller(this);
 
         scene.autoClear = false;
@@ -93,35 +94,56 @@ export class MainScene {
                 scene.getEngine().getRenderHeight(true)));
         return transform;
     }
-    async saveFile() {
-        // create a new handle
-        const newHandle = await window.showSaveFilePicker();
 
-        await newHandle.requestPermission();
-      
-        // create a FileSystemWritableFileStream to write to
-        const writableStream = await newHandle.createWritable();
-      
-        // write our file
-        await writableStream.write('test');
-      
-        // close the file and write the contents to disk.
-        await writableStream.close();
-      }
+    async verifyPermission(fileHandle: any) {
+        const options = { mode: 'readwrite' };
 
-    saveScene(){
-        console.log('Save Scene');
-        this.saveFile();
+        // Check if permission was already granted. If so, return true.
+        if ((await fileHandle.queryPermission(options)) === 'granted') {
+            return true;
+        }
+        // Request permission. If the user grants permission, return true.
+        if ((await fileHandle.requestPermission(options)) === 'granted') {
+            return true;
+        }
+        // The user didn't grant permission, so return false.
+        return false;
     }
 
-    loadScene(){
+    download(filename: string, contents: string) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(contents));
+        element.setAttribute('download', filename);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+        document.body.removeChild(element);
+    }
+
+    saveScene() {
+        console.log('Save Scene');
+        const terr = JSON.stringify(this.terrain.heights);
+
+        const date = new Date();
+        this.download('Scene'
+            + date.toISOString().slice(0, 10).replace(/-/g, "")
+            + '.dat', terr);
+    }
+
+    loadScene() {
         console.log('Load Scene');
-        let input = document.createElement('input') as HTMLInputElement;
+        const input = document.createElement('input') as HTMLInputElement;
         input.type = 'file';
         input.onchange = _this => {
-                  let files =   Array.from(input.files);
-                  console.log(files);
-              };
+            const files = Array.from(input.files);
+            files[0].text().then(text => {
+                console.log(text);
+                let heights = JSON.parse(text);
+                this.terrain.heights = heights;
+                this.terrain.drawTerrain();
+            });
+        };
         input.click();
         input.remove();
     }

@@ -39,6 +39,8 @@ const createWindow = (): void => {
     })
 };
 
+app.commandLine.appendSwitch("enable-experimental-web-platform-features");
+
 app.on('ready', createWindow);
 
 app.whenReady().then(async () => { });

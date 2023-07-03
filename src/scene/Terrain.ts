@@ -11,6 +11,7 @@ import SkyboxPz from '../static/skybox/skybox_pz.jpg';
 
 export class Terrain {
     heights: number[][] = [];
+    tiles: BABYLON.Mesh[] = [];
     mapsize = 200;
     mainScene: MainScene;
     mat;
@@ -25,6 +26,14 @@ export class Terrain {
 
         this.createOcean();
         this.createSkyBox();
+    }
+
+    /* Dispose terrain meshes */
+    disposeTerrain() {
+        this.tiles.forEach((mesh) => {
+            mesh.dispose();
+        });
+        this.tiles = [];
     }
 
     /* Create SkyBox */
@@ -88,9 +97,11 @@ export class Terrain {
         terrain.material = this.mat;
         terrain.metadata = { type: "terrain" };
         terrain.receiveShadows = true;
+        this.tiles.push(terrain);
     }
 
     drawTerrain() {
+        this.disposeTerrain();
         const tilesize = 10;
         const fragsize = (this.mapsize / tilesize);
         for (let xtile = 0; xtile < fragsize; xtile++) {
