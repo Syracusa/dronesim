@@ -146,7 +146,7 @@ export class GuiLayer {
 
         if (meta.type == "drone") {
             this.nodeInfo.text = "Node Index : " + meta.idx + "\n";
-            this.nodeInfo.text += "Tx Bytes : " + meta.txBytes + " Rx Bytes : " + meta.rxBtyes + "\n";
+            this.nodeInfo.text += "Tx Bytes : " + meta.txBytes + " Rx Bytes : " + meta.rxBytes + "\n";
         } else {
             console.log('type :' + meta.type);
         }

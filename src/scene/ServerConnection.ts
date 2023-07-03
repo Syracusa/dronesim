@@ -5,7 +5,7 @@ export class ServerConnection {
     static workerConnected = false;
     droneManager: DroneManager;
     linkInfoIntervalMs: number = 2000;
-    shouldStart = false;
+    shouldStart = true;
 
     constructor(droneManager: DroneManager) {
         this.droneManager = droneManager;
@@ -41,28 +41,41 @@ export class ServerConnection {
 
     handleWorkerMessage(data: any) {
         if (data.hasOwnProperty("type")) {
+
             switch (data.type) {
                 case "TcpOnConnect":
+                    console.log("TCP connected");
                     this.shouldStart = true;
                     break;
                 case "TRx":
                     // console.log(data);
-                    const drone = this.droneManager.droneList[data.node];
-                    const dronemeta = drone.metadata as DroneMetadata;
-                    dronemeta.txBytes = data.tx;
-                    dronemeta.rxBytes = data.rx;
-                    dronemeta.dirty = true;
+                    {
+                        const drone = this.droneManager.droneList[data.node];
+                        const dronemeta = drone.metadata as DroneMetadata;
+                        dronemeta.txBytes = data.tx;
+                        dronemeta.rxBytes = data.rx;
+                        dronemeta.dirty = true;
+                    }
                     break;
                 case "Status":
                     // console.log(data);
                     break;
                 case "Route":
                     console.log(data);
+                    {
+                        const drone = this.droneManager.droneList[data.node];
+                        const dronemeta = drone.metadata as DroneMetadata;
+                        const routeEntry = dronemeta.route[data.node];
+                        routeEntry.hopCount = data.hopcount;
+                        routeEntry.path = data.path;
+                        console.log(routeEntry);
+                    }
                     break;
                 default:
                     console.log("Unknown message type from worker " + data.type);
                     break;
             }
+
         }
     }
 

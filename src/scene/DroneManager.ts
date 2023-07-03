@@ -4,6 +4,11 @@ import "@babylonjs/loaders/glTF";
 import { MainScene } from './MainScene';
 import DroneModel from '../static/drone.glb';
 
+export interface RouteEntry {
+    hopCount: number;
+    path: number[];
+}
+
 export interface DroneMetadata {
     selectionIndicator: BABYLON.Mesh;
     type: 'drone';
@@ -12,6 +17,7 @@ export interface DroneMetadata {
     txBytes: number;
     rxBytes: number;
     dirty: boolean;
+    route: RouteEntry[];
 }
 
 export class DroneManager {
@@ -88,14 +94,21 @@ export class DroneManager {
         line.alpha = 0.5;
         line.setParent(droneSelector);
 
+        let routingTable = [];
+        for (let i = 0; i < 128; i++){
+            let entry = {hopCount: 0, path: []} as RouteEntry;
+            routingTable.push(entry);
+        }
+
         droneSelector.metadata = {
             draggable: true,
             type: "drone",
             idx: this.droneCount,
             selectionIndicator: torus,
             txBytes: 0,
-            rxBtyes: 0,
-            dirty: true
+            rxBytes: 0,
+            dirty: true,
+            route: routingTable
         } as DroneMetadata;
 
         droneSelector.material = new BABYLON.StandardMaterial("mat", this.mainScene.scene);
@@ -152,7 +165,7 @@ export class DroneManager {
 
         this.droneMesh = droneMesh;
         this.modelLoaded = true;
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 10; i++) {
             this.instanciateDrone();
         }
     }

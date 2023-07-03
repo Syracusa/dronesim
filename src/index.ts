@@ -22,14 +22,18 @@ const createWindow = (): void => {
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
     mainWindow.webContents.openDevTools();
 
+
+    const showWorker = false;
     const worker = new BrowserWindow({
-        show: false,
+        show: showWorker,
         webPreferences: {
             contextIsolation: false,
             nodeIntegration: true
         }
     });
-    worker.webContents.openDevTools();
+    if (showWorker) {
+        worker.webContents.openDevTools();
+    }
     worker.loadURL(SOCKET_WORKER_WEBPACK_ENTRY);
 
     mainWindow.webContents.mainFrame.ipc.on('request-worker-channel', (event) => {
