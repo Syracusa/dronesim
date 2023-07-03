@@ -147,11 +147,23 @@ export class GuiLayer {
         if (meta.type == "drone") {
             this.nodeInfo.text = "Node Index : " + meta.idx + "\n";
             this.nodeInfo.text += "Tx Bytes : " + meta.txBytes + " Rx Bytes : " + meta.rxBytes + "\n";
+
+            this.nodeInfo.text += "Routing Table\n";
+            for (let i = 0; i < meta.routingTable.length; i++) {
+                if (meta.routingTable[i].hopCount != 0) {
+                    let routeText = "";
+                    routeText += meta.idx;
+                    for (let hop = 0; hop < meta.routingTable[i].hopCount; hop++) {
+                        routeText += " => " + meta.routingTable[i].path[hop];
+                    }
+                    this.nodeInfo.text += routeText + "\n";
+                }
+            }
         } else {
             console.log('type :' + meta.type);
         }
 
-        if (meta.dirty){
+        if (meta.dirty) {
             meta.dirty = false;
             this.mainScene.dirty = true;
         }

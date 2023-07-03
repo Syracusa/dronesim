@@ -65,10 +65,10 @@ export class ServerConnection {
                     {
                         const drone = this.droneManager.droneList[data.node];
                         const dronemeta = drone.metadata as DroneMetadata;
-                        const routeEntry = dronemeta.route[data.node];
+                        const routeEntry = dronemeta.routingTable[data.target];
                         routeEntry.hopCount = data.hopcount;
                         routeEntry.path = data.path;
-                        console.log(routeEntry);
+                        dronemeta.dirty = true;
                     }
                     break;
                 default:

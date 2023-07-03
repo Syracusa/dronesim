@@ -17,7 +17,7 @@ export interface DroneMetadata {
     txBytes: number;
     rxBytes: number;
     dirty: boolean;
-    route: RouteEntry[];
+    routingTable: RouteEntry[];
 }
 
 export class DroneManager {
@@ -108,7 +108,7 @@ export class DroneManager {
             txBytes: 0,
             rxBytes: 0,
             dirty: true,
-            route: routingTable
+            routingTable: routingTable
         } as DroneMetadata;
 
         droneSelector.material = new BABYLON.StandardMaterial("mat", this.mainScene.scene);
