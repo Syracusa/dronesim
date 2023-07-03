@@ -41,8 +41,9 @@ export class MainScene {
         window.addEventListener("resize", function () {
             engine.resize();
         });
+        
     }
-
+    
     updateScene(delta: number) {
         this.controller.update(delta);
     }

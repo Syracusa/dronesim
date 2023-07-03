@@ -1,8 +1,10 @@
+import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { DroneManager } from "./DroneManager";
 
 export class ServerConnection {
     static workerConnected = false;
     droneManager: DroneManager;
+    linkInfoIntervalMs: number = 2000;
 
     constructor(droneManager: DroneManager) {
         this.droneManager = droneManager;
@@ -14,6 +16,15 @@ export class ServerConnection {
 
         ServerConnection.waitWorkerConnection(this);
 
+        this.backgroundWork();
+    }
+
+    backgroundWork() {
+        const that = this;
+        this.sendNodeLinkState();
+        setTimeout(() => {
+            that.backgroundWork();
+        }, that.linkInfoIntervalMs);
     }
 
     static async waitWorkerConnection(that: ServerConnection) {
@@ -50,7 +61,24 @@ export class ServerConnection {
     }
 
     sendNodeLinkState() {
-
+        const dronenum = this.droneManager.droneList.length;
+        const nodeLinkInfo: number[][] = [];
+        for (let i = 0; i < dronenum; i++) {
+            let oneNodeLinkInfo: number[] = [];
+            for (let j = i + 1; j < dronenum; j++) {
+                const drone1 = this.droneManager.droneList[i];
+                const drone2 = this.droneManager.droneList[j];
+                const distance = BABYLON.Vector3.Distance(drone1.position, drone2.position);
+                oneNodeLinkInfo.push(parseFloat(distance.toFixed(2)));
+            }
+            nodeLinkInfo.push(oneNodeLinkInfo);
+        }
+        let json = {
+            type: "LinkInfo",
+            links: nodeLinkInfo
+        }
+        console.log(json);
+        this.sendtoServer(json);
     }
 
     sendStartSimulation() {
@@ -60,5 +88,7 @@ export class ServerConnection {
             nodenum: this.droneManager.droneList.length
         }
         this.sendtoServer(json);
+
+        this.sendNodeLinkState();
     }
 }

@@ -18,6 +18,7 @@ export class Controller {
     isDragging: boolean = false;
     guiLayer: GuiLayer;
     droneManager: DroneManager;
+    serverConnection: ServerConnection;
     dragHandlerExist: boolean = false;
 
     constructor(mainScene: MainScene) {
@@ -40,7 +41,7 @@ export class Controller {
 
         this.guiLayer = new GuiLayer(mainScene, this.droneManager);
 
-        new ServerConnection(this.droneManager);
+        this.serverConnection = new ServerConnection(this.droneManager);
     }
 
     handleMouseDown() {
