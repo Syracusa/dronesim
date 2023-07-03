@@ -10,7 +10,7 @@ export interface DroneMetadata {
     idx: number;
     draggable: true;
     txBytes: number;
-    rxBtyes: number;
+    rxBytes: number;
     dirty: boolean;
 }
 

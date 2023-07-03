@@ -1,5 +1,5 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
-import { DroneManager } from "./DroneManager";
+import { DroneManager, DroneMetadata } from "./DroneManager";
 
 export class ServerConnection {
     static workerConnected = false;
@@ -48,9 +48,10 @@ export class ServerConnection {
                 case "TRx":
                     // console.log(data);
                     const drone = this.droneManager.droneList[data.node];
-                    drone.metadata.txBytes = data.tx;
-                    drone.metadata.rxBytes = data.rx;
-                    drone.metadata.dirty = true;
+                    const dronemeta = drone.metadata as DroneMetadata;
+                    dronemeta.txBytes = data.tx;
+                    dronemeta.rxBytes = data.rx;
+                    dronemeta.dirty = true;
                     break;
                 case "Status":
                     // console.log(data);
