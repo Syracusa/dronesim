@@ -10,6 +10,10 @@ export class MainScene {
     terrain: Terrain;
     shadowGenerator: BABYLON.ShadowGenerator;
 
+    renderWhenDirty: boolean = true;
+    dirty: boolean = true;
+    oldCampos: BABYLON.Vector3;
+
     lastRender = performance.now();
 
     constructor() {
@@ -41,11 +45,25 @@ export class MainScene {
         window.addEventListener("resize", function () {
             engine.resize();
         });
-        
     }
     
     updateScene(delta: number) {
         this.controller.update(delta);
+    }
+
+    checkCameraMoved() {
+        const campos = this.scene.activeCamera.position;
+        if (!this.oldCampos) {
+            this.oldCampos = campos;
+            return true;
+        }
+        const diff = campos.subtract(this.oldCampos);
+        const len = diff.length();
+        if (len > 0.0001) {
+            this.oldCampos = campos;
+            return true;
+        }
+        return false;
     }
 
     startRenderLoop() {
@@ -53,7 +71,20 @@ export class MainScene {
         const that = this;
 
         this.engine.runRenderLoop(function () {
-            scene.render();
+            if (that.renderWhenDirty) {
+                if (that.dirty) {
+                    scene.render();
+                    that.dirty = false;
+                } else {
+                    if (that.checkCameraMoved()) {
+                        scene.render();
+                    }
+                }
+
+            } else {
+                scene.render();
+            }
+
             /* Calculate Time between frames */
             let curr = performance.now();
             let delta = curr - that.lastRender;

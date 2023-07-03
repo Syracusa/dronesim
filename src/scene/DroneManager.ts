@@ -11,6 +11,7 @@ export interface DroneMetadata {
     draggable: true;
     txBytes: number;
     rxBtyes: number;
+    dirty: boolean;
 }
 
 export class DroneManager {
@@ -93,7 +94,8 @@ export class DroneManager {
             idx: this.droneCount,
             selectionIndicator: torus,
             txBytes: 0,
-            rxBtyes: 0
+            rxBtyes: 0,
+            dirty: true
         } as DroneMetadata;
 
         droneSelector.material = new BABYLON.StandardMaterial("mat", this.mainScene.scene);

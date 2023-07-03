@@ -172,6 +172,7 @@ export class Controller {
 
                 break;
         }
+        this.mainScene.dirty = true;
     }
 
     setMouseHandler() {
@@ -281,6 +282,7 @@ export class Controller {
     isKeyPressed(key: string) {
         if (key in this.keystate) {
             if (this.keystate[key] == 1) {
+                this.mainScene.dirty = true;
                 return true;
             } else {
                 return false;

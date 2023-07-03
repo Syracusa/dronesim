@@ -39,6 +39,15 @@ export class GuiLayer {
         this.mainScene = mainScene;
         this.droneManager = droneManager;
         this.makeControls();
+        this.backgroundWork();
+    }
+
+    backgroundWork() {
+        const that = this;
+        this.updateNodeInfo(this.nodeInfoTarget);
+        setTimeout(() => {
+            that.backgroundWork();
+        }, 1000);
     }
 
     update() {
@@ -51,7 +60,6 @@ export class GuiLayer {
         this.updatePanelText();
         this.updateDroneNameCards();
         this.updateDroneLinkLines();
-        this.updateNodeInfo(this.nodeInfoTarget);
     }
 
     updateDroneLinkLines() {
@@ -141,6 +149,11 @@ export class GuiLayer {
             this.nodeInfo.text += "Tx Bytes : " + meta.txBytes + " Rx Bytes : " + meta.rxBtyes + "\n";
         } else {
             console.log('type :' + meta.type);
+        }
+
+        if (meta.dirty){
+            meta.dirty = false;
+            this.mainScene.dirty = true;
         }
     }
 

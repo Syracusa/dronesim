@@ -5,6 +5,7 @@ export class ServerConnection {
     static workerConnected = false;
     droneManager: DroneManager;
     linkInfoIntervalMs: number = 2000;
+    shouldStart = false;
 
     constructor(droneManager: DroneManager) {
         this.droneManager = droneManager;
@@ -22,6 +23,10 @@ export class ServerConnection {
     backgroundWork() {
         const that = this;
         this.sendNodeLinkState();
+        if (this.shouldStart) {
+            this.sendStartSimulation();
+            this.shouldStart = false;
+        }
         setTimeout(() => {
             that.backgroundWork();
         }, that.linkInfoIntervalMs);
@@ -31,20 +36,21 @@ export class ServerConnection {
         while (!ServerConnection.workerConnected) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
-        that.sendStartSimulation();
+        that.shouldStart = true;
     }
 
     handleWorkerMessage(data: any) {
         if (data.hasOwnProperty("type")) {
             switch (data.type) {
                 case "TcpOnConnect":
-                    this.sendStartSimulation();
+                    this.shouldStart = true;
                     break;
                 case "TRx":
                     // console.log(data);
                     const drone = this.droneManager.droneList[data.node];
                     drone.metadata.txBytes = data.tx;
                     drone.metadata.rxBytes = data.rx;
+                    drone.metadata.dirty = true;
                     break;
                 case "Status":
                     // console.log(data);
