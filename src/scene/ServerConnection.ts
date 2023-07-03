@@ -42,9 +42,12 @@ export class ServerConnection {
                     break;
                 case "TRx":
                     // console.log(data);
+                    const drone = this.droneManager.droneList[data.node];
+                    drone.metadata.txBytes = data.tx;
+                    drone.metadata.rxBytes = data.rx;
                     break;
                 case "Status":
-                    console.log(data);
+                    // console.log(data);
                     break;
                 case "Route":
                     console.log(data);
@@ -77,7 +80,6 @@ export class ServerConnection {
             type: "LinkInfo",
             links: nodeLinkInfo
         }
-        console.log(json);
         this.sendtoServer(json);
     }
 
@@ -88,7 +90,6 @@ export class ServerConnection {
             nodenum: this.droneManager.droneList.length
         }
         this.sendtoServer(json);
-
         this.sendNodeLinkState();
     }
 }

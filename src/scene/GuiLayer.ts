@@ -1,4 +1,4 @@
-import { DroneManager } from "./DroneManager";
+import { DroneManager, DroneMetadata } from "./DroneManager";
 import { MainScene } from "./MainScene";
 import * as GUI from "@babylonjs/gui/Legacy/legacy";
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
@@ -24,8 +24,8 @@ export class GuiLayer {
     nodeInfoTarget: BABYLON.Mesh;
 
     droneManager: DroneManager;
-    useUpdateInterval = false;
-    updateIntervalMs = 50;
+    useUpdateInterval = true;
+    updateIntervalMs = 20;
     advancedTexture: GUI.AdvancedDynamicTexture;
 
     menuButtons: GUI.Button[] = [];
@@ -51,6 +51,7 @@ export class GuiLayer {
         this.updatePanelText();
         this.updateDroneNameCards();
         this.updateDroneLinkLines();
+        this.updateNodeInfo(this.nodeInfoTarget);
     }
 
     updateDroneLinkLines() {
@@ -129,7 +130,7 @@ export class GuiLayer {
             return;
         }
 
-        const meta = target.metadata;
+        const meta = target.metadata as DroneMetadata;
 
         if (!meta) {
             return;
@@ -137,6 +138,7 @@ export class GuiLayer {
 
         if (meta.type == "drone") {
             this.nodeInfo.text = "Node Index : " + meta.idx + "\n";
+            this.nodeInfo.text += "Tx Bytes : " + meta.txBytes + " Rx Bytes : " + meta.rxBtyes + "\n";
         } else {
             console.log('type :' + meta.type);
         }
@@ -163,6 +165,7 @@ export class GuiLayer {
                 card.alpha = 0.5;
                 card.zIndex = 5;
                 card.onPointerUpObservable.add(function () {
+                    that.nodeInfoTarget = drones[i];
                     that.updateNodeInfo(drones[i]);
                 });
 
