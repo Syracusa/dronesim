@@ -61,7 +61,7 @@ export class ServerConnection {
                     // console.log(data);
                     break;
                 case "Route":
-                    console.log(data);
+                    // console.log(data);
                     {
                         const drone = this.droneManager.droneList[data.node];
                         const dronemeta = drone.metadata as DroneMetadata;

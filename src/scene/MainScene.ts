@@ -124,6 +124,7 @@ export class MainScene {
             camera.viewport.toGlobal(
                 scene.getEngine().getRenderWidth(true),
                 scene.getEngine().getRenderHeight(true)));
+
         return transform;
     }
 

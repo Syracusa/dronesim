@@ -100,10 +100,27 @@ export class GuiLayer {
 
 
                 const linkLine = this.droneGUIs[i].links[j - i - 1].linkLine;
+
+                if (Math.abs(clientDrone1Pos.z) > 1.0 || Math.abs(clientDrone2Pos.z) > 1.0) {
+                    linkLine.isVisible = false;
+                    continue;
+                } else {
+                    linkLine.isVisible = true;
+                }
+
                 linkLine.x1 = clientDrone1Pos.x | 0;
                 linkLine.y1 = clientDrone1Pos.y | 0;
                 linkLine.x2 = clientDrone2Pos.x | 0;
                 linkLine.y2 = clientDrone2Pos.y | 0;
+
+                const TWEAK_LINE = 0;
+                
+                if (TWEAK_LINE) {
+                    linkLine.x1 += i * 2 - drones.length;
+                    linkLine.y1 += j * 2 - drones.length;
+                    linkLine.x2 += i * 2 - drones.length;
+                    linkLine.y2 += j * 2 - drones.length;
+                }
 
                 const linkText = this.droneGUIs[i].links[j - i - 1].linkText;
                 linkText.top = ((clientDrone1Pos.y + clientDrone2Pos.y) / 2) | 0;
@@ -205,6 +222,12 @@ export class GuiLayer {
         for (let i = 0; i < drones.length; i++) {
             const onedrone = drones[i];
             const clientDronePos = this.mainScene.worldVec3toClient(onedrone.position);
+            if (Math.abs(clientDronePos.z) > 1.0) {
+                this.droneGUIs[i].nameCard.isVisible = false;
+                continue;
+            } else {
+                this.droneGUIs[i].nameCard.isVisible = true;
+            }
 
             this.droneGUIs[i].nameCard.left = ((clientDronePos.x | 0) - 20) + "px";
             this.droneGUIs[i].nameCard.top = ((clientDronePos.y | 0) - 30) + "px";

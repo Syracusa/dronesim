@@ -95,8 +95,8 @@ export class DroneManager {
         line.setParent(droneSelector);
 
         let routingTable = [];
-        for (let i = 0; i < 128; i++){
-            let entry = {hopCount: 0, path: []} as RouteEntry;
+        for (let i = 0; i < 128; i++) {
+            let entry = { hopCount: 0, path: [] } as RouteEntry;
             routingTable.push(entry);
         }
 
@@ -128,10 +128,18 @@ export class DroneManager {
 
             this.mainScene.shadowGenerator.getShadowMap().renderList.push(instancedChild);
         }
-        droneSelector.position = new BABYLON.Vector3(
-            52 + (3 * this.droneCount) / 30,
-            5,
-            52 + (3 * this.droneCount) % 30);
+
+        if (0) {
+            droneSelector.position = new BABYLON.Vector3(
+                52 + (3 * this.droneCount) / 30,
+                5,
+                52 + (3 * this.droneCount) % 30);
+        } else {
+            droneSelector.position = new BABYLON.Vector3(
+                50 + ((4 + this.droneCount * 1.3) * Math.sin(Math.PI * this.droneCount / 5)),
+                5 + this.droneCount / 3,
+                50 + ((4 + this.droneCount * 1.3) * Math.cos(Math.PI * this.droneCount / 5)));
+        }
         droneSelector.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
 
         this.droneList.push(droneSelector);
@@ -165,7 +173,7 @@ export class DroneManager {
 
         this.droneMesh = droneMesh;
         this.modelLoaded = true;
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 20; i++) {
             this.instanciateDrone();
         }
     }
