@@ -1,9 +1,9 @@
 # Memo
-``
+```
 npm init electron-app@latest dronesim -- --template=webpack-typescript
 cd dronesim
 npm install babylonjs --save
-``
+```
 
 # Enable main process log
 ```
