@@ -1,9 +1,7 @@
-import { NodeManager, DroneMetadata } from "./NodeManager";
+import { NodeManager, Node } from "./NodeManager";
 import { MainScene } from "./MainScene";
 import * as GUI from "@babylonjs/gui/Legacy/legacy";
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
-import { link } from "original-fs";
-
 
 interface DroneLink {
     linkLine: GUI.Line;
@@ -21,7 +19,7 @@ export class GuiLayer {
     nodeInfo: GUI.TextBlock;
     dragIndicator: GUI.Rectangle;
     nodeGUIs: NodeGUI[] = [];
-    nodeInfoTarget: BABYLON.Mesh;
+    targetNodeIdx: number = -1;
 
     nodeManager: NodeManager;
     useUpdateInterval = true;
@@ -36,7 +34,7 @@ export class GuiLayer {
 
     lastUpdate = 0;
 
-    beautifulColors = [
+    static beautifulColors = [
         "#ff0000", "#ff4000", "#ff8000", "#ffbf00", "#ffff00",
         "#bfff00", "#80ff00", "#40ff00", "#00ff00", "#00ff40",
         "#00ff80", "#00ffbf", "#00ffff", "#00bfff", "#0080ff",
@@ -65,7 +63,7 @@ export class GuiLayer {
 
     backgroundWork() {
         const that = this;
-        this.updateNodeInfo(this.nodeInfoTarget);
+        this.updateNodeInfo();
         setTimeout(() => {
             that.backgroundWork();
         }, 1000);
@@ -89,10 +87,10 @@ export class GuiLayer {
             for (let j = i + 1; j < nodes.length; j++) {
                 const node1 = nodes[i];
                 const node2 = nodes[j];
-                const clientDrone1Pos = this.mainScene.worldVec3toClient(node1.position);
-                const clientDrone2Pos = this.mainScene.worldVec3toClient(node2.position);
+                const clientDrone1Pos = this.mainScene.worldVec3toClient(node1.getPosition());
+                const clientDrone2Pos = this.mainScene.worldVec3toClient(node2.getPosition());
 
-                const nodeDistance = BABYLON.Vector3.Distance(node1.position, node2.position);
+                const nodeDistance = BABYLON.Vector3.Distance(node1.getPosition(), node2.getPosition());
 
                 if (this.nodeGUIs[i].links.length < j - i) {
                     for (let k = this.nodeGUIs[i].links.length; k < j - i; k++) {
@@ -183,46 +181,36 @@ export class GuiLayer {
         }
     }
 
-    updateNodeInfo(target: BABYLON.Mesh) {
-        if (target == null) {
-            this.nodeInfo.text = "No target";
+    updateNodeInfo() {
+        const targetNodeIdx = this.targetNodeIdx;
+        if (targetNodeIdx < 0)
             return;
-        }
+        const node: Node = this.nodeManager.nodeList[targetNodeIdx];
 
-        const meta = target.metadata as DroneMetadata;
+        this.nodeInfo.text = "Node Index : " + targetNodeIdx + "\n";
+        this.nodeInfo.text += "Tx Bytes : " + node.txBytes + " Rx Bytes : " + node.rxBytes + "\n";
 
-        if (!meta) {
-            return;
-        }
-
-        if (meta.type == "drone") {
-            this.nodeInfo.text = "Node Index : " + meta.idx + "\n";
-            this.nodeInfo.text += "Tx Bytes : " + meta.txBytes + " Rx Bytes : " + meta.rxBytes + "\n";
-
-            this.nodeManager.disposePathMeshes();
-            this.nodeInfo.text += "Routing Table\n";
-            for (let i = 0; i < meta.routingTable.length; i++) {
-                if (meta.routingTable[i].hopCount != 0) {
-                    let routeText = "";
-                    routeText += meta.idx;
-                    for (let hop = 0; hop < meta.routingTable[i].hopCount; hop++) {
-                        routeText += " => " + meta.routingTable[i].path[hop];
-                    }
-
-                    this.nodeManager.drawDronePath(
-                        [meta.idx].concat(meta.routingTable[i].path),
-                        new BABYLON.Vector3(0, 0.03 * i - 0.2, 0),
-                        BABYLON.Color3.FromHexString(this.beautifulColors[i])
-                    );
-                    this.nodeInfo.text += routeText + "\n";
+        this.nodeManager.disposePathMeshes();
+        this.nodeInfo.text += "Routing Table\n";
+        for (let i = 0; i < node.routingTable.length; i++) {
+            if (node.routingTable[i].hopCount != 0) {
+                let routeText = "";
+                routeText += targetNodeIdx;
+                for (let hop = 0; hop < node.routingTable[i].hopCount; hop++) {
+                    routeText += " => " + node.routingTable[i].path[hop];
                 }
+
+                this.nodeManager.drawDronePath(
+                    [targetNodeIdx].concat(node.routingTable[i].path),
+                    new BABYLON.Vector3(0, 0.03 * i - 0.2, 0),
+                    BABYLON.Color3.FromHexString(GuiLayer.beautifulColors[i])
+                );
+                this.nodeInfo.text += routeText + "\n";
             }
-        } else {
-            console.log('type :' + meta.type);
         }
 
-        if (meta.dirty) {
-            meta.dirty = false;
+        if (node.guiInfoDirty) {
+            node.guiInfoDirty = false;
             this.mainScene.dirty = true;
         }
     }
@@ -249,8 +237,8 @@ export class GuiLayer {
                 card.zIndex = 5;
                 card.onPointerUpObservable.add(function () {
                     that.nodeManager.disposePathMeshes();
-                    that.nodeInfoTarget = nodes[i];
-                    that.updateNodeInfo(nodes[i]);
+                    that.targetNodeIdx = i;
+                    that.updateNodeInfo();
                 });
 
                 this.advancedTexture.addControl(card);
@@ -262,8 +250,8 @@ export class GuiLayer {
         }
 
         for (let i = 0; i < nodes.length; i++) {
-            const onedrone = nodes[i];
-            const clientDronePos = this.mainScene.worldVec3toClient(onedrone.position);
+            const oneNode = nodes[i];
+            const clientDronePos = this.mainScene.worldVec3toClient(oneNode.getPosition());
             if (Math.abs(clientDronePos.z) > 1.0) {
                 this.nodeGUIs[i].nameCard.isVisible = false;
                 continue;
@@ -299,10 +287,6 @@ export class GuiLayer {
         this.dragIndicator.top = y1 + "px";
         this.dragIndicator.width = (x2 - x1) + "px";
         this.dragIndicator.height = (y2 - y1) + "px";
-    }
-
-    sceneSaveButtonClicked() {
-
     }
 
     menuViewToggleButtonClicked() {

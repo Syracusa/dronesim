@@ -1,5 +1,5 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
-import { NodeManager, DroneMetadata } from "./NodeManager";
+import { NodeManager } from "./NodeManager";
 
 export class ServerConnection {
     static workerConnected = false;
@@ -50,11 +50,10 @@ export class ServerConnection {
                 case "TRx":
                     // console.log(data);
                     {
-                        const drone = this.nodeManager.nodeList[data.node];
-                        const dronemeta = drone.metadata as DroneMetadata;
-                        dronemeta.txBytes = data.tx;
-                        dronemeta.rxBytes = data.rx;
-                        dronemeta.dirty = true;
+                        const node = this.nodeManager.nodeList[data.node];
+                        node.txBytes = data.tx;
+                        node.rxBytes = data.rx;
+                        node.guiInfoDirty = true;
                     }
                     break;
                 case "Status":
@@ -63,14 +62,13 @@ export class ServerConnection {
                 case "Route":
                     // console.log(data);
                     {
-                        const drone = this.nodeManager.nodeList[data.node];
-                        const dronemeta = drone.metadata as DroneMetadata;
-                        const routeEntry = dronemeta.routingTable[data.target];
+                        const node = this.nodeManager.nodeList[data.node];
+                        const routeEntry = node.routingTable[data.target];
                         routeEntry.hopCount = data.hopcount;
                         routeEntry.path = data.path;
-                        dronemeta.dirty = true;
+                        node.guiInfoDirty = true;
 
-                        this.nodeManager.calcRelayNode();
+                        // this.nodeManager.calcRelayNode();
                     }
                     break;
                 default:
@@ -93,7 +91,9 @@ export class ServerConnection {
             for (let j = i + 1; j < nodenum; j++) {
                 const node1 = this.nodeManager.nodeList[i];
                 const node2 = this.nodeManager.nodeList[j];
-                const distance = BABYLON.Vector3.Distance(node1.position, node2.position);
+                const distance = BABYLON.Vector3.Distance(
+                    node1.getPosition(),
+                    node2.getPosition());
                 oneNodeLinkInfo.push(parseFloat(distance.toFixed(2)));
             }
             nodeLinkInfo.push(oneNodeLinkInfo);

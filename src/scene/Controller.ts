@@ -2,7 +2,7 @@ import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { MainScene } from "./MainScene";
 import { ShiftHelper } from "./ShiftHelper";
 import { GuiLayer } from "./GuiLayer";
-import { NodeManager } from "./NodeManager";
+import { NodeManager, Node } from "./NodeManager";
 import { ServerConnection } from "./ServerConnection";
 
 export class Controller {
@@ -54,7 +54,7 @@ export class Controller {
             BABYLON.Matrix.Identity(), this.camera, false);
         const hit = scene.pickWithRay(ray);
 
-        const mesh = hit.pickedMesh;
+        const mesh = hit.pickedMesh as BABYLON.Mesh;
         if (mesh) {
             let meta = mesh.metadata;
             if (meta) {
@@ -69,10 +69,11 @@ export class Controller {
                 if (meta.type) {
                     if (meta.type == 'terrain') {
                         this.shiftHelper.releaseTarget();
-                        this.nodeManager.unfocusAllDrones();
-                    } else if (meta.type == 'drone') {
-                        this.nodeManager.unfocusAllDrones();
-                        this.nodeManager.focusDrone(mesh as BABYLON.Mesh);
+                        this.nodeManager.unfocusAllNodes();
+                    } else if (meta.type == 'node') {
+                        this.nodeManager.unfocusAllNodes();
+                        const node: Node = Node.getNodeFromMesh(mesh);
+                        this.nodeManager.focusNode(node);
                     }
                     console.log(meta.type);
                 }
@@ -84,12 +85,12 @@ export class Controller {
         }
     }
 
-    getDraggedDrones(): BABYLON.Mesh[] {
-        let dragedDrones: BABYLON.Mesh[] = [];
+    getDraggedNodes(): Node[] {
+        let draggedNodes: Node[] = [];
         let nodeList = this.nodeManager.nodeList;
         for (let i = 0; i < nodeList.length; i++) {
             let clientPos = this.mainScene.worldVec3toClient(
-                nodeList[i].position);
+                nodeList[i].clonePosition());
 
             let x1, x2, y1, y2;
             if (this.dragStartX < this.scene.pointerX) {
@@ -109,22 +110,24 @@ export class Controller {
 
             if (clientPos.x > x1 && clientPos.x < x2 &&
                 clientPos.y > y1 && clientPos.y < y2) {
-                dragedDrones.push(nodeList[i]);
+                draggedNodes.push(nodeList[i]);
             }
         }
-        return dragedDrones;
+        return draggedNodes;
     }
 
     handleMouseUp() {
         this.isDragging = false;
 
         if (!this.dragHandlerExist) {
-            let dragedDrones = this.getDraggedDrones();
-            if (dragedDrones.length > 0) {
-                this.shiftHelper.setMultiTarget(dragedDrones);
-                this.nodeManager.unfocusAllDrones();
-                for (let i = 0; i < dragedDrones.length; i++)
-                    this.nodeManager.focusDrone(dragedDrones[i]);
+            let draggedNodes = this.getDraggedNodes();
+            if (draggedNodes.length > 0) {
+                this.shiftHelper.setMultiTarget(draggedNodes.map((n)=>{
+                    return n.rootMesh;
+                }));
+                this.nodeManager.unfocusAllNodes();
+                for (let i = 0; i < draggedNodes.length; i++)
+                    this.nodeManager.focusNode(draggedNodes[i]);
             }
         }
         this.guiLayer.updateDragIndicator(0, 0, 0, 0);
@@ -241,7 +244,7 @@ export class Controller {
         if (this.isKeyPressed("e") || this.isKeyPressed("E"))
             this.camera.rotationOffset += 0.1 * delta;
 
-        if (this.isKeyPressed("1")){
+        if (this.isKeyPressed("1")) {
             if (this.camera.radius > 0.02 * delta)
                 this.camera.radius -= 0.02 * delta;
         }
@@ -249,7 +252,7 @@ export class Controller {
         if (this.isKeyPressed("2"))
             this.camera.radius += 0.02 * delta;
 
-            if (this.isKeyPressed("3")) {
+        if (this.isKeyPressed("3")) {
             this.camera.fov -= 0.002 * delta;
             if (this.camera.fov < 0.1)
                 this.camera.fov = 0.1;
