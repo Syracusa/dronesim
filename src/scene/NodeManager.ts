@@ -2,6 +2,7 @@ import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import "@babylonjs/loaders/glTF";
 
 import { MainScene } from './MainScene';
+import { GuiLayer } from "./GuiLayer";
 import DroneModel from '../static/drone.glb';
 
 export interface RouteEntry {
@@ -151,18 +152,6 @@ export class NodeManager {
         this.loadDroneModel();
     }
 
-    // calcRelayNode() {
-    //     let i = 0; /* Temp */
-    //     const oneDrone = this.nodeList[i];
-    //     const droneMeta = oneDrone.metadata as NodeMetadata;
-    //     for (let j = 0; j < droneMeta.routingTable.length; j++) {
-    //         const routeEntry = droneMeta.routingTable[j];
-    //         for (let hcnt = 0; hcnt < routeEntry.hopCount - 1; hcnt++) {
-    //             droneMeta.relayNodes.push(routeEntry.path[hcnt]);
-    //         }
-    //     }
-    // }
-
     disposePathMeshes() {
         for (let i = 0; i < this.pathMeshes.length; i++) {
             this.pathMeshes[i].dispose();
@@ -170,7 +159,22 @@ export class NodeManager {
         this.pathMeshes = [];
     }
 
-    drawDronePath(path: number[], adjustVec?: BABYLON.Vector3, color?: BABYLON.Color3) {
+    drawNodePaths(rootNodeIdx: number) {
+        this.disposePathMeshes();
+        const rootNode = this.nodeList[rootNodeIdx];
+        this.getEdgeNodeIdxList(rootNodeIdx).forEach((i) => {
+            this.drawNodePath([rootNodeIdx].concat(rootNode.routingTable[i].path),
+                new BABYLON.Vector3(0, 0.03 * i - 0.2, 0),
+                BABYLON.Color3.FromHexString(GuiLayer.beautifulColors[i])
+            );
+        });
+    }
+
+    drawNodePath(path: number[], adjustVec?: BABYLON.Vector3, color?: BABYLON.Color3) {
+        if (path.length < 2) {
+            return;
+        }
+
         let points = [];
         if (!adjustVec) {
             adjustVec = new BABYLON.Vector3(0, 0.2, 0);
@@ -178,10 +182,19 @@ export class NodeManager {
 
         for (let i = 0; i < path.length; i++) {
             const dronepos = this.nodeList[path[i]].clonePosition();
+
+            let dir = null as BABYLON.Vector3;
+
             if (i != 0) {
                 const privDronepos = this.nodeList[path[i - 1]].clonePosition();
-                const dir = dronepos.subtract(privDronepos).normalize();
-                points.push(dronepos.subtract(dir.scale(1.0)).addInPlace(adjustVec));
+                dir = dronepos.subtract(privDronepos).normalize();
+            }
+
+            if (dir) {
+                if (i == path.length - 1)
+                    points.push(dronepos.subtract(dir.scale(1.0)).addInPlace(adjustVec));
+                else
+                    points.push(dronepos.subtract(dir.scale(0.3)).addInPlace(adjustVec));
             } else {
                 points.push(dronepos.add(adjustVec));
             }
@@ -296,7 +309,7 @@ export class NodeManager {
 
         this.droneMesh = droneMesh;
         this.modelLoaded = true;
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < 30; i++) {
             const droneInitX =
                 50 + ((4 + this.nodeNumber * 1.3) * Math.sin(Math.PI * this.nodeNumber / 5));
             const droneInitY = 5 + this.nodeNumber / 3;
@@ -304,6 +317,8 @@ export class NodeManager {
                 50 + ((4 + this.nodeNumber * 1.3) * Math.cos(Math.PI * this.nodeNumber / 5));
             const initPos = new BABYLON.Vector3(droneInitX, droneInitY, droneInitZ);
             const newNode: Node = new Node(this.mainScene, droneMesh, initPos);
+            newNode.idx = this.nodeNumber;
+
             this.nodeList.push(newNode);
             this.nodeNumber++;
         }
@@ -321,4 +336,26 @@ export class NodeManager {
             }
         );
     }
+
+    getEdgeNodeIdxList(rootNodeIdx: number): number[] {
+        const isIdxRelay = new Array(this.nodeList.length).fill(false);
+        const edgeNodeIdxList: number[] = [];
+        const node = this.nodeList[rootNodeIdx];
+        for (let i = 0; i < node.routingTable.length; i++) {
+            const routeEntry = node.routingTable[i];
+            for (let j = 0; j < routeEntry.hopCount - 1; j++) {
+                const relayIdx = routeEntry.path[j];
+                isIdxRelay[relayIdx] = true;
+            }
+        }
+
+        for (let i = 0; i < isIdxRelay.length; i++) {
+            if (!isIdxRelay[i]) {
+                edgeNodeIdxList.push(i);
+            }
+        }
+
+        return edgeNodeIdxList;
+    }
+
 }

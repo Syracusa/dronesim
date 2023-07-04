@@ -187,10 +187,10 @@ export class GuiLayer {
             return;
         const node: Node = this.nodeManager.nodeList[targetNodeIdx];
 
+        this.nodeManager.drawNodePaths(targetNodeIdx);
         this.nodeInfo.text = "Node Index : " + targetNodeIdx + "\n";
         this.nodeInfo.text += "Tx Bytes : " + node.txBytes + " Rx Bytes : " + node.rxBytes + "\n";
 
-        this.nodeManager.disposePathMeshes();
         this.nodeInfo.text += "Routing Table\n";
         for (let i = 0; i < node.routingTable.length; i++) {
             if (node.routingTable[i].hopCount != 0) {
@@ -200,11 +200,6 @@ export class GuiLayer {
                     routeText += " => " + node.routingTable[i].path[hop];
                 }
 
-                this.nodeManager.drawDronePath(
-                    [targetNodeIdx].concat(node.routingTable[i].path),
-                    new BABYLON.Vector3(0, 0.03 * i - 0.2, 0),
-                    BABYLON.Color3.FromHexString(GuiLayer.beautifulColors[i])
-                );
                 this.nodeInfo.text += routeText + "\n";
             }
         }
