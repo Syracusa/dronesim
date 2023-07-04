@@ -90,7 +90,6 @@ export class MainScene {
             let delta = curr - that.lastRender;
             that.updateScene(delta);
             that.lastRender = curr;
-
         });
     }
 
@@ -112,7 +111,6 @@ export class MainScene {
         ambientLight.intensity = 0.2;
     };
 
-    /* Vec3 to Client */
     worldVec3toClient(vec3: BABYLON.Vector3): BABYLON.Vector3 {
         const scene = this.scene;
         const camera = scene.activeCamera;
@@ -126,21 +124,6 @@ export class MainScene {
                 scene.getEngine().getRenderHeight(true)));
 
         return transform;
-    }
-
-    async verifyPermission(fileHandle: any) {
-        const options = { mode: 'readwrite' };
-
-        // Check if permission was already granted. If so, return true.
-        if ((await fileHandle.queryPermission(options)) === 'granted') {
-            return true;
-        }
-        // Request permission. If the user grants permission, return true.
-        if ((await fileHandle.requestPermission(options)) === 'granted') {
-            return true;
-        }
-        // The user didn't grant permission, so return false.
-        return false;
     }
 
     download(filename: string, contents: string) {
