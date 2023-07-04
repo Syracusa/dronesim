@@ -1,7 +1,8 @@
-import { DroneManager, DroneMetadata } from "./DroneManager";
+import { NodeManager, DroneMetadata } from "./NodeManager";
 import { MainScene } from "./MainScene";
 import * as GUI from "@babylonjs/gui/Legacy/legacy";
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
+import { link } from "original-fs";
 
 
 interface DroneLink {
@@ -9,7 +10,7 @@ interface DroneLink {
     linkText: GUI.TextBlock;
 }
 
-interface DroneGUI {
+interface NodeGUI {
     nameCard: GUI.Button;
     links: DroneLink[];
 }
@@ -19,11 +20,10 @@ export class GuiLayer {
     infoPanel: GUI.TextBlock;
     nodeInfo: GUI.TextBlock;
     dragIndicator: GUI.Rectangle;
-    droneGUIs: DroneGUI[] = [];
-    testDroneRec: GUI.Rectangle;
+    nodeGUIs: NodeGUI[] = [];
     nodeInfoTarget: BABYLON.Mesh;
 
-    droneManager: DroneManager;
+    nodeManager: NodeManager;
     useUpdateInterval = true;
     updateIntervalMs = 20;
     advancedTexture: GUI.AdvancedDynamicTexture;
@@ -32,14 +32,35 @@ export class GuiLayer {
     menuOpened: boolean = true;
     menuButtonOffset = 0;
 
+    drawLinks = true;
+
     lastUpdate = 0;
 
+    beautifulColors = [
+        "#ff0000", "#ff4000", "#ff8000", "#ffbf00", "#ffff00",
+        "#bfff00", "#80ff00", "#40ff00", "#00ff00", "#00ff40",
+        "#00ff80", "#00ffbf", "#00ffff", "#00bfff", "#0080ff",
+        "#0040ff", "#0000ff", "#4000ff", "#8000ff", "#bf00ff",
+        "#ff00ff", "#ff00bf", "#ff0080", "#ff0040", "#ff0000",
+        "#FF6633", "#FFB399", "#FF33FF", "#FFFF99", "#00B3E6",
+        "#E6B333", "#3366E6", "#999966", "#99FF99", "#B34D4D",
+        "#80B300", "#809900", "#E6B3B3", "#6680B3", "#66991A",
+        "#FF99E6", "#CCFF1A", "#FF1A66", "#E6331A", "#33FFCC",
+        "#66994D", "#B366CC", "#4D8000", "#B33300", "#CC80CC",
+        "#66664D", "#991AFF", "#E666FF", "#4DB3FF", "#1AB399",
+        "#E666B3", "#33991A", "#CC9999", "#B3B31A", "#00E680",
+        "#4D8066", "#809980", "#E6FF80", "#1AFF33", "#999933",
+        "#FF3380", "#CCCC00", "#66E64D", "#4D80CC", "#9900B3",
+        "#E64D66", "#4DB380", "#FF4D4D", "#99E6E6", "#6666FF"
+    ];
 
-    constructor(mainScene: MainScene, droneManager: DroneManager) {
+
+    constructor(mainScene: MainScene, nodeManager: NodeManager) {
         this.mainScene = mainScene;
-        this.droneManager = droneManager;
+        this.nodeManager = nodeManager;
         this.makeControls();
         this.backgroundWork();
+
     }
 
     backgroundWork() {
@@ -58,23 +79,23 @@ export class GuiLayer {
         }
 
         this.updatePanelText();
-        this.updateDroneNameCards();
+        this.updateDroneButtons();
         this.updateDroneLinkLines();
     }
 
     updateDroneLinkLines() {
-        const drones = this.droneManager.droneList;
-        for (let i = 0; i < drones.length; i++) {
-            for (let j = i + 1; j < drones.length; j++) {
-                const drone1 = drones[i];
-                const drone2 = drones[j];
-                const clientDrone1Pos = this.mainScene.worldVec3toClient(drone1.position);
-                const clientDrone2Pos = this.mainScene.worldVec3toClient(drone2.position);
+        const nodes = this.nodeManager.nodeList;
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                const node1 = nodes[i];
+                const node2 = nodes[j];
+                const clientDrone1Pos = this.mainScene.worldVec3toClient(node1.position);
+                const clientDrone2Pos = this.mainScene.worldVec3toClient(node2.position);
 
-                const droneDistance = BABYLON.Vector3.Distance(drone1.position, drone2.position);
+                const nodeDistance = BABYLON.Vector3.Distance(node1.position, node2.position);
 
-                if (this.droneGUIs[i].links.length < j - i) {
-                    for (let k = this.droneGUIs[i].links.length; k < j - i; k++) {
+                if (this.nodeGUIs[i].links.length < j - i) {
+                    for (let k = this.nodeGUIs[i].links.length; k < j - i; k++) {
                         let link = new Object() as DroneLink;
                         link.linkLine = new GUI.Line();
                         link.linkLine.lineWidth = 1.0;
@@ -94,18 +115,32 @@ export class GuiLayer {
                         link.linkText.fontSize = 10;
                         this.advancedTexture.addControl(link.linkText);
 
-                        this.droneGUIs[i].links.push(link);
+                        this.nodeGUIs[i].links.push(link);
                     }
                 }
 
 
-                const linkLine = this.droneGUIs[i].links[j - i - 1].linkLine;
+                const linkLine = this.nodeGUIs[i].links[j - i - 1].linkLine;
+                const linkText = this.nodeGUIs[i].links[j - i - 1].linkText;
 
-                if (Math.abs(clientDrone1Pos.z) > 1.0 || Math.abs(clientDrone2Pos.z) > 1.0) {
+                let shouldDraw = true;
+                if (Math.abs(clientDrone1Pos.z) > 1.0 || Math.abs(clientDrone2Pos.z) > 1.0)
+                    shouldDraw = false;
+                else
+                    shouldDraw = true;
+
+                if (!this.drawLinks)
+                    shouldDraw = false;
+                else
+                    shouldDraw = true;
+
+                if (!shouldDraw) {
                     linkLine.isVisible = false;
+                    linkText.isVisible = false;
                     continue;
                 } else {
                     linkLine.isVisible = true;
+                    linkText.isVisible = true;
                 }
 
                 linkLine.x1 = clientDrone1Pos.x | 0;
@@ -114,30 +149,29 @@ export class GuiLayer {
                 linkLine.y2 = clientDrone2Pos.y | 0;
 
                 const TWEAK_LINE = 0;
-                
+
                 if (TWEAK_LINE) {
-                    linkLine.x1 += i * 2 - drones.length;
-                    linkLine.y1 += j * 2 - drones.length;
-                    linkLine.x2 += i * 2 - drones.length;
-                    linkLine.y2 += j * 2 - drones.length;
+                    linkLine.x1 += i * 2 - nodes.length;
+                    linkLine.y1 += j * 2 - nodes.length;
+                    linkLine.x2 += i * 2 - nodes.length;
+                    linkLine.y2 += j * 2 - nodes.length;
                 }
 
-                const linkText = this.droneGUIs[i].links[j - i - 1].linkText;
                 linkText.top = ((clientDrone1Pos.y + clientDrone2Pos.y) / 2) | 0;
                 linkText.left = ((clientDrone1Pos.x + clientDrone2Pos.x) / 2) | 0;
-                linkText.text = droneDistance.toFixed(1);
+                linkText.text = nodeDistance.toFixed(1);
 
 
-                if (droneDistance > 15) {
+                if (nodeDistance > 15) {
                     linkLine.isVisible = false;
                     linkText.isVisible = false;
                 } else {
                     linkLine.isVisible = true;
                     linkText.isVisible = true;
-                    if (droneDistance < 10) {
+                    if (nodeDistance < 10) {
                         linkLine.color = "green";
                         linkLine.alpha = 1.0;
-                    } else if (droneDistance < 13) {
+                    } else if (nodeDistance < 13) {
                         linkLine.color = "yellow";
                         linkLine.alpha = 0.5;
                     } else {
@@ -165,6 +199,7 @@ export class GuiLayer {
             this.nodeInfo.text = "Node Index : " + meta.idx + "\n";
             this.nodeInfo.text += "Tx Bytes : " + meta.txBytes + " Rx Bytes : " + meta.rxBytes + "\n";
 
+            this.nodeManager.disposePathMeshes();
             this.nodeInfo.text += "Routing Table\n";
             for (let i = 0; i < meta.routingTable.length; i++) {
                 if (meta.routingTable[i].hopCount != 0) {
@@ -173,6 +208,12 @@ export class GuiLayer {
                     for (let hop = 0; hop < meta.routingTable[i].hopCount; hop++) {
                         routeText += " => " + meta.routingTable[i].path[hop];
                     }
+
+                    this.nodeManager.drawDronePath(
+                        [meta.idx].concat(meta.routingTable[i].path),
+                        new BABYLON.Vector3(0, 0.03 * i - 0.2, 0),
+                        BABYLON.Color3.FromHexString(this.beautifulColors[i])
+                    );
                     this.nodeInfo.text += routeText + "\n";
                 }
             }
@@ -186,13 +227,13 @@ export class GuiLayer {
         }
     }
 
-    updateDroneNameCards() {
+    updateDroneButtons() {
         const that = this;
-        const drones = this.droneManager.droneList;
+        const nodes = this.nodeManager.nodeList;
 
-        if (this.droneGUIs.length < drones.length) {
-            for (let i = this.droneGUIs.length; i < drones.length; i++) {
-                let droneGUI: DroneGUI = new Object() as DroneGUI;
+        if (this.nodeGUIs.length < nodes.length) {
+            for (let i = this.nodeGUIs.length; i < nodes.length; i++) {
+                let droneGUI: NodeGUI = new Object() as NodeGUI;
                 droneGUI.links = [];
 
                 let card = GUI.Button.CreateSimpleButton("but " + i, "Drone " + i);
@@ -207,30 +248,31 @@ export class GuiLayer {
                 card.alpha = 0.5;
                 card.zIndex = 5;
                 card.onPointerUpObservable.add(function () {
-                    that.nodeInfoTarget = drones[i];
-                    that.updateNodeInfo(drones[i]);
+                    that.nodeManager.disposePathMeshes();
+                    that.nodeInfoTarget = nodes[i];
+                    that.updateNodeInfo(nodes[i]);
                 });
 
                 this.advancedTexture.addControl(card);
 
                 droneGUI.nameCard = card;
 
-                this.droneGUIs.push(droneGUI);
+                this.nodeGUIs.push(droneGUI);
             }
         }
 
-        for (let i = 0; i < drones.length; i++) {
-            const onedrone = drones[i];
+        for (let i = 0; i < nodes.length; i++) {
+            const onedrone = nodes[i];
             const clientDronePos = this.mainScene.worldVec3toClient(onedrone.position);
             if (Math.abs(clientDronePos.z) > 1.0) {
-                this.droneGUIs[i].nameCard.isVisible = false;
+                this.nodeGUIs[i].nameCard.isVisible = false;
                 continue;
             } else {
-                this.droneGUIs[i].nameCard.isVisible = true;
+                this.nodeGUIs[i].nameCard.isVisible = true;
             }
 
-            this.droneGUIs[i].nameCard.left = ((clientDronePos.x | 0) - 20) + "px";
-            this.droneGUIs[i].nameCard.top = ((clientDronePos.y | 0) - 30) + "px";
+            this.nodeGUIs[i].nameCard.left = ((clientDronePos.x | 0) - 20) + "px";
+            this.nodeGUIs[i].nameCard.top = ((clientDronePos.y | 0) - 30) + "px";
         }
     }
 
@@ -370,6 +412,10 @@ export class GuiLayer {
 
         this.createMenuButton("Load", function () {
             that.mainScene.loadScene();
+        });
+
+        this.createMenuButton("Link", function () {
+            that.drawLinks = !that.drawLinks;
         });
 
 

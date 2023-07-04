@@ -2,7 +2,7 @@ import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { MainScene } from "./MainScene";
 import { ShiftHelper } from "./ShiftHelper";
 import { GuiLayer } from "./GuiLayer";
-import { DroneManager } from "./DroneManager";
+import { NodeManager } from "./NodeManager";
 import { ServerConnection } from "./ServerConnection";
 
 export class Controller {
@@ -17,7 +17,7 @@ export class Controller {
     selTarget: BABYLON.Mesh;
     isDragging: boolean = false;
     guiLayer: GuiLayer;
-    droneManager: DroneManager;
+    nodeManager: NodeManager;
     serverConnection: ServerConnection;
     dragHandlerExist: boolean = false;
 
@@ -37,11 +37,11 @@ export class Controller {
         this.setMouseHandler();
         this.shiftHelper = new ShiftHelper(mainScene, this);
 
-        this.droneManager = new DroneManager(mainScene);
+        this.nodeManager = new NodeManager(mainScene);
 
-        this.guiLayer = new GuiLayer(mainScene, this.droneManager);
+        this.guiLayer = new GuiLayer(mainScene, this.nodeManager);
 
-        this.serverConnection = new ServerConnection(this.droneManager);
+        this.serverConnection = new ServerConnection(this.nodeManager);
     }
 
     handleMouseDown() {
@@ -69,10 +69,10 @@ export class Controller {
                 if (meta.type) {
                     if (meta.type == 'terrain') {
                         this.shiftHelper.releaseTarget();
-                        this.droneManager.unfocusAllDrones();
+                        this.nodeManager.unfocusAllDrones();
                     } else if (meta.type == 'drone') {
-                        this.droneManager.unfocusAllDrones();
-                        this.droneManager.focusDrone(mesh as BABYLON.Mesh);
+                        this.nodeManager.unfocusAllDrones();
+                        this.nodeManager.focusDrone(mesh as BABYLON.Mesh);
                     }
                     console.log(meta.type);
                 }
@@ -86,10 +86,10 @@ export class Controller {
 
     getDraggedDrones(): BABYLON.Mesh[] {
         let dragedDrones: BABYLON.Mesh[] = [];
-        let droneList = this.droneManager.droneList;
-        for (let i = 0; i < droneList.length; i++) {
+        let nodeList = this.nodeManager.nodeList;
+        for (let i = 0; i < nodeList.length; i++) {
             let clientPos = this.mainScene.worldVec3toClient(
-                droneList[i].position);
+                nodeList[i].position);
 
             let x1, x2, y1, y2;
             if (this.dragStartX < this.scene.pointerX) {
@@ -109,7 +109,7 @@ export class Controller {
 
             if (clientPos.x > x1 && clientPos.x < x2 &&
                 clientPos.y > y1 && clientPos.y < y2) {
-                dragedDrones.push(droneList[i]);
+                dragedDrones.push(nodeList[i]);
             }
         }
         return dragedDrones;
@@ -122,9 +122,9 @@ export class Controller {
             let dragedDrones = this.getDraggedDrones();
             if (dragedDrones.length > 0) {
                 this.shiftHelper.setMultiTarget(dragedDrones);
-                this.droneManager.unfocusAllDrones();
+                this.nodeManager.unfocusAllDrones();
                 for (let i = 0; i < dragedDrones.length; i++)
-                    this.droneManager.focusDrone(dragedDrones[i]);
+                    this.nodeManager.focusDrone(dragedDrones[i]);
             }
         }
         this.guiLayer.updateDragIndicator(0, 0, 0, 0);
