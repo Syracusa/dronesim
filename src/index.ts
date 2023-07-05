@@ -1,4 +1,5 @@
-import { app, BrowserWindow, MessageChannelMain } from 'electron';
+import { app, BrowserWindow, MessageChannelMain, Tray, Menu } from 'electron';
+import TreeImg from './static/Tree.png';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -36,8 +37,10 @@ const createWindow = (): void => {
         },
     });
 
+    console.log(ANALYZER_WEBPACK_ENTRY);
     analyzerWindow.loadURL(ANALYZER_WEBPACK_ENTRY);
     analyzerWindow.webContents.openDevTools();
+    analyzerWindow.hide();
 
     /* ===== Worker Window ===== */
     const showWorker = true;
@@ -52,6 +55,8 @@ const createWindow = (): void => {
         worker.webContents.openDevTools();
     }
     worker.loadURL(SOCKET_WORKER_WEBPACK_ENTRY);
+    // worker.minimize();
+    worker.hide();
 
 
     /* ===== IPC Handler ===== */
@@ -60,14 +65,40 @@ const createWindow = (): void => {
         const { port1, port2 } = new MessageChannelMain();
         worker.webContents.postMessage('new-client', null, [port1]);
         event.senderFrame.postMessage('provide-worker-channel', null, [port2]);
-    })
+    });
 
     analyzerWindow.webContents.mainFrame.ipc.on('request-worker-channel', (event) => {
         console.log('Analyzer port request');
         const { port1, port2 } = new MessageChannelMain();
         worker.webContents.postMessage('new-client', null, [port1]);
         event.senderFrame.postMessage('provide-worker-channel', null, [port2]);
-    })
+    });
+
+    /* ===== Tray ===== */
+    // console.log(path.resolve TreeImg);
+
+    // console.log('Start!');
+    // let tray;
+    // try {
+    //     tray = new Tray(TreeImg);
+    // }
+    // catch (e) {
+    //     console.log(e);
+    // }
+
+    // if (0) {
+    //     console.log('Generated!');
+    //     const contextMenu = Menu.buildFromTemplate([
+    //         { label: 'Item1', type: 'radio' },
+    //         { label: 'Item2', type: 'radio' },
+    //         { label: 'Item3', type: 'radio', checked: true },
+    //         { label: 'Item4', type: 'radio' }
+    //     ]);
+    //     tray.setToolTip('This is my application.');
+    //     tray.setContextMenu(contextMenu);
+
+    //     console.log('Done!');
+    // }
 };
 
 app.on('ready', createWindow);
