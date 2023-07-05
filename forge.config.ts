@@ -37,6 +37,14 @@ const config: ForgeConfig = {
             js: './src/socket_worker.ts',
             name: 'socket_worker',
             nodeIntegration : true,
+          },
+          {
+            html: './src/analyzer/analyzer.html',
+            js: './src/analyzer/analyzer.ts',
+            name: 'analyzer',
+            preload: {
+              js: './src/analyzer/preload-analyzer.ts',
+            },
           }
         ],
       },
