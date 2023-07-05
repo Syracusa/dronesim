@@ -7,9 +7,23 @@ export class Analyzer {
 
     constructor() {
         this.initIPC();
+    }
 
-        const infoDiv = new NodeInfoDiv();
-        infoDiv.attachTo(document.body);
+    getNodeInfoDiv(nodeId: number) {
+        let infoDiv = this.nodeInfoDivArray[nodeId];
+        if (!infoDiv) {
+            infoDiv = new NodeInfoDiv(nodeId);
+            this.nodeInfoDivArray[nodeId] = infoDiv;
+            infoDiv.attachTo(document.body);
+        }
+        return infoDiv;
+    }
+
+    handleTRxInfo(data: any) {
+        const infoDiv = this.getNodeInfoDiv(data.node);
+        infoDiv.txbytes = data.tx;
+        infoDiv.rxbytes = data.rx;
+        infoDiv.updateText();
     }
 
     handleWorkerMessage(data: any) {
@@ -20,7 +34,7 @@ export class Analyzer {
                     break;
                 case "TRx":
                     // console.log(data);
-    
+                    this.handleTRxInfo(data);
                     break;
                 case "Status":
                     // console.log(data);
