@@ -104,7 +104,6 @@ client.on('error', function (err) {
     tcpConnected = false;
     waitConnect = false;
     streambuf.read();    /* Clean Streambuf */
-    client.end();
 });
 
 client.on('close', function () {

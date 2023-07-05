@@ -1,5 +1,5 @@
 import { NodeInfoDiv } from "./NodeInfoDiv";
-
+import TestHTML from "./test.html.resource";
 
 export class Analyzer {
     nodeInfoDivArray = new Array<NodeInfoDiv>(128).fill(null);
@@ -7,6 +7,25 @@ export class Analyzer {
 
     constructor() {
         this.initIPC();
+        document.body.appendChild(this.createStreamConfigButton());
+    }
+
+    createStreamConfigButton() {
+        const button = document.createElement("button");
+        button.innerText = "Stream Config";
+        button.onclick = this.openDummyStreamConfigWindow;
+        return button;
+    }
+
+    openDummyStreamConfigWindow() {
+        console.log(TestHTML);
+        const childWindow = window.open('', '');
+        fetch(TestHTML)
+            .then((res) => res.text())
+            .then((text) => {
+                childWindow.document.write(text);
+            })
+            .catch((e) => console.error(e));
     }
 
     getNodeInfoDiv(nodeId: number) {
@@ -52,7 +71,7 @@ export class Analyzer {
             }
         }
     }
-    
+
     initIPC() {
         const that = this;
         window.electronAPI.requestWorkerChannel((data: any) => {
