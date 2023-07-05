@@ -24,8 +24,8 @@ const createWindow = (): void => {
         },
     });
 
-    mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
     mainWindow.webContents.openDevTools();
+    mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
     /* ===== Analyzer Window ===== */
     const analyzerWindow = new BrowserWindow({
@@ -37,7 +37,7 @@ const createWindow = (): void => {
     });
 
     analyzerWindow.loadURL(ANALYZER_WEBPACK_ENTRY);
-    analyzerWindow.webContents.openDevTools();
+    // analyzerWindow.webContents.openDevTools();
 
     /* ===== Worker Window ===== */
     const showWorker = false;
@@ -70,11 +70,7 @@ const createWindow = (): void => {
     })
 };
 
-app.commandLine.appendSwitch("enable-experimental-web-platform-features");
-
 app.on('ready', createWindow);
-
-app.whenReady().then(async () => { });
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

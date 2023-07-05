@@ -26,6 +26,11 @@ export class Analyzer {
         infoDiv.updateText();
     }
 
+    handleRouteInfo(data: any) {
+        const infoDiv = this.getNodeInfoDiv(data.node);
+        /* Do something */
+    }
+
     handleWorkerMessage(data: any) {
         if (data.hasOwnProperty("type")) {
             switch (data.type) {
@@ -33,14 +38,13 @@ export class Analyzer {
                     console.log("TCP connected");
                     break;
                 case "TRx":
-                    // console.log(data);
                     this.handleTRxInfo(data);
                     break;
                 case "Status":
-                    // console.log(data);
+                    // Do nothing
                     break;
                 case "Route":
-                    // console.log(data);
+                    this.handleRouteInfo(data);
                     break;
                 default:
                     console.log("Unknown message type from worker " + data.type);
