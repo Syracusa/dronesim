@@ -1,6 +1,3 @@
-
-console.log('analyzer started');
-
 let workerConnected = false;
 
 function handleWorkerMessage(data: any) {
