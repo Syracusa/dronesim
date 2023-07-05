@@ -40,7 +40,7 @@ const config: ForgeConfig = {
           },
           {
             html: './src/analyzer/analyzer.html',
-            js: './src/analyzer/analyzer.ts',
+            js: './src/analyzer/renderer-analyzer.ts',
             name: 'analyzer',
             preload: {
               js: './src/analyzer/preload-analyzer.ts',
