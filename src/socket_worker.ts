@@ -99,6 +99,14 @@ client.on('data', function (data) {
     }
 });
 
+client.on('error', function (err) {
+    console.log('Socket Error: ' + err);
+    tcpConnected = false;
+    waitConnect = false;
+    streambuf.read();    /* Clean Streambuf */
+    client.end();
+});
+
 client.on('close', function () {
     tcpConnected = false;
     console.log('Connection closed... Retry');

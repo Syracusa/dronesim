@@ -37,10 +37,10 @@ const createWindow = (): void => {
     });
 
     analyzerWindow.loadURL(ANALYZER_WEBPACK_ENTRY);
-    // analyzerWindow.webContents.openDevTools();
+    analyzerWindow.webContents.openDevTools();
 
     /* ===== Worker Window ===== */
-    const showWorker = false;
+    const showWorker = true;
     const worker = new BrowserWindow({
         show: showWorker,
         webPreferences: {
