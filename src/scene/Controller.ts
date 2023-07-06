@@ -189,7 +189,7 @@ export class Controller {
         const sphere = BABYLON.MeshBuilder.CreateSphere("sphere",
             { diameter: 1, segments: 16 },
             this.mainScene.scene);
-        sphere.position = new BABYLON.Vector3(40, 10, 40);
+        sphere.position = new BABYLON.Vector3(90, 10, 90);
         sphere.isVisible = false;
         this.lookTarget = sphere;
     }

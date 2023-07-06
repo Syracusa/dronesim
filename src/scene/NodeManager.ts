@@ -311,10 +311,10 @@ export class NodeManager {
         this.modelLoaded = true;
         for (let i = 0; i < 30; i++) {
             const droneInitX =
-                50 + ((4 + this.nodeNumber * 1.3) * Math.sin(Math.PI * this.nodeNumber / 5));
+                100 + ((4 + this.nodeNumber * 1.3) * Math.sin(Math.PI * this.nodeNumber / 5));
             const droneInitY = 5 + this.nodeNumber / 3;
             const droneInitZ =
-                50 + ((4 + this.nodeNumber * 1.3) * Math.cos(Math.PI * this.nodeNumber / 5));
+                100 + ((4 + this.nodeNumber * 1.3) * Math.cos(Math.PI * this.nodeNumber / 5));
             const initPos = new BABYLON.Vector3(droneInitX, droneInitY, droneInitZ);
             const newNode: Node = new Node(this.mainScene, droneMesh, initPos);
             newNode.idx = this.nodeNumber;
