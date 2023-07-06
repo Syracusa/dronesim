@@ -37,16 +37,16 @@ export class GuiLayer {
     static beautifulColors = [
         "#FF0000", "#FFC0CB", "#3A3B3C", "#4B0150", "#151B54", "#1E90FF", "#EB5406", "#52595D",
         "#F8F0E3", "#7FFFD4", "#728FCE", "#357EC7", "#00BFFF", "#808000", "#FFDB58", "#16F529",
-        "#43C6DB", "#E67451", "#000000", "#ADD8E6", "#800080", "#FF00FF", "#8B8000", "#ECC5C0",
+        "#43C6DB", "#E67451", "#000000", "#ADD8E6", "#800080", "#8B8000", "#ECC5C0", "#008000",
         "#0C090A", "#AA6C39", "#00008B", "#36013F", "#454545", "#00FF00", "#2B65EC", "#0000FF",
         "#87CEEB", "#FDD017", "#6F4E37", "#34A56F", "#5EFB6E", "#686A6C", "#00FFFF", "#D4AF37",
         "#006400", "#A52A2A", "#800000", "#C0C0C0", "#8B0000", "#FFDF00", "#666362", "#FEFCFF",
         "#FFD700", "#FFFF00", "#D3D3D3", "#BCC6CC", "#98AFC7", "#1589FF", "#F62817", "#F70D1A",
-        "#F8F6F0", "#000080", "#4863A0", "#008000", "#FFCE44", "#966F33", "#7E3517", "#123456",
+        "#F8F6F0", "#4863A0", "#FFCE44", "#966F33", "#7E3517", "#123456", "#000080", "#008080",
         "#FAAFBA", "#625D5D", "#E5E4E2", "#F5F5DC", "#F6BE00", "#E75480", "#0041C2", "#FFFDD0",
-        "#808080", "#A9A9A9", "#9D00FF", "#FF6700", "#368BC1", "#008080", "#FFFFFF", "#29465B",
+        "#808080", "#A9A9A9", "#9D00FF", "#FF6700", "#368BC1", "#FFFFFF", "#29465B", "#C2DFFF",
         "#B87333", "#CD7F32", "#E41B17", "#95B9C7", "#FFA500", "#93917C", "#E1D9D1", "#90EE90",
-        "#FFE87C", "#C2DFFF", "#1569C7", "#F535AA", "#DADBDD", "#FFCCCB",
+        "#FFE87C", "#1569C7", "#F535AA", "#DADBDD", "#FFCCCB", "#FF00FF",
     ];
 
     constructor(mainScene: MainScene, nodeManager: NodeManager) {
@@ -206,6 +206,13 @@ export class GuiLayer {
         }
     }
 
+    onClickDroneButton(i: number) {
+        this.nodeManager.disposePathMeshes();
+        this.targetNodeIdx = i;
+        this.updateNodeInfo();
+        this.drawLinks = false;
+    }
+
     updateDroneButtons() {
         const that = this;
         const nodes = this.nodeManager.nodeList;
@@ -227,9 +234,7 @@ export class GuiLayer {
                 card.alpha = 0.5;
                 card.zIndex = 5;
                 card.onPointerUpObservable.add(function () {
-                    that.nodeManager.disposePathMeshes();
-                    that.targetNodeIdx = i;
-                    that.updateNodeInfo();
+                    that.onClickDroneButton(i);
                 });
 
                 this.advancedTexture.addControl(card);
@@ -391,6 +396,7 @@ export class GuiLayer {
 
         this.createMenuButton("Link", function () {
             that.drawLinks = !that.drawLinks;
+            that.mainScene.dirty = true;
         });
 
 
