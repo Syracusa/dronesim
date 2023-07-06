@@ -3,18 +3,19 @@ import net from 'net';
 import stream from 'node:stream';
 
 class SocketWorker {
-    jsonIo: JsonIoClient;
+    jsonIo = new JsonIoClient();
     ports: MessagePort[] = [];
 
     constructor() {
         const that = this;
-        this.jsonIo = new JsonIoClient();
         this.jsonIo.onJsonRecv = (json) => {
             that.ports.forEach(port => port.postMessage(json));
         };
         this.jsonIo.onConnect = () => {
             console.log('Server connected');
-            that.ports.forEach(port => { port.postMessage({ type: "TcpOnConnect" }) });
+            that.ports.forEach(port => {
+                port.postMessage({ type: "TcpOnConnect" })
+            });
         }
 
         ipcRenderer.on('new-client', (event) => {
@@ -22,7 +23,6 @@ class SocketWorker {
             console.log('New socket listener.');
             that.ports.push(port);
 
-            port.postMessage('init');
             port.onmessage = (event) => {
                 that.jsonIo.sendJsonTcp(event.data);
             }
@@ -33,8 +33,8 @@ class SocketWorker {
 }
 
 class JsonIoClient {
-    tcpClient: TcpClient = new TcpClient();
-    streambuf: stream.PassThrough = new stream.PassThrough();
+    tcpClient = new TcpClient();
+    streambuf = new stream.PassThrough();
 
     onJsonRecv: (json: any) => void = (d) => {
         console.log('No JSON handler');
@@ -54,7 +54,7 @@ class JsonIoClient {
         }
     }
 
-    start(){
+    start() {
         this.tcpClient.start();
     }
 
@@ -69,12 +69,7 @@ class JsonIoClient {
 
     recvDataCallback(data: Buffer) {
         const streambuf = this.streambuf;
-        try {
-            streambuf.write(data);
-        } catch (e) {
-            console.log(data);
-            console.log('Fail to write to streambuf');
-        }
+        streambuf.write(data);
 
         while (streambuf.readableLength >= 2) {
             let buf = streambuf.read(2);
@@ -96,7 +91,7 @@ class JsonIoClient {
 }
 
 class TcpClient {
-    socket: net.Socket = this.createSocket();;
+    socket: net.Socket = this.createSocket();
     serverAddr: string = '127.0.0.1';
     serverPort: number = 12123;
     onData: (data: any) => void = (d) => {
