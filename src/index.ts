@@ -56,18 +56,16 @@ const createWindow = (): void => {
     });
 
     /* ===== Worker Window ===== */
-    const showWorker = true;
     const worker = new BrowserWindow({
-        show: showWorker,
+        show: true,
         webPreferences: {
             contextIsolation: false,
             nodeIntegration: true
         },
         autoHideMenuBar: true,
     });
-    if (showWorker) {
-        worker.webContents.openDevTools();
-    }
+
+    worker.webContents.openDevTools();
     worker.loadURL(SOCKET_WORKER_WEBPACK_ENTRY);
     worker.hide();
 
