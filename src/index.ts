@@ -70,8 +70,8 @@ const createWindow = (): void => {
         y: 30,
     });
 
-    worker.webContents.openDevTools();
     worker.loadURL(SOCKET_WORKER_WEBPACK_ENTRY);
+    worker.webContents.openDevTools();
     worker.hide();
 
     worker.on('close', (event) => {

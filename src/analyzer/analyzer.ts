@@ -1,5 +1,5 @@
 import { NodeInfoDiv } from "./NodeInfoDiv";
-import TestHTML from "./test.html.resource";
+import DummyConfigHtmlResource from "./dummyconfig.html.resource";
 
 export class Analyzer {
     nodeInfoDivArray = new Array<NodeInfoDiv>(128).fill(null);
@@ -17,23 +17,17 @@ export class Analyzer {
         return button;
     }
 
-
     static array2str(data : Uint8Array) {
         let i, str = '';
-
-        for (i = 0; i < data.length; i++) {
+        for (i = 0; i < data.length; i++) 
             str += '%' + ('0' + data[i].toString(16)).slice(-2);
-        }
-
+        
         return decodeURIComponent(str);
     }
 
     openDummyStreamConfigWindow() {
-        console.log(TestHTML);
-        const data = TestHTML.data as Uint8Array;
-        console.log(data.toString());
-
         const childWindow = window.open('', '');
+        const data = DummyConfigHtmlResource.data as Uint8Array;
         childWindow.document.write(Analyzer.array2str(data));
     }
 
