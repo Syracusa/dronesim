@@ -78,102 +78,92 @@ export class GuiLayer {
         this.updateDroneLinkLines();
     }
 
+    createNewLink() {
+        const link = new Object() as DroneLink;
+        link.linkLine = new GUI.Line();
+        link.linkLine.lineWidth = 1.0;
+        link.linkLine.color = "white";
+        this.advancedTexture.addControl(link.linkLine);
+
+        link.linkText = new GUI.TextBlock();
+        link.linkText.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        link.linkText.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        link.linkText.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        link.linkText.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+
+        link.linkText.text = "Link";
+        link.linkText.color = "white";
+        link.linkText.height = "15px";
+        link.linkText.alpha = 0.5;
+        link.linkText.fontSize = 10;
+        this.advancedTexture.addControl(link.linkText);
+
+        return link;
+    }
+
+    updateLink(linkLine: GUI.Line, linkText: GUI.TextBlock,
+        clipos1: BABYLON.Vector3,
+        clipos2: BABYLON.Vector3,
+        distance: number) {
+
+        linkLine.x1 = clipos1.x | 0;
+        linkLine.y1 = clipos1.y | 0;
+        linkLine.x2 = clipos2.x | 0;
+        linkLine.y2 = clipos2.y | 0;
+
+        linkText.top = ((clipos1.y + clipos2.y) / 2) | 0;
+        linkText.left = ((clipos1.x + clipos2.x) / 2) | 0;
+        linkText.text = distance.toFixed(1);
+
+        if (distance < 10) {
+            linkLine.color = "green";
+            linkLine.alpha = 1.0;
+        } else if (distance < 13) {
+            linkLine.color = "yellow";
+            linkLine.alpha = 0.5;
+        } else {
+            linkLine.color = "red";
+            linkLine.alpha = 0.7;
+        }
+    }
+
+    updateOneDroneLinkLine(nodeidx1: number, nodeidx2: number) {
+        const nodes = this.nodeManager.nodeList;
+        const node1 = nodes[nodeidx1];
+        const node2 = nodes[nodeidx2];
+        const clientDrone1Pos = this.mainScene.worldVec3toClient(node1.getPosition());
+        const clientDrone2Pos = this.mainScene.worldVec3toClient(node2.getPosition());
+
+        const nodeDistance = BABYLON.Vector3.Distance(node1.getPosition(), node2.getPosition());
+
+        const linkLine = this.nodeGUIs[nodeidx1].links[nodeidx2 - nodeidx1 - 1].linkLine;
+        const linkText = this.nodeGUIs[nodeidx1].links[nodeidx2 - nodeidx1 - 1].linkText;
+
+        if (Math.abs(clientDrone1Pos.z) > 1.0 ||
+            Math.abs(clientDrone2Pos.z) > 1.0 ||
+            !this.drawLinks || nodeDistance > 15) {
+
+            linkLine.isVisible = false;
+            linkText.isVisible = false;
+            return;
+        } else {
+            linkLine.isVisible = true;
+            linkText.isVisible = true;
+        }
+
+        this.updateLink(linkLine, linkText, clientDrone1Pos, clientDrone2Pos, nodeDistance);
+    }
+
     updateDroneLinkLines() {
         const nodes = this.nodeManager.nodeList;
         for (let i = 0; i < nodes.length; i++) {
             for (let j = i + 1; j < nodes.length; j++) {
-                const node1 = nodes[i];
-                const node2 = nodes[j];
-                const clientDrone1Pos = this.mainScene.worldVec3toClient(node1.getPosition());
-                const clientDrone2Pos = this.mainScene.worldVec3toClient(node2.getPosition());
-
-                const nodeDistance = BABYLON.Vector3.Distance(node1.getPosition(), node2.getPosition());
-
                 if (this.nodeGUIs[i].links.length < j - i) {
                     for (let k = this.nodeGUIs[i].links.length; k < j - i; k++) {
-                        let link = new Object() as DroneLink;
-                        link.linkLine = new GUI.Line();
-                        link.linkLine.lineWidth = 1.0;
-                        link.linkLine.color = "white";
-                        this.advancedTexture.addControl(link.linkLine);
-
-                        link.linkText = new GUI.TextBlock();
-                        link.linkText.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-                        link.linkText.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-                        link.linkText.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-                        link.linkText.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-
-                        link.linkText.text = "Link";
-                        link.linkText.color = "white";
-                        link.linkText.height = "15px";
-                        link.linkText.alpha = 0.5;
-                        link.linkText.fontSize = 10;
-                        this.advancedTexture.addControl(link.linkText);
-
-                        this.nodeGUIs[i].links.push(link);
+                        this.nodeGUIs[i].links.push(this.createNewLink());
                     }
                 }
-
-
-                const linkLine = this.nodeGUIs[i].links[j - i - 1].linkLine;
-                const linkText = this.nodeGUIs[i].links[j - i - 1].linkText;
-
-                let shouldDraw = true;
-                if (Math.abs(clientDrone1Pos.z) > 1.0 || Math.abs(clientDrone2Pos.z) > 1.0)
-                    shouldDraw = false;
-                else
-                    shouldDraw = true;
-
-                if (!this.drawLinks)
-                    shouldDraw = false;
-                else
-                    shouldDraw = true;
-
-                if (!shouldDraw) {
-                    linkLine.isVisible = false;
-                    linkText.isVisible = false;
-                    continue;
-                } else {
-                    linkLine.isVisible = true;
-                    linkText.isVisible = true;
-                }
-
-                linkLine.x1 = clientDrone1Pos.x | 0;
-                linkLine.y1 = clientDrone1Pos.y | 0;
-                linkLine.x2 = clientDrone2Pos.x | 0;
-                linkLine.y2 = clientDrone2Pos.y | 0;
-
-                const TWEAK_LINE = 0;
-
-                if (TWEAK_LINE) {
-                    linkLine.x1 += i * 2 - nodes.length;
-                    linkLine.y1 += j * 2 - nodes.length;
-                    linkLine.x2 += i * 2 - nodes.length;
-                    linkLine.y2 += j * 2 - nodes.length;
-                }
-
-                linkText.top = ((clientDrone1Pos.y + clientDrone2Pos.y) / 2) | 0;
-                linkText.left = ((clientDrone1Pos.x + clientDrone2Pos.x) / 2) | 0;
-                linkText.text = nodeDistance.toFixed(1);
-
-
-                if (nodeDistance > 15) {
-                    linkLine.isVisible = false;
-                    linkText.isVisible = false;
-                } else {
-                    linkLine.isVisible = true;
-                    linkText.isVisible = true;
-                    if (nodeDistance < 10) {
-                        linkLine.color = "green";
-                        linkLine.alpha = 1.0;
-                    } else if (nodeDistance < 13) {
-                        linkLine.color = "yellow";
-                        linkLine.alpha = 0.5;
-                    } else {
-                        linkLine.color = "red";
-                        linkLine.alpha = 0.7;
-                    }
-                }
+                this.updateOneDroneLinkLine(i, j);
             }
         }
     }
