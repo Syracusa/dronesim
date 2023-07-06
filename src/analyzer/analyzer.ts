@@ -17,15 +17,24 @@ export class Analyzer {
         return button;
     }
 
+
+    static array2str(data : Uint8Array) {
+        let i, str = '';
+
+        for (i = 0; i < data.length; i++) {
+            str += '%' + ('0' + data[i].toString(16)).slice(-2);
+        }
+
+        return decodeURIComponent(str);
+    }
+
     openDummyStreamConfigWindow() {
         console.log(TestHTML);
+        const data = TestHTML.data as Uint8Array;
+        console.log(data.toString());
+
         const childWindow = window.open('', '');
-        fetch(TestHTML)
-            .then((res) => res.text())
-            .then((text) => {
-                childWindow.document.write(text);
-            })
-            .catch((e) => console.error(e));
+        childWindow.document.write(Analyzer.array2str(data));
     }
 
     getNodeInfoDiv(nodeId: number) {

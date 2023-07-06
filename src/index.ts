@@ -1,5 +1,6 @@
-import { app, BrowserWindow, MessageChannelMain, Tray, Menu } from 'electron';
-import TreeImg from './static/Tree.png';
+import { app, BrowserWindow, MessageChannelMain, Tray, Menu, nativeImage } from 'electron';
+
+import TreeImg from './static/Tree.png.resource';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -40,7 +41,7 @@ const createWindow = (): void => {
     console.log(ANALYZER_WEBPACK_ENTRY);
     analyzerWindow.loadURL(ANALYZER_WEBPACK_ENTRY);
     analyzerWindow.webContents.openDevTools();
-    analyzerWindow.hide();
+    // analyzerWindow.hide();
 
     /* ===== Worker Window ===== */
     const showWorker = true;
@@ -56,7 +57,7 @@ const createWindow = (): void => {
     }
     worker.loadURL(SOCKET_WORKER_WEBPACK_ENTRY);
     // worker.minimize();
-    worker.hide();
+    // worker.hide();
 
 
     /* ===== IPC Handler ===== */
@@ -75,30 +76,15 @@ const createWindow = (): void => {
     });
 
     /* ===== Tray ===== */
-    // console.log(path.resolve TreeImg);
-
-    // console.log('Start!');
-    // let tray;
-    // try {
-    //     tray = new Tray(TreeImg);
-    // }
-    // catch (e) {
-    //     console.log(e);
-    // }
-
-    // if (0) {
-    //     console.log('Generated!');
-    //     const contextMenu = Menu.buildFromTemplate([
-    //         { label: 'Item1', type: 'radio' },
-    //         { label: 'Item2', type: 'radio' },
-    //         { label: 'Item3', type: 'radio', checked: true },
-    //         { label: 'Item4', type: 'radio' }
-    //     ]);
-    //     tray.setToolTip('This is my application.');
-    //     tray.setContextMenu(contextMenu);
-
-    //     console.log('Done!');
-    // }
+    const tray = new Tray(nativeImage.createFromBuffer(Buffer.from(TreeImg)));
+    const contextMenu = Menu.buildFromTemplate([
+        { label: 'Item1', type: 'radio' },
+        { label: 'Item2', type: 'radio' },
+        { label: 'Item3', type: 'radio', checked: true },
+        { label: 'Item4', type: 'radio' }
+    ]);
+    tray.setToolTip('Tray test');
+    tray.setContextMenu(contextMenu);
 };
 
 app.on('ready', createWindow);
