@@ -76,7 +76,7 @@ export class Node {
         const VIEW_ROOTMESH = 0;
         if (VIEW_ROOTMESH)
             this.rootMesh.material.wireframe = true;
-        else 
+        else
             this.rootMesh.material.alpha = 0.0;
 
         this.rootMesh.addChild(Node.createPosHelpMesh());
@@ -109,7 +109,7 @@ export class Node {
             node: this
         } as NodeMetadata;
     }
-    
+
     initRoutingTable() {
         this.routingTable = [];
         for (let i = 0; i < 128; i++) {
@@ -244,14 +244,15 @@ export class NodeManager {
             'RouteLine',
             {
                 path: points,
-                // radius: 0.1,
                 radiusFunction: (i, distance) => {
-                    if (i == points.length - 1) {
-                        return 0.0;
-                    } else if (i == points.length - 2) {
-                        return 0.1;
-                    } else {
-                        return 0.06 * (i / points.length);
+                    switch (i) {
+                        case 0:
+                        case points.length - 1:
+                            return 0.0;
+                        case points.length - 2:
+                            return 0.1;
+                        default:
+                            return 0.06 * ((i + 1) / points.length);
                     }
                 },
                 instance: null,
@@ -309,9 +310,9 @@ export class NodeManager {
     afterLoad(newMeshes: BABYLON.AbstractMesh[]) {
         let droneMesh = newMeshes[0] as BABYLON.Mesh;
 
-        if (this.simplifyModel) 
+        if (this.simplifyModel)
             NodeManager.simplifyMeshes(newMeshes);
-        
+
         droneMesh.position = new BABYLON.Vector3(0, 0, 0);
         droneMesh.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
         droneMesh.rotation.y = Math.PI / 2;
@@ -361,7 +362,7 @@ export class NodeManager {
         }
 
         for (let i = 0; i < isIdxRelay.length; i++) {
-            if (!isIdxRelay[i]) 
+            if (!isIdxRelay[i])
                 edgeNodeIdxList.push(i);
         }
 
