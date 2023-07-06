@@ -31,8 +31,9 @@ const createWindow = (): void => {
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
     mainWindow.on('close', (event) => {
-        analyzerWindow.close();
-        worker.close();
+        analyzerWindow.destroy();
+        worker.destroy();
+        app.exit();
     });
 
     /* ===== Analyzer Window ===== */
@@ -43,6 +44,8 @@ const createWindow = (): void => {
             preload: ANALYZER_PRELOAD_WEBPACK_ENTRY,
         },
         autoHideMenuBar: true,
+        x: 10,
+        y: 10,
     });
 
     console.log(ANALYZER_WEBPACK_ENTRY);
@@ -63,6 +66,8 @@ const createWindow = (): void => {
             nodeIntegration: true
         },
         autoHideMenuBar: true,
+        x: 30,
+        y: 30,
     });
 
     worker.webContents.openDevTools();
