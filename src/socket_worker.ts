@@ -1,101 +1,154 @@
-import { app, BrowserWindow, ipcRenderer } from 'electron';
-
+import { ipcRenderer } from 'electron';
 import net from 'net';
 import stream from 'node:stream';
 
-console.log("socket worker started - socket_worker.ts");
-const ports: MessagePort[] = [];
+class SocketWorker {
+    jsonIo: JsonIoClient;
+    ports: MessagePort[] = [];
 
-/* Open TCP Connection to server */
-const streambuf = new stream.PassThrough();
-const client = new net.Socket();
-
-socketloop();
-
-function writeJsonOnSocket(json: any) {
-    let jsonstr = JSON.stringify(json);
-    let buf = Buffer.alloc(2);
-    buf.writeUInt16BE(jsonstr.length);
-    if (!client.closed) {
-        client.write(buf);
-        client.write(jsonstr);
-    } else {
-        console.log('TCP not connected');
-    }
-}
-
-function tcpOnConnect() {
-    streambuf.read();    /* Clean Streambuf */
-    console.log('TCP Connected');
-    ports.forEach(port => { port.postMessage({ type: "TcpOnConnect" }) });
-}
-
-async function socketloop() {
-    while (1) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        if (ports.length > 0) {
-            writeJsonOnSocket({ type: "Status" });
-        } else {
-            console.log('No port');
+    constructor() {
+        const that = this;
+        this.jsonIo = new JsonIoClient();
+        this.jsonIo.onJsonRecv = (json) => {
+            that.ports.forEach(port => port.postMessage(json));
+        };
+        this.jsonIo.onConnect = () => {
+            console.log('Server connected');
+            that.ports.forEach(port => { port.postMessage({ type: "TcpOnConnect" }) });
         }
 
-        if (client.closed) {
-            streambuf.read();    /* Clean Streambuf */
-            // client.removeAllListeners();
-            client.removeListener('connect', tcpOnConnect);
-            client.connect(12123, '127.0.0.1', tcpOnConnect);
-        }
+        ipcRenderer.on('new-client', (event) => {
+            const port = event.ports[0];
+            console.log('New socket listener.');
+            that.ports.push(port);
 
-    }
-}
-
-ipcRenderer.on('new-client', (event) => {
-    console.log(event.ports);
-    const port = event.ports[0];
-    ports.push(port);
-
-    port.postMessage('init');
-    port.onmessage = (event) => {
-        console.log('socket worker received message:', event.data)
-        writeJsonOnSocket(event.data);
-    }
-});
-
-client.setTimeout(3000);
-
-client.on('timeout', function () {
-    console.log('Socket Timeout');
-    streambuf.read();    /* Clean Streambuf */
-});
-
-client.on('data', function (data) {
-    streambuf.write(data);
-
-    while (streambuf.readableLength >= 2) {
-        let buf = streambuf.read(2);
-        let len = buf.readUInt16BE();
-        if (streambuf.readableLength >= len) {
-            try {
-                let json = JSON.parse(streambuf.read(len));
-                ports.forEach(port => port.postMessage(json));
+            port.postMessage('init');
+            port.onmessage = (event) => {
+                that.jsonIo.sendJsonTcp(event.data);
             }
-            catch (e) {
-                console.log('Fail to parse JSON');
+        });
+    }
+}
+
+class JsonIoClient {
+    tcpClient: TcpClient = new TcpClient();
+    streambuf: stream.PassThrough = new stream.PassThrough();
+
+    onJsonRecv: (json: any) => void = (d) => {
+        console.log('No JSON handler');
+    };
+    onConnect: () => void = () => {
+        console.log('JsonIoClient - Server connected');
+    };
+
+    constructor() {
+        const that = this;
+        this.tcpClient.onData = (data) => {
+            that.recvDataCallback(data);
+        };
+        this.tcpClient.onConnect = () => {
+            that.streambuf.read(); /* clear buffer */
+            that.onConnect();
+        }
+        this.tcpClient.start();
+    }
+
+    sendJsonTcp(json: any) {
+        const jsonstr = JSON.stringify(json);
+        const buf = Buffer.alloc(2);
+        buf.writeUInt16BE(jsonstr.length);
+
+        this.tcpClient.send(buf);
+        this.tcpClient.send(jsonstr);
+    }
+
+    recvDataCallback(data: Buffer) {
+        const streambuf = this.streambuf;
+        try {
+            streambuf.write(data);
+        } catch (e) {
+            console.log(data);
+            console.log('Fail to write to streambuf');
+        }
+        
+        while (streambuf.readableLength >= 2) {
+            let buf = streambuf.read(2);
+            let len = buf.readUInt16BE();
+            if (streambuf.readableLength >= len) {
+                try {
+                    let json = JSON.parse(streambuf.read(len));
+                    this.onJsonRecv(json);
+                }
+                catch (e) {
+                    console.log('Fail to parse JSON');
+                }
+            } else {
+                streambuf.unshift(buf);
+                break;
             }
-        } else {
-            streambuf.unshift(buf);
-            break;
         }
     }
-});
+}
 
-client.on('error', function (err) {
-    console.log('Socket Error: ' + err);
-    streambuf.read();    /* Clean Streambuf */
-});
+class TcpClient {
+    socket: net.Socket = this.createSocket();;
+    serverAddr: string = '127.0.0.1';
+    serverPort: number = 12123;
+    onData: (data: any) => void = (d) => {
+        console.log('No data handler');
+    };
+    onConnect: () => void = () => {
+        console.log('TcpClient - Server connected');
+    };
 
-client.on('close', function () {
-    console.log('Connection closed...');
-    client.destroy();
-    streambuf.read();    /* Clean Streambuf */
-});
+    constructor(serverAddr?: string, serverPort?: number) {
+        if (serverAddr && serverPort) {
+            this.serverAddr = serverAddr;
+            this.serverPort = serverPort;
+        }
+    }
+
+    createSocket() {
+        const that = this;
+        const socket = new net.Socket();
+        socket.setTimeout(3000);
+
+        socket.on('timeout', function () {
+            console.log('Socket Timeout');
+        });
+
+        socket.on('data', (data) => {
+            that.onData(data);
+        });
+
+        socket.on('error', function (err) {
+            console.log('Socket Error: ' + err);
+        });
+
+        socket.on('close', function () {
+            console.log('Connection closed...');
+        });
+
+        return socket;
+    }
+
+    send(data: Buffer | string) {
+        if (!this.socket.closed)
+            this.socket.write(data);
+        else
+            console.log('TCP not connected');
+    }
+
+    async start() {
+        const socket = this.socket;
+        while (1) {
+            if (socket.closed) {
+                socket.removeListener('connect', this.onConnect);
+                socket.connect(12123, '127.0.0.1', this.onConnect);
+            }
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+    }
+}
+
+new SocketWorker();
