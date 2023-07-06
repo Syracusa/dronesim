@@ -14,7 +14,7 @@ interface NodeGUI {
 }
 
 export class GuiLayer {
-    /* Dependancy */
+    /* Dependency */
     mainScene: MainScene;
     nodeManager: NodeManager;
 
@@ -67,12 +67,12 @@ export class GuiLayer {
         this.updateDroneLinkLines();
     }
 
-    createNewLink() {
+    static createNewLink(advancedTexture: GUI.AdvancedDynamicTexture) {
         const link = new Object() as DroneLink;
         link.linkLine = new GUI.Line();
         link.linkLine.lineWidth = 1.0;
         link.linkLine.color = "white";
-        this.advancedTexture.addControl(link.linkLine);
+        advancedTexture.addControl(link.linkLine);
 
         link.linkText = new GUI.TextBlock();
         link.linkText.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -85,7 +85,7 @@ export class GuiLayer {
         link.linkText.height = "15px";
         link.linkText.alpha = 0.5;
         link.linkText.fontSize = 10;
-        this.advancedTexture.addControl(link.linkText);
+        advancedTexture.addControl(link.linkText);
 
         return link;
     }
@@ -149,7 +149,7 @@ export class GuiLayer {
             for (let j = i + 1; j < nodes.length; j++) {
                 if (this.nodeGUIs[i].links.length < j - i) {
                     for (let k = this.nodeGUIs[i].links.length; k < j - i; k++) {
-                        this.nodeGUIs[i].links.push(this.createNewLink());
+                        this.nodeGUIs[i].links.push(GuiLayer.createNewLink(this.advancedTexture));
                     }
                 }
                 this.updateOneDroneLinkLine(i, j);
@@ -190,37 +190,47 @@ export class GuiLayer {
         this.drawLinks = false;
     }
 
-    updateDroneButtons() {
+    createNewDroneButton(buttonIdx: number) {
         const that = this;
+        let droneGUI: NodeGUI = new Object() as NodeGUI;
+        droneGUI.links = [];
+
+        let card = GUI.Button.CreateSimpleButton("but " + buttonIdx, "Drone " + buttonIdx);
+        card.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+        card.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+        card.color = "black";
+        card.height = "12px";
+        card.width = "45px";
+        card.cornerRadius = 3;
+        card.background = "yellow";
+        card.fontSize = 10;
+        card.alpha = 0.5;
+        card.zIndex = 5;
+        card.onPointerUpObservable.add(() => { that.onClickDroneButton(buttonIdx); });
+
+        this.advancedTexture.addControl(card);
+        droneGUI.nameCard = card;
+        this.nodeGUIs.push(droneGUI);
+    }
+
+    createNewDroneButtonsIfNeeded() {
         const nodes = this.nodeManager.nodeList;
 
         if (this.nodeGUIs.length < nodes.length) {
             for (let i = this.nodeGUIs.length; i < nodes.length; i++) {
-                let droneGUI: NodeGUI = new Object() as NodeGUI;
-                droneGUI.links = [];
-
-                let card = GUI.Button.CreateSimpleButton("but " + i, "Drone " + i);
-                card.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-                card.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-                card.color = "black";
-                card.height = "12px";
-                card.width = "45px";
-                card.cornerRadius = 3;
-                card.background = "yellow";
-                card.fontSize = 10;
-                card.alpha = 0.5;
-                card.zIndex = 5;
-                card.onPointerUpObservable.add(() => { that.onClickDroneButton(i); });
-
-                this.advancedTexture.addControl(card);
-                droneGUI.nameCard = card;
-                this.nodeGUIs.push(droneGUI);
+                this.createNewDroneButton(i);
             }
         }
+    }
 
+    updateDroneButtons() {
+        this.createNewDroneButtonsIfNeeded();
+
+        const nodes = this.nodeManager.nodeList;
         for (let i = 0; i < nodes.length; i++) {
             const oneNode = nodes[i];
             const clientDronePos = this.mainScene.worldVec3toClient(oneNode.getPosition());
+
             if (Math.abs(clientDronePos.z) > 1.0) {
                 this.nodeGUIs[i].nameCard.isVisible = false;
                 continue;
