@@ -5,17 +5,29 @@ import stream from 'node:stream';
 
 console.log("socket worker started - socket_worker.ts");
 const ports: MessagePort[] = [];
-let tcpConnected = false;
-let waitConnect = false;
+
+/* Open TCP Connection to server */
+const streambuf = new stream.PassThrough();
+const client = new net.Socket();
+
+socketloop();
 
 function writeJsonOnSocket(json: any) {
     let jsonstr = JSON.stringify(json);
     let buf = Buffer.alloc(2);
     buf.writeUInt16BE(jsonstr.length);
-    if (tcpConnected) {
+    if (!client.closed) {
         client.write(buf);
         client.write(jsonstr);
+    } else {
+        console.log('TCP not connected');
     }
+}
+
+function tcpOnConnect() {
+    streambuf.read();    /* Clean Streambuf */
+    console.log('TCP Connected');
+    ports.forEach(port => { port.postMessage({ type: "TcpOnConnect" }) });
 }
 
 async function socketloop() {
@@ -27,17 +39,13 @@ async function socketloop() {
             console.log('No port');
         }
 
-        if (!tcpConnected && !waitConnect) {
-            waitConnect = true;
-            client.connect(12123, '127.0.0.1', function () {
-                streambuf.read();    /* Clean Streambuf */
-                console.log('TCP Connected');
-                ports.forEach(port => { port.postMessage({ type: "TcpOnConnect" }) });
-
-                tcpConnected = true;
-                waitConnect = false;
-            });
+        if (client.closed) {
+            streambuf.read();    /* Clean Streambuf */
+            // client.removeAllListeners();
+            client.removeListener('connect', tcpOnConnect);
+            client.connect(12123, '127.0.0.1', tcpOnConnect);
         }
+
     }
 }
 
@@ -53,27 +61,10 @@ ipcRenderer.on('new-client', (event) => {
     }
 });
 
-/* Open TCP Connection to server */
-const streambuf = new stream.PassThrough();
-const client = new net.Socket();
-
-// if (!waitConnect) {
-//     client.connect(12123, '127.0.0.1', function () {
-//         console.log('TCP Connected');
-//         ports.forEach(port => port.postMessage({ type: "TcpOnConnect" }));
-//         tcpConnected = true;
-//     });
-//     waitConnect = true;
-// }
-
 client.setTimeout(3000);
 
 client.on('timeout', function () {
     console.log('Socket Timeout');
-    client.end();
-    tcpConnected = false;
-    waitConnect = false;
-
     streambuf.read();    /* Clean Streambuf */
 });
 
@@ -91,7 +82,6 @@ client.on('data', function (data) {
             catch (e) {
                 console.log('Fail to parse JSON');
             }
-
         } else {
             streambuf.unshift(buf);
             break;
@@ -101,16 +91,11 @@ client.on('data', function (data) {
 
 client.on('error', function (err) {
     console.log('Socket Error: ' + err);
-    tcpConnected = false;
-    waitConnect = false;
     streambuf.read();    /* Clean Streambuf */
 });
 
 client.on('close', function () {
-    tcpConnected = false;
-    console.log('Connection closed... Retry');
-    waitConnect = false;
+    console.log('Connection closed...');
+    client.destroy();
     streambuf.read();    /* Clean Streambuf */
 });
-
-socketloop();
