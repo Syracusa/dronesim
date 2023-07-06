@@ -26,9 +26,10 @@ export class GuiLayer {
     updateIntervalMs = 20;
     advancedTexture: GUI.AdvancedDynamicTexture;
 
+    menuViewToggleBotton: GUI.Button;
     menuButtons: GUI.Button[] = [];
     menuOpened: boolean = true;
-    menuButtonOffset = 0;
+    menuButtonOffset = 12;
 
     drawLinks = true;
 
@@ -316,17 +317,8 @@ export class GuiLayer {
         this.menuButtonOffset += 12;
     }
 
-    makeControls() {
-        const that = this;
-        const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        this.advancedTexture = advancedTexture;
-
-        // Style
-        let style = advancedTexture.createStyle();
-        style.fontSize = 3;
-        style.fontStyle = "bold";
-
-        let infoPanel = new GUI.TextBlock();
+    static createInfoPanel(advancedTexture: GUI.AdvancedDynamicTexture) {
+        const infoPanel = new GUI.TextBlock();
         infoPanel.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
         infoPanel.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
         infoPanel.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -337,23 +329,25 @@ export class GuiLayer {
         infoPanel.fontSize = 10;
         advancedTexture.addControl(infoPanel);
 
-        this.infoPanel = infoPanel;
+        return infoPanel;
+    }
 
-        let nodeInfo = new GUI.TextBlock();
+    static createNodeInfoPanel(advancedTexture: GUI.AdvancedDynamicTexture) {
+        const nodeInfo = new GUI.TextBlock();
         nodeInfo.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
         nodeInfo.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
         nodeInfo.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
         nodeInfo.textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
         nodeInfo.text = "No node selected";
         nodeInfo.color = "white";
-        // nodeInfo.height = "300px";
         nodeInfo.resizeToFit = true;
         nodeInfo.fontSize = 10;
         advancedTexture.addControl(nodeInfo);
+        return nodeInfo;
+    }
 
-        this.nodeInfo = nodeInfo;
-
-        let dragIndicator = new GUI.Rectangle();
+    static createDragIndicator(advancedTexture: GUI.AdvancedDynamicTexture) {
+        const dragIndicator = new GUI.Rectangle();
         dragIndicator.width = "1px";
         dragIndicator.height = "1px";
         dragIndicator.color = "white";
@@ -365,9 +359,10 @@ export class GuiLayer {
         dragIndicator.isPointerBlocker = false;
         dragIndicator.isVisible = true;
         advancedTexture.addControl(dragIndicator);
-        this.dragIndicator = dragIndicator;
+        return dragIndicator;
+    }
 
-
+    static createMenuViewToggleButton(advancedTexture: GUI.AdvancedDynamicTexture) {
         const menuViewToggleButton = GUI.Button.CreateSimpleButton("but", "Menu");
         menuViewToggleButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
         menuViewToggleButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
@@ -379,12 +374,28 @@ export class GuiLayer {
         menuViewToggleButton.fontSize = 10;
         menuViewToggleButton.alpha = 1.0
         menuViewToggleButton.zIndex = 5;
-        menuViewToggleButton.onPointerUpObservable.add(function () {
+
+        advancedTexture.addControl(menuViewToggleButton);
+        return menuViewToggleButton;
+    }
+
+    makeControls() {
+        const that = this;
+        const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+        this.advancedTexture = advancedTexture;
+
+        // Style
+        const style = advancedTexture.createStyle();
+        style.fontSize = 3;
+        style.fontStyle = "bold";
+
+        this.infoPanel = GuiLayer.createInfoPanel(advancedTexture);
+        this.nodeInfo = GuiLayer.createNodeInfoPanel(advancedTexture);
+        this.dragIndicator = GuiLayer.createDragIndicator(advancedTexture);
+        this.menuViewToggleBotton = GuiLayer.createMenuViewToggleButton(advancedTexture);
+        this.menuViewToggleBotton.onPointerUpObservable.add(function () {
             that.menuViewToggleButtonClicked();
         });
-        advancedTexture.addControl(menuViewToggleButton);
-
-        this.menuButtonOffset = 12;
 
         this.createMenuButton("Save", function () {
             that.mainScene.saveScene();
@@ -398,7 +409,5 @@ export class GuiLayer {
             that.drawLinks = !that.drawLinks;
             that.mainScene.dirty = true;
         });
-
-
     }
 }
