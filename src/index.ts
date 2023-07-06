@@ -24,6 +24,7 @@ const createWindow = (): void => {
         webPreferences: {
             preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
         },
+        autoHideMenuBar: true,
     });
 
     mainWindow.webContents.openDevTools();
@@ -41,6 +42,7 @@ const createWindow = (): void => {
         webPreferences: {
             preload: ANALYZER_PRELOAD_WEBPACK_ENTRY,
         },
+        autoHideMenuBar: true,
     });
 
     console.log(ANALYZER_WEBPACK_ENTRY);
@@ -60,7 +62,8 @@ const createWindow = (): void => {
         webPreferences: {
             contextIsolation: false,
             nodeIntegration: true
-        }
+        },
+        autoHideMenuBar: true,
     });
     if (showWorker) {
         worker.webContents.openDevTools();
