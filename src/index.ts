@@ -1,6 +1,5 @@
-import { app, BrowserWindow, MessageChannelMain, Tray, Menu, nativeImage } from 'electron';
-
-import TreeImg from './static/Tree.png.resource';
+import { app, BrowserWindow, MessageChannelMain, Tray, Menu, nativeImage, NativeImage } from 'electron';
+import IconResource from './static/icon.resource';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -13,6 +12,7 @@ declare const ANALYZER_PRELOAD_WEBPACK_ENTRY: string;
 if (require('electron-squirrel-startup')) {
     app.quit();
 }
+
 
 console.log("main worker started");
 const createWindow = (): void => {
@@ -96,7 +96,19 @@ const createWindow = (): void => {
     });
 
     /* ===== Tray ===== */
-    const tray = new Tray(nativeImage.createFromBuffer(Buffer.from(TreeImg)));
+
+    const array2str = (data: Uint8Array) => {
+        let i, str = '';
+        for (i = 0; i < data.length; i++)
+            str += '%' + ('0' + data[i].toString(16)).slice(-2);
+
+        return decodeURIComponent(str);
+    }
+    const dataUrl = array2str(IconResource.data as Uint8Array);
+    console.log(dataUrl);
+    const icon = nativeImage.createFromDataURL(dataUrl);
+
+    const tray = new Tray(icon)
     const contextMenu = Menu.buildFromTemplate([
         { label: 'Show socket debug panel', type: 'normal', click: () => { worker.show(); } },
         { label: 'Show analyzer', type: 'normal', click: () => { analyzerWindow.show(); } },
