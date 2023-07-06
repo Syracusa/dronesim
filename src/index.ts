@@ -20,7 +20,7 @@ const createWindow = (): void => {
     /* ===== Main Window ===== */
     const mainWindow = new BrowserWindow({
         height: 600,
-        width: 800,
+        width: 1280,
         webPreferences: {
             preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
         },
@@ -29,10 +29,15 @@ const createWindow = (): void => {
     mainWindow.webContents.openDevTools();
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
+    mainWindow.on('close', (event) => {
+        analyzerWindow.close();
+        worker.close();
+    });
+
     /* ===== Analyzer Window ===== */
     const analyzerWindow = new BrowserWindow({
         height: 600,
-        width: 800,
+        width: 1280,
         webPreferences: {
             preload: ANALYZER_PRELOAD_WEBPACK_ENTRY,
         },
@@ -41,7 +46,12 @@ const createWindow = (): void => {
     console.log(ANALYZER_WEBPACK_ENTRY);
     analyzerWindow.loadURL(ANALYZER_WEBPACK_ENTRY);
     analyzerWindow.webContents.openDevTools();
-    // analyzerWindow.hide();
+    analyzerWindow.hide();
+
+    analyzerWindow.on('close', (event) => {
+        event.preventDefault();
+        analyzerWindow.hide();
+    });
 
     /* ===== Worker Window ===== */
     const showWorker = true;
@@ -56,9 +66,12 @@ const createWindow = (): void => {
         worker.webContents.openDevTools();
     }
     worker.loadURL(SOCKET_WORKER_WEBPACK_ENTRY);
-    // worker.minimize();
-    // worker.hide();
+    worker.hide();
 
+    worker.on('close', (event) => {
+        event.preventDefault();
+        worker.hide();
+    });
 
     /* ===== IPC Handler ===== */
     mainWindow.webContents.mainFrame.ipc.on('request-worker-channel', (event) => {
@@ -67,6 +80,7 @@ const createWindow = (): void => {
         worker.webContents.postMessage('new-client', null, [port1]);
         event.senderFrame.postMessage('provide-worker-channel', null, [port2]);
     });
+
 
     analyzerWindow.webContents.mainFrame.ipc.on('request-worker-channel', (event) => {
         console.log('Analyzer port request');
@@ -78,10 +92,8 @@ const createWindow = (): void => {
     /* ===== Tray ===== */
     const tray = new Tray(nativeImage.createFromBuffer(Buffer.from(TreeImg)));
     const contextMenu = Menu.buildFromTemplate([
-        { label: 'Item1', type: 'radio' },
-        { label: 'Item2', type: 'radio' },
-        { label: 'Item3', type: 'radio', checked: true },
-        { label: 'Item4', type: 'radio' }
+        { label: 'Show socket debug panel', type: 'normal', click: () => { worker.show(); } },
+        { label: 'Show analyzer', type: 'normal', click: () => { analyzerWindow.show(); } },
     ]);
     tray.setToolTip('Tray test');
     tray.setContextMenu(contextMenu);
@@ -90,6 +102,7 @@ const createWindow = (): void => {
 app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
+    console.log('window-all-closed');
     if (process.platform !== 'darwin') {
         app.quit();
     }
