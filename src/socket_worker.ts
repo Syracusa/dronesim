@@ -27,6 +27,8 @@ class SocketWorker {
                 that.jsonIo.sendJsonTcp(event.data);
             }
         });
+
+        this.jsonIo.start();
     }
 }
 
@@ -50,6 +52,9 @@ class JsonIoClient {
             that.streambuf.read(); /* clear buffer */
             that.onConnect();
         }
+    }
+
+    start(){
         this.tcpClient.start();
     }
 
@@ -70,7 +75,7 @@ class JsonIoClient {
             console.log(data);
             console.log('Fail to write to streambuf');
         }
-        
+
         while (streambuf.readableLength >= 2) {
             let buf = streambuf.read(2);
             let len = buf.readUInt16BE();
