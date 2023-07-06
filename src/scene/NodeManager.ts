@@ -2,7 +2,6 @@ import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import "@babylonjs/loaders/glTF";
 
 import { MainScene } from './MainScene';
-import { GuiLayer } from "./GuiLayer";
 import DroneModel from '../static/drone.glb';
 
 export interface RouteEntry {
@@ -13,9 +12,23 @@ export interface RouteEntry {
 export interface NodeMetadata {
     type: 'node';
     draggable: true;
-    // dirty: boolean;
     node: Node;
 }
+
+const HEX_COLORS = [
+    "#FF0000", "#FFC0CB", "#3A3B3C", "#4B0150", "#151B54", "#1E90FF", "#EB5406", "#52595D",
+    "#F8F0E3", "#7FFFD4", "#728FCE", "#357EC7", "#00BFFF", "#808000", "#FFDB58", "#16F529",
+    "#43C6DB", "#E67451", "#000000", "#ADD8E6", "#800080", "#8B8000", "#ECC5C0", "#008000",
+    "#0C090A", "#AA6C39", "#00008B", "#36013F", "#454545", "#00FF00", "#2B65EC", "#0000FF",
+    "#87CEEB", "#FDD017", "#6F4E37", "#34A56F", "#5EFB6E", "#686A6C", "#00FFFF", "#D4AF37",
+    "#006400", "#A52A2A", "#800000", "#C0C0C0", "#8B0000", "#FFDF00", "#666362", "#FEFCFF",
+    "#FFD700", "#FFFF00", "#D3D3D3", "#BCC6CC", "#98AFC7", "#1589FF", "#F62817", "#F70D1A",
+    "#F8F6F0", "#4863A0", "#FFCE44", "#966F33", "#7E3517", "#123456", "#000080", "#008080",
+    "#FAAFBA", "#625D5D", "#E5E4E2", "#F5F5DC", "#F6BE00", "#E75480", "#0041C2", "#FFFDD0",
+    "#808080", "#A9A9A9", "#9D00FF", "#FF6700", "#368BC1", "#FFFFFF", "#29465B", "#C2DFFF",
+    "#B87333", "#CD7F32", "#E41B17", "#95B9C7", "#FFA500", "#93917C", "#E1D9D1", "#90EE90",
+    "#FFE87C", "#1569C7", "#F535AA", "#DADBDD", "#FFCCCB", "#FF00FF",
+];
 
 export class Node {
     rootMesh: BABYLON.Mesh;
@@ -59,8 +72,12 @@ export class Node {
         this.rootMesh.position = new BABYLON.Vector3(0, 0, 0);
 
         this.rootMesh.material = new BABYLON.StandardMaterial("mat", scene);
-        // this.mesh.material.wireframe = true;
-        this.rootMesh.material.alpha = 0.0;
+
+        const VIEW_ROOTMESH = 0;
+        if (VIEW_ROOTMESH)
+            this.rootMesh.material.wireframe = true;
+        else 
+            this.rootMesh.material.alpha = 0.0;
 
         this.rootMesh.addChild(Node.createPosHelpMesh());
 
@@ -92,18 +109,18 @@ export class Node {
             node: this
         } as NodeMetadata;
     }
-
-    static getNodeFromMesh(mesh: BABYLON.Mesh) {
-        const metadata = mesh.metadata as NodeMetadata;
-        return metadata.node;
-    }
-
+    
     initRoutingTable() {
         this.routingTable = [];
         for (let i = 0; i < 128; i++) {
             let entry = { hopCount: 0, path: [] } as RouteEntry;
             this.routingTable.push(entry);
         }
+    }
+
+    static getNodeFromMesh(mesh: BABYLON.Mesh) {
+        const metadata = mesh.metadata as NodeMetadata;
+        return metadata.node;
     }
 
     static createPosHelpMesh() {
@@ -165,25 +182,22 @@ export class NodeManager {
         this.getEdgeNodeIdxList(rootNodeIdx).forEach((i) => {
             this.drawNodePath([rootNodeIdx].concat(rootNode.routingTable[i].path),
                 new BABYLON.Vector3(0, 0.03 * i - 0.2, 0),
-                BABYLON.Color3.FromHexString(GuiLayer.beautifulColors[i])
+                BABYLON.Color3.FromHexString(HEX_COLORS[i])
             );
         });
     }
 
     drawNodePath(path: number[], adjustVec?: BABYLON.Vector3, color?: BABYLON.Color3) {
-        if (path.length < 2) {
+        if (path.length < 2)
             return;
-        }
 
-        let points = [];
-        if (!adjustVec) {
+        const points = [];
+        if (!adjustVec)
             adjustVec = new BABYLON.Vector3(0, 0.2, 0);
-        }
 
         for (let i = 0; i < path.length; i++) {
             const dronepos = this.nodeList[path[i]].clonePosition();
-
-            let dir = null as BABYLON.Vector3;
+            let dir: BABYLON.Vector3 = null;
 
             if (i != 0) {
                 const privDronepos = this.nodeList[path[i - 1]].clonePosition();
@@ -200,7 +214,7 @@ export class NodeManager {
             }
         }
 
-        let interpolatedPoints = [];
+        let interpolatedPoints: BABYLON.Vector3[];
         if (path.length > 2) {
             const catmullRom = BABYLON.Curve3.CreateCatmullRomSpline(points, 10, false);
             interpolatedPoints = catmullRom.getPoints();
@@ -262,7 +276,6 @@ export class NodeManager {
             stdmat.alpha = 0.8;
         }
         tube.material = stdmat;
-
         this.pathMeshes.push(tube);
     }
 
@@ -272,9 +285,8 @@ export class NodeManager {
     }
 
     unfocusAllNodes() {
-        for (let i = 0; i < this.focusedNodeList.length; i++) {
+        for (let i = 0; i < this.focusedNodeList.length; i++)
             this.focusedNodeList[i].unselect();
-        }
         this.focusedNodeList = [];
     }
 
@@ -297,10 +309,9 @@ export class NodeManager {
     afterLoad(newMeshes: BABYLON.AbstractMesh[]) {
         let droneMesh = newMeshes[0] as BABYLON.Mesh;
 
-        if (this.simplifyModel) {
+        if (this.simplifyModel) 
             NodeManager.simplifyMeshes(newMeshes);
-        }
-
+        
         droneMesh.position = new BABYLON.Vector3(0, 0, 0);
         droneMesh.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
         droneMesh.rotation.y = Math.PI / 2;
@@ -350,12 +361,10 @@ export class NodeManager {
         }
 
         for (let i = 0; i < isIdxRelay.length; i++) {
-            if (!isIdxRelay[i]) {
+            if (!isIdxRelay[i]) 
                 edgeNodeIdxList.push(i);
-            }
         }
 
         return edgeNodeIdxList;
     }
-
 }
