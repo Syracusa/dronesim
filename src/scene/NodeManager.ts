@@ -171,7 +171,7 @@ export class NodeManager {
 
     disposePathMeshes() {
         for (let i = 0; i < this.pathMeshes.length; i++) {
-            this.pathMeshes[i].dispose();
+            this.pathMeshes[i].dispose(false, true);
         }
         this.pathMeshes = [];
     }

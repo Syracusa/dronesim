@@ -31,7 +31,7 @@ export class Terrain {
     /* Dispose terrain meshes */
     disposeTerrain() {
         this.tiles.forEach((mesh) => {
-            mesh.dispose();
+            mesh.dispose(false, true);
         });
         this.tiles = [];
     }
