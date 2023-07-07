@@ -115,6 +115,7 @@ class TcpClient {
 
         socket.on('timeout', function () {
             console.log('Socket Timeout');
+            socket.destroy();
         });
 
         socket.on('data', (data) => {
@@ -143,6 +144,7 @@ class TcpClient {
         const socket = this.socket;
         while (1) {
             if (socket.closed) {
+                console.log('Try connect...');
                 socket.removeListener('connect', this.onConnect);
                 socket.connect(12123, '127.0.0.1', this.onConnect);
             }
