@@ -48,7 +48,6 @@ export class ServerConnection {
                     this.shouldStart = true;
                     break;
                 case "TRx":
-                    // console.log(data);
                     {
                         const node = this.nodeManager.nodeList[data.node];
                         node.txBytes = data.tx;
@@ -57,10 +56,8 @@ export class ServerConnection {
                     }
                     break;
                 case "Status":
-                    // console.log(data);
                     break;
                 case "Route":
-                    // console.log(data);
                     {
                         const node = this.nodeManager.nodeList[data.node];
                         const routeEntry = node.routingTable[data.target];

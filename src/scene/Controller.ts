@@ -63,9 +63,8 @@ export class Controller {
                     meta.onMouseDown();
                 if (meta.draggable) {
                     this.shiftHelper.setTarget(mesh as BABYLON.Mesh);
-                } else {
-                    console.log('Not draggable');
                 }
+
                 if (meta.type) {
                     if (meta.type == 'terrain') {
                         this.shiftHelper.releaseTarget();
@@ -75,7 +74,6 @@ export class Controller {
                         const node: Node = Node.getNodeFromMesh(mesh);
                         this.nodeManager.focusNode(node);
                     }
-                    console.log(meta.type);
                 }
             } else {
                 console.log('No metadata');

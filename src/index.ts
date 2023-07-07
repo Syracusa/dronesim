@@ -48,7 +48,6 @@ const createWindow = (): void => {
         y: 10,
     });
 
-    console.log(ANALYZER_WEBPACK_ENTRY);
     analyzerWindow.loadURL(ANALYZER_WEBPACK_ENTRY);
     analyzerWindow.webContents.openDevTools();
     analyzerWindow.hide();
@@ -105,7 +104,6 @@ const createWindow = (): void => {
         return decodeURIComponent(str);
     }
     const dataUrl = array2str(IconResource.data as Uint8Array);
-    console.log(dataUrl);
     const icon = nativeImage.createFromDataURL(dataUrl);
 
     const tray = new Tray(icon)
