@@ -9,12 +9,15 @@ import SkyboxPx from '../static/skybox/skybox_px.jpg';
 import SkyboxPy from '../static/skybox/skybox_py.jpg';
 import SkyboxPz from '../static/skybox/skybox_pz.jpg';
 
+import TreeModel from '../static/Tree.glb';
+
 export class Terrain {
     heights: number[][] = [];
     tiles: BABYLON.Mesh[] = [];
     mapsize = 200;
     mainScene: MainScene;
     mat;
+    treeMesh: BABYLON.Mesh;
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
@@ -26,6 +29,8 @@ export class Terrain {
 
         this.createOcean();
         this.createSkyBox();
+
+        this.loadTreeModel();
     }
 
     /* Dispose terrain meshes */
@@ -161,4 +166,60 @@ export class Terrain {
             }
         }
     }
+
+    afterLoad(newMeshes: BABYLON.AbstractMesh[]) {
+        console.log("Tree Loaded");
+        let treeMesh = newMeshes[0] as BABYLON.Mesh;
+
+        treeMesh.position = new BABYLON.Vector3(0, 0, 0);
+        treeMesh.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
+        treeMesh.rotation.y = Math.PI / 2;
+        treeMesh.rotation.x = Math.PI / 2;
+        treeMesh.rotation.z = Math.PI / 2;
+
+        this.treeMesh = treeMesh;
+
+        for (let i = 0; i < 10; i++) {
+            const rootMesh = BABYLON.MeshBuilder.CreateSphere("sphere",
+            { diameter: 6, segments: 4 }, this.mainScene.scene);
+
+            rootMesh.material = new BABYLON.StandardMaterial("mat", this.mainScene.scene);
+
+            const VIEW_ROOTMESH = 1;
+            if (VIEW_ROOTMESH)
+                rootMesh.material.wireframe = true;
+            else
+                rootMesh.material.alpha = 0.0;
+
+            const initPos = new BABYLON.Vector3(100, 9, 100 + i * 10);
+            let childMeshes = treeMesh.getChildMeshes();
+
+            for (let meshidx = 0; meshidx < childMeshes.length; meshidx++) {
+                const child = childMeshes[meshidx] as BABYLON.Mesh;
+                const instancedChild = child.createInstance("treechild");
+                instancedChild.parent = rootMesh;
+
+                instancedChild.scaling = child.absoluteScaling.clone();
+                instancedChild.position = child.absolutePosition.clone();
+                instancedChild.rotation = child.absoluteRotationQuaternion.toEulerAngles();
+
+                this.mainScene.shadowGenerator.getShadowMap().renderList.push(instancedChild);
+            }
+            rootMesh.position = initPos;
+        }
+    }
+
+    loadTreeModel() {
+        const that = this;
+
+        BABYLON.SceneLoader.ImportMesh("",
+            TreeModel.replace(TreeModel.split('\\').pop().split('/').pop(), ''),
+            TreeModel.split('\\').pop().split('/').pop(),
+            this.mainScene.scene,
+            function (newMeshes) {
+                that.afterLoad(newMeshes);
+            }
+        );
+    }
+
 }
