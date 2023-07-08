@@ -187,7 +187,8 @@ export class Controller {
         const sphere = BABYLON.MeshBuilder.CreateSphere("sphere",
             { diameter: 1, segments: 16 },
             this.mainScene.scene);
-        sphere.position = new BABYLON.Vector3(90, 10, 90);
+        // sphere.position = new BABYLON.Vector3(90, 10, 90);
+        sphere.position = new BABYLON.Vector3(0, 10, 0);
         sphere.isVisible = false;
         this.lookTarget = sphere;
     }
@@ -209,6 +210,7 @@ export class Controller {
         camera.cameraAcceleration = 0.05;
         camera.maxCameraSpeed = 10;
         camera.lockedTarget = this.lookTarget;
+        camera.setCameraRigMode(BABYLON.Camera.RIG_MODE_NONE, { interaxialDistance: 0.1 });
 
         // camera.attachControl(true);
         // camera.inputs.clear();
@@ -258,8 +260,8 @@ export class Controller {
 
         if (this.isKeyPressed("4")) {
             this.camera.fov += 0.002 * delta;
-            if (this.camera.fov > 3)
-                this.camera.fov = 3;
+            if (this.camera.fov > 2.0)
+                this.camera.fov = 2.0;
         }
 
         if (this.isKeyPressed("ArrowUp"))

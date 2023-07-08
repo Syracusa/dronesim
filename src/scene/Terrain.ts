@@ -21,14 +21,15 @@ export class Terrain {
     mainScene: MainScene;
     mat;
     treeMeshParts: BABYLON.Mesh[] = [];
-    treeScale = 0.2;
+    treeScale = 0.3;
+    modelScale = new BABYLON.Vector3(0.232, 1, 0.232);
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
         this.mat = this.loadStdMat();
 
         this.initHeights();
-        this.randomTerrainHeight(1000);
+        this.randomTerrainHeight(100);
         this.drawTerrain();
 
         this.createOcean();
@@ -172,56 +173,29 @@ export class Terrain {
         }
     }
 
-    thinInstanceTest() {
-        for (let i = 0; i < 10; i++) {
-            const matrix = BABYLON.Matrix.Translation(0, 0, i * 20);
-            this.treeMeshParts.forEach((mesh) => {
-                mesh.thinInstanceAdd(matrix);
-            });
-            // this.treeMeshParts[0].thinInstanceAdd(matrix);
-        }
-    }
+    createTrees() {
+        console.log(this.treeMeshParts[0]);
+        for (let i = 0; i < this.mapsize; i ++) {
+            for (let j = 0; j < this.mapsize; j ++) {
+                if (this.heights[i][j] < 0.2)
+                    continue;
+                if (Math.random() > 0.04)
+                    continue;
 
-    makeTrees() {
-        let tscale = 4;
-        console.log(this.treeMeshParts[0].rawBoundingInfo);
-        for (let i = 0; i < this.mapsize; i += tscale) {
-            for (let j = 0; j < this.mapsize; j += tscale) {
-                
-                let fector = 22;
-                
                 const matrix = BABYLON.Matrix.Translation(
-                    fector * i, 5.01 * this.heights[i][j], fector * j * -1);
+                    (1 / this.modelScale.x / this.treeScale) * i,
+                    (1 / this.modelScale.y / this.treeScale) * this.heights[i][j] - 0.1,
+                    (1 / this.modelScale.z / this.treeScale) * j * -1);
                 this.treeMeshParts.forEach((part) => {
                     part.thinInstanceAdd(matrix);
                 });
             }
         }
-        // for (let i = 0; i < this.mapsize; i++) {
-        //     for (let j = 0; j < this.mapsize; j++) {
-        //         if (Math.random() > 0.9 && this.heights[i][j] > 0.1) {
-
-        //             let height = 0;
-        //             if (i > j)
-        //                 height = 5;
-        //             else 
-        //                 height = 10;
-
-        //             const matrix = BABYLON.Matrix.Translation(
-        //                 i * 20 - 20 * 200, this.heights[i][j] * 5 + 10, j * 20);
-
-
-        //             this.treeMeshParts.forEach((part) => {
-        //                 part.thinInstanceAdd(matrix);
-        //             });
-        //         }
-        //     }
-        // }
     }
 
     afterLoad(newMeshes: BABYLON.AbstractMesh[]) {
         console.log("Tree Loaded");
-        newMeshes[0].position = BABYLON.Vector3.Zero().clone();
+        newMeshes[0].position = BABYLON.Vector3.Zero();
         newMeshes[0].scalingDeterminant = this.treeScale;
 
         for (let i = 1; i < newMeshes.length; i++) {
@@ -229,13 +203,11 @@ export class Terrain {
             console.log(part.rotation);
             console.log(part.scaling)
 
-            part.rotate(BABYLON.Axis.Y, (Math.PI / 2) * 2, BABYLON.Space.BONE);
+            part.rotate(BABYLON.Axis.Y, Math.PI, BABYLON.Space.BONE);
             this.treeMeshParts.push(part);
-
         }
 
-        this.makeTrees();
-        // this.thinInstanceTest();
+        this.createTrees();
     }
 
     loadTreeModel() {
