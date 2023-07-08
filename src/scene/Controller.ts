@@ -77,6 +77,8 @@ export class Controller {
                 }
             } else {
                 console.log('No metadata');
+                this.shiftHelper.releaseTarget();
+                this.nodeManager.unfocusAllNodes();
             }
         } else {
             console.log('No mesh');
@@ -207,11 +209,9 @@ export class Controller {
         camera.radius = 11;
         camera.heightOffset = 8;
         camera.rotationOffset = 225;
-        camera.cameraAcceleration = 0.05;
+        camera.cameraAcceleration = 0.5;
         camera.maxCameraSpeed = 10;
         camera.lockedTarget = this.lookTarget;
-        camera.setCameraRigMode(BABYLON.Camera.RIG_MODE_NONE, { interaxialDistance: 0.1 });
-
         // camera.attachControl(true);
         // camera.inputs.clear();
         this.camera = camera;
