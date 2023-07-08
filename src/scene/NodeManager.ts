@@ -183,7 +183,7 @@ export class NodeManager {
         const rootNode = this.nodeList[rootNodeIdx];
         this.getEdgeNodeIdxList(rootNodeIdx).forEach((i) => {
             this.drawNodePath([rootNodeIdx].concat(rootNode.routingTable[i].path),
-                new BABYLON.Vector3(0, 0.03 * i - 0.2, 0),
+                new BABYLON.Vector3(0, -0.1, 0),
                 BABYLON.Color3.FromHexString(HEX_COLORS[i])
             );
         });
@@ -248,13 +248,17 @@ export class NodeManager {
                 path: points,
                 radiusFunction: (i, distance) => {
                     switch (i) {
-                        case 0:
+                        // case 0:
+                        //     return 0.1;
                         case points.length - 1:
                             return 0.0;
                         case points.length - 2:
                             return 0.1;
                         default:
-                            return 0.06 * ((i + 1) / points.length);
+                            let r = 0.06 * ((i + 1) / points.length);
+                            if (r < 0.01)
+                                r = 0.01;
+                            return r;
                     }
                 },
                 instance: null,

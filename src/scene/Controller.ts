@@ -265,16 +265,16 @@ export class Controller {
         }
 
         if (this.isKeyPressed("ArrowUp"))
-            this.lookTarget.position.y += 0.02 * delta;
+            this.lookTarget.position.y += 0.06 * delta;
 
         if (this.isKeyPressed("ArrowDown"))
-            this.lookTarget.position.y -= 0.02 * delta;
+            this.lookTarget.position.y -= 0.06 * delta;
 
         if (this.isKeyPressed("PageUp"))
-            this.camera.heightOffset += 0.02 * delta;
+            this.camera.heightOffset += 0.06 * delta;
 
         if (this.isKeyPressed("PageDown"))
-            this.camera.heightOffset -= 0.02 * delta;
+            this.camera.heightOffset -= 0.06 * delta;
     }
 
     update(delta: number) {
