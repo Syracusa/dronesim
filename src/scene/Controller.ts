@@ -225,16 +225,16 @@ export class Controller {
         let sideDir = new BABYLON.Vector3(Math.cos(angle), 0, Math.sin(angle));
 
         if (this.isKeyPressed("w") || this.isKeyPressed("W"))
-            this.lookTarget.position.addInPlace(lookXZDir.scale(0.01 * delta));
+            this.lookTarget.position.addInPlace(lookXZDir.scale(0.1 * delta));
 
         if (this.isKeyPressed("s") || this.isKeyPressed("S"))
-            this.lookTarget.position.addInPlace(lookXZDir.scale(-0.01 * delta));
+            this.lookTarget.position.addInPlace(lookXZDir.scale(-0.1 * delta));
 
         if (this.isKeyPressed("a") || this.isKeyPressed("A"))
-            this.lookTarget.position.addInPlace(sideDir.scale(0.01 * delta));
+            this.lookTarget.position.addInPlace(sideDir.scale(0.1 * delta));
 
         if (this.isKeyPressed("d") || this.isKeyPressed("D"))
-            this.lookTarget.position.addInPlace(sideDir.scale(-0.01 * delta));
+            this.lookTarget.position.addInPlace(sideDir.scale(-0.1 * delta));
 
         if (this.isKeyPressed("q") || this.isKeyPressed("Q"))
             this.camera.rotationOffset -= 0.1 * delta;
@@ -258,8 +258,8 @@ export class Controller {
 
         if (this.isKeyPressed("4")) {
             this.camera.fov += 0.002 * delta;
-            if (this.camera.fov > 1.5)
-                this.camera.fov = 1.5;
+            if (this.camera.fov > 3)
+                this.camera.fov = 3;
         }
 
         if (this.isKeyPressed("ArrowUp"))

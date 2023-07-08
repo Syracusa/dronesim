@@ -9,7 +9,10 @@ import SkyboxPx from '../static/skybox/skybox_px.jpg';
 import SkyboxPy from '../static/skybox/skybox_py.jpg';
 import SkyboxPz from '../static/skybox/skybox_pz.jpg';
 
-import TreeModel from '../static/Tree.glb';
+import TreeModel from '../static/glb/Tree2.glb';
+import StoneModel from '../static/glb/Stone.glb';
+import StoneModel2 from '../static/glb/Stone2.glb';
+
 
 export class Terrain {
     heights: number[][] = [];
@@ -17,14 +20,15 @@ export class Terrain {
     mapsize = 200;
     mainScene: MainScene;
     mat;
-    treeMesh: BABYLON.Mesh;
+    treeMeshParts: BABYLON.Mesh[] = [];
+    treeScale = 0.2;
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
         this.mat = this.loadStdMat();
 
         this.initHeights();
-        this.randomTerrainHeight(100);
+        this.randomTerrainHeight(1000);
         this.drawTerrain();
 
         this.createOcean();
@@ -138,6 +142,7 @@ export class Terrain {
         for (let i = 0; i < this.mapsize + 1; i++) {
             let xarr: number[] = [];
             for (let j = 0; j < this.mapsize + 1; j++) {
+                // xarr.push(j / 10.0);
                 xarr.push(0);
             }
             this.heights.push(xarr);
@@ -167,46 +172,70 @@ export class Terrain {
         }
     }
 
+    thinInstanceTest() {
+        for (let i = 0; i < 10; i++) {
+            const matrix = BABYLON.Matrix.Translation(0, 0, i * 20);
+            this.treeMeshParts.forEach((mesh) => {
+                mesh.thinInstanceAdd(matrix);
+            });
+            // this.treeMeshParts[0].thinInstanceAdd(matrix);
+        }
+    }
+
+    makeTrees() {
+        let tscale = 4;
+        console.log(this.treeMeshParts[0].rawBoundingInfo);
+        for (let i = 0; i < this.mapsize; i += tscale) {
+            for (let j = 0; j < this.mapsize; j += tscale) {
+                
+                let fector = 22;
+                
+                const matrix = BABYLON.Matrix.Translation(
+                    fector * i, 5.01 * this.heights[i][j], fector * j * -1);
+                this.treeMeshParts.forEach((part) => {
+                    part.thinInstanceAdd(matrix);
+                });
+            }
+        }
+        // for (let i = 0; i < this.mapsize; i++) {
+        //     for (let j = 0; j < this.mapsize; j++) {
+        //         if (Math.random() > 0.9 && this.heights[i][j] > 0.1) {
+
+        //             let height = 0;
+        //             if (i > j)
+        //                 height = 5;
+        //             else 
+        //                 height = 10;
+
+        //             const matrix = BABYLON.Matrix.Translation(
+        //                 i * 20 - 20 * 200, this.heights[i][j] * 5 + 10, j * 20);
+
+
+        //             this.treeMeshParts.forEach((part) => {
+        //                 part.thinInstanceAdd(matrix);
+        //             });
+        //         }
+        //     }
+        // }
+    }
+
     afterLoad(newMeshes: BABYLON.AbstractMesh[]) {
         console.log("Tree Loaded");
-        let treeMesh = newMeshes[0] as BABYLON.Mesh;
+        newMeshes[0].position = BABYLON.Vector3.Zero().clone();
+        newMeshes[0].scalingDeterminant = this.treeScale;
 
-        treeMesh.position = new BABYLON.Vector3(0, 0, 0);
-        treeMesh.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
-        treeMesh.rotation.y = Math.PI / 2;
-        treeMesh.rotation.x = Math.PI / 2;
-        treeMesh.rotation.z = Math.PI / 2;
+        for (let i = 1; i < newMeshes.length; i++) {
+            const part = newMeshes[i] as BABYLON.Mesh;
+            console.log(part.rotation);
+            console.log(part.scaling)
 
-        this.treeMesh = treeMesh;
+            part.rotate(BABYLON.Axis.Y, (Math.PI / 2) * 2, BABYLON.Space.BONE);
+            this.treeMeshParts.push(part);
 
-        for (let i = 0; i < 10; i++) {
-            const rootMesh = BABYLON.MeshBuilder.CreateSphere("sphere",
-            { diameter: 6, segments: 4 }, this.mainScene.scene);
-
-            rootMesh.material = new BABYLON.StandardMaterial("mat", this.mainScene.scene);
-
-            const VIEW_ROOTMESH = 1;
-            if (VIEW_ROOTMESH)
-                rootMesh.material.wireframe = true;
-            else
-                rootMesh.material.alpha = 0.0;
-
-            const initPos = new BABYLON.Vector3(100, 9, 100 + i * 10);
-            let childMeshes = treeMesh.getChildMeshes();
-
-            for (let meshidx = 0; meshidx < childMeshes.length; meshidx++) {
-                const child = childMeshes[meshidx] as BABYLON.Mesh;
-                const instancedChild = child.createInstance("treechild");
-                instancedChild.parent = rootMesh;
-
-                instancedChild.scaling = child.absoluteScaling.clone();
-                instancedChild.position = child.absolutePosition.clone();
-                instancedChild.rotation = child.absoluteRotationQuaternion.toEulerAngles();
-
-                this.mainScene.shadowGenerator.getShadowMap().renderList.push(instancedChild);
-            }
-            rootMesh.position = initPos;
         }
+
+        this.makeTrees();
+        // this.thinInstanceTest();
     }
 
     loadTreeModel() {

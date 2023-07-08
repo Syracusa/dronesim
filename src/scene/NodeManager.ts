@@ -2,7 +2,7 @@ import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import "@babylonjs/loaders/glTF";
 
 import { MainScene } from './MainScene';
-import DroneModel from '../static/drone.glb';
+import DroneModel from '../static/glb/Drone.glb';
 
 export interface RouteEntry {
     hopCount: number;
@@ -321,7 +321,7 @@ export class NodeManager {
 
         this.droneMesh = droneMesh;
         this.modelLoaded = true;
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 2; i++) {
             const droneInitX =
                 100 + ((4 + this.nodeNumber * 1.3) * Math.sin(Math.PI * this.nodeNumber / 5));
             const droneInitY = 5 + this.nodeNumber / 3;
