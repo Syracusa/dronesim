@@ -187,8 +187,8 @@ export class Controller {
         const sphere = BABYLON.MeshBuilder.CreateSphere("sphere",
             { diameter: 1, segments: 16 },
             this.mainScene.scene);
-        // sphere.position = new BABYLON.Vector3(90, 10, 90);
-        sphere.position = new BABYLON.Vector3(0, 10, 0);
+        sphere.position = new BABYLON.Vector3(90, 10, 90);
+        // sphere.position = new BABYLON.Vector3(0, 10, 0);
         sphere.isVisible = false;
         this.lookTarget = sphere;
     }
@@ -227,16 +227,16 @@ export class Controller {
         let sideDir = new BABYLON.Vector3(Math.cos(angle), 0, Math.sin(angle));
 
         if (this.isKeyPressed("w") || this.isKeyPressed("W"))
-            this.lookTarget.position.addInPlace(lookXZDir.scale(0.1 * delta));
+            this.lookTarget.position.addInPlace(lookXZDir.scale(0.03 * delta));
 
         if (this.isKeyPressed("s") || this.isKeyPressed("S"))
-            this.lookTarget.position.addInPlace(lookXZDir.scale(-0.1 * delta));
+            this.lookTarget.position.addInPlace(lookXZDir.scale(-0.03 * delta));
 
         if (this.isKeyPressed("a") || this.isKeyPressed("A"))
-            this.lookTarget.position.addInPlace(sideDir.scale(0.1 * delta));
+            this.lookTarget.position.addInPlace(sideDir.scale(0.03 * delta));
 
         if (this.isKeyPressed("d") || this.isKeyPressed("D"))
-            this.lookTarget.position.addInPlace(sideDir.scale(-0.1 * delta));
+            this.lookTarget.position.addInPlace(sideDir.scale(-0.03 * delta));
 
         if (this.isKeyPressed("q") || this.isKeyPressed("Q"))
             this.camera.rotationOffset -= 0.1 * delta;
