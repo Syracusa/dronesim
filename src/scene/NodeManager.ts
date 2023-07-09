@@ -314,7 +314,15 @@ export class NodeManager {
     }
 
     afterLoad(newMeshes: BABYLON.AbstractMesh[]) {
+        
         let droneMesh = newMeshes[0] as BABYLON.Mesh;
+        for (let i = 0; i < newMeshes.length; i++) {
+            const oneMesh = newMeshes[i] as BABYLON.Mesh;
+
+            const NODE_HIGHLIGHT = 0;
+            if (NODE_HIGHLIGHT)
+                this.mainScene.highlightLayer.addMesh(oneMesh, BABYLON.Color3.Green());
+        }
 
         if (this.simplifyModel)
             NodeManager.simplifyMeshes(newMeshes);

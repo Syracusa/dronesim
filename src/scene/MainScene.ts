@@ -8,6 +8,7 @@ export class MainScene {
     scene: BABYLON.Scene;
     controller: Controller;
     terrain: Terrain;
+    highlightLayer: BABYLON.HighlightLayer;
     shadowGenerator: BABYLON.ShadowGenerator;
 
     renderWhenDirty: boolean = true;
@@ -19,10 +20,12 @@ export class MainScene {
     constructor() {
         const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
         this.canvas = canvas;
-        const engine = new BABYLON.Engine(canvas, true);
+        const engine = new BABYLON.Engine(canvas, true, {stencil: true});
         this.engine = engine;
         const scene = new BABYLON.Scene(engine);
         this.scene = scene;
+        const highlightLayer = new BABYLON.HighlightLayer("highlightLayer", scene);
+        this.highlightLayer = highlightLayer;
 
         const USE_OPTIMIZER = false;
         if (USE_OPTIMIZER) {
