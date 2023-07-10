@@ -21,8 +21,13 @@ export class Terrain {
     mainScene: MainScene;
     mat;
     treeMeshParts: BABYLON.Mesh[] = [];
+    stoneMeshParts: BABYLON.Mesh[] = [];
+
+    stoneScale = 0.5;
+    stoneModelScale = new BABYLON.Vector3(0.243, 0.243, 0.243);
+
     treeScale = 0.3;
-    modelScale = new BABYLON.Vector3(0.232, 1, 0.232);
+    treeModelScale = new BABYLON.Vector3(0.232, 1, 0.232);
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
@@ -35,7 +40,13 @@ export class Terrain {
         this.createOcean();
         this.createSkyBox();
 
-        this.loadTreeModel();
+        const DRAW_TREE = 0;
+        if (DRAW_TREE)
+            this.loadTerrainObjectModel(TreeModel, Terrain.afterTreeLoad);
+
+        const DRAW_STONE = 0;
+        if (DRAW_STONE)
+            this.loadTerrainObjectModel(StoneModel2, Terrain.afterStoneLoad);
     }
 
     /* Dispose terrain meshes */
@@ -173,52 +184,155 @@ export class Terrain {
         }
     }
 
+    getTerrainSlope(x: number, y: number) {
+        if (x < 0 || x > this.mapsize || y < 0 || y > this.mapsize)
+            return 0;
+
+        let x1 = Math.floor(x);
+        let x2 = Math.ceil(x);
+        let y1 = Math.floor(y);
+        let y2 = Math.ceil(y);
+
+        if ((x | 0) == x)
+            x2 += 1;
+        if ((y | 0) == y)
+            y2 += 1;
+
+        let heights = [
+            this.heights[x1][y1],
+            this.heights[x2][y1],
+            this.heights[x2][y2],
+            this.heights[x1][y2]
+        ];
+
+        let min = Math.min(...heights);
+        let max = Math.max(...heights);
+
+        return max - min;
+    }
+
+    getInterpolratedHeight(x: number, y: number) {
+        if (x < 0 || x > this.mapsize || y < 0 || y > this.mapsize)
+            return 0;
+
+        let x1 = Math.floor(x);
+        let x2 = Math.ceil(x);
+        let y1 = Math.floor(y);
+        let y2 = Math.ceil(y);
+
+        let xdiff = x - x1;
+        let ydiff = y - y1;
+
+        let h1 = this.heights[x1][y1] * (1 - xdiff) + this.heights[x2][y1] * xdiff;
+        let h2 = this.heights[x1][y2] * (1 - xdiff) + this.heights[x2][y2] * xdiff;
+
+        return h1 * (1 - ydiff) + h2 * ydiff;
+    }
+
+    createTreeAt(x: number, y: number) {
+        const height = this.getInterpolratedHeight(x, y);
+        if (height < 0.2)
+            return;
+
+        const matrix = BABYLON.Matrix.Translation(
+            (1 / this.treeModelScale.x / this.treeScale) * x,
+            (1 / this.treeModelScale.y / this.treeScale) * height - 0.1,
+            (1 / this.treeModelScale.z / this.treeScale) * y * -1);
+        this.treeMeshParts.forEach((part) => {
+            part.thinInstanceAdd(matrix);
+        });
+    }
+
     createTrees() {
         console.log(this.treeMeshParts[0]);
-        for (let i = 0; i < this.mapsize; i ++) {
-            for (let j = 0; j < this.mapsize; j ++) {
-                if (this.heights[i][j] < 0.2)
+        for (let i = 0; i < this.mapsize; i++) {
+            for (let j = 0; j < this.mapsize; j++) {
+                if (Math.random() > 0.01)
                     continue;
-                if (Math.random() > 0.04)
-                    continue;
-
-                const matrix = BABYLON.Matrix.Translation(
-                    (1 / this.modelScale.x / this.treeScale) * i,
-                    (1 / this.modelScale.y / this.treeScale) * this.heights[i][j] - 0.1,
-                    (1 / this.modelScale.z / this.treeScale) * j * -1);
-                this.treeMeshParts.forEach((part) => {
-                    part.thinInstanceAdd(matrix);
-                });
+                this.createTreeAt(i, j);
+                for (let k = 0; k < (1 - this.getTerrainSlope(i, j)) * 10; k++) {
+                    this.createTreeAt(
+                        i + (Math.random() - 0.5) * (Math.random() * k),
+                        j + (Math.random() - 0.5) * (Math.random() * k));
+                }
             }
         }
     }
 
-    afterLoad(newMeshes: BABYLON.AbstractMesh[]) {
+    static afterTreeLoad(ctx: Terrain, newMeshes: BABYLON.AbstractMesh[]) {
         console.log("Tree Loaded");
         newMeshes[0].position = BABYLON.Vector3.Zero();
-        newMeshes[0].scalingDeterminant = this.treeScale;
+        newMeshes[0].scalingDeterminant = ctx.treeScale;
 
         for (let i = 1; i < newMeshes.length; i++) {
             const part = newMeshes[i] as BABYLON.Mesh;
             console.log(part.rotation);
             console.log(part.scaling)
 
-            part.rotate(BABYLON.Axis.Y, Math.PI, BABYLON.Space.BONE);
-            this.treeMeshParts.push(part);
+            part.rotate(BABYLON.Axis.Y, Math.PI, BABYLON.Space.LOCAL);
+            ctx.treeMeshParts.push(part);
         }
 
-        this.createTrees();
+        ctx.createTrees();
     }
 
-    loadTreeModel() {
+    createStoneAt(x: number, y: number) {
+        const height = this.getInterpolratedHeight(x, y);
+        if (height < 0.2)
+            return;
+
+        const matrix = BABYLON.Matrix.Translation(
+            (1 / this.stoneModelScale.x / this.stoneScale) * x,
+            (1 / this.stoneModelScale.y / this.stoneScale) * height - 0.3,
+            (1 / this.stoneModelScale.z / this.stoneScale) * y * -1);
+        this.stoneMeshParts.forEach((part) => {
+            part.thinInstanceAdd(matrix);
+        });
+    }
+
+    createStones() {
+        console.log(this.stoneMeshParts[0]);
+        for (let i = 0; i < this.mapsize; i++) {
+            for (let j = 0; j < this.mapsize; j++) {
+                if (Math.random() > 0.01)
+                continue;
+                this.createStoneAt(i, j);
+                let slope = this.getTerrainSlope(i, j);
+                for (let k = 0; k < slope * 10; k++) {
+                    this.createStoneAt(
+                        i + (Math.random() - 0.5) * (Math.random() * k),
+                        j + (Math.random() - 0.5) * (Math.random() * k));
+                }
+            }
+        }
+    }
+
+    static afterStoneLoad(ctx: Terrain, newMeshes: BABYLON.AbstractMesh[]) {
+        console.log("Stone Loaded");
+        newMeshes[0].position = BABYLON.Vector3.Zero();
+        newMeshes[0].scalingDeterminant = ctx.stoneScale;
+
+        for (let i = 1; i < newMeshes.length; i++) {
+            const part = newMeshes[i] as BABYLON.Mesh;
+            console.log(part.rotation);
+            console.log(part.scaling)
+
+            part.rotate(BABYLON.Axis.Y, Math.PI, BABYLON.Space.LOCAL);
+            ctx.stoneMeshParts.push(part);
+        }
+
+        ctx.createStones();
+    }
+
+    loadTerrainObjectModel(glbpath: string, callback: (ctx: Terrain, meshs: any[]) => void) {
         const that = this;
 
         BABYLON.SceneLoader.ImportMesh("",
-            TreeModel.replace(TreeModel.split('\\').pop().split('/').pop(), ''),
-            TreeModel.split('\\').pop().split('/').pop(),
+            glbpath.replace(glbpath.split('\\').pop().split('/').pop(), ''),
+            glbpath.split('\\').pop().split('/').pop(),
             this.mainScene.scene,
             function (newMeshes) {
-                that.afterLoad(newMeshes);
+                callback(that, newMeshes);
             }
         );
     }
