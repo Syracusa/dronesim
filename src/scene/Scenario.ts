@@ -1,13 +1,37 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
+import sample1 from "../static/scenario/sample1.json"
+import { NodeManager } from "./NodeManager";
+import { MainScene } from "./MainScene";
+
+interface KeyFrame {
+    time: number;
+    nodePostions?: {};
+}
+
+export interface ScenarioConf {
+    nodeNum: number;
+    keyFrames: KeyFrame[];
+    options?: any;
+}
+
+
 export class Scenario {
-    nodeNum = 30;
+    mainScene: MainScene;
+    nodeManager: NodeManager;
+
     nodeCurrPos: BABYLON.Vector3[] = [];
+    conf = sample1 as ScenarioConf;
 
-    constructor() {
-    
+    constructor(mainScene: MainScene) {        
+        this.nodeManager = new NodeManager(mainScene, this);
     }
-
+    
     update(timeDiff: number) {
 
     }
+
+    start() {
+
+    }
+
 }

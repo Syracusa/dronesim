@@ -4,6 +4,7 @@ import { ShiftHelper } from "./ShiftHelper";
 import { GuiLayer } from "./GuiLayer";
 import { NodeManager, Node } from "./NodeManager";
 import { ServerConnection } from "./ServerConnection";
+import { Scenario } from "./Scenario";
 
 export class Controller {
     mainScene: MainScene;
@@ -20,6 +21,7 @@ export class Controller {
     nodeManager: NodeManager;
     serverConnection: ServerConnection;
     dragHandlerExist: boolean = false;
+    scenario: Scenario;
 
     constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
@@ -37,7 +39,7 @@ export class Controller {
         this.setMouseHandler();
         this.shiftHelper = new ShiftHelper(mainScene, this);
 
-        this.nodeManager = new NodeManager(mainScene);
+
 
         this.guiLayer = new GuiLayer(mainScene, this.nodeManager);
 

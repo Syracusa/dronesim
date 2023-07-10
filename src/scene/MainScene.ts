@@ -1,6 +1,7 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { Terrain } from './Terrain';
 import { Controller } from "./Controller";
+import { Scenario } from "./Scenario";
 
 export class MainScene {
     canvas: HTMLCanvasElement;
@@ -14,6 +15,7 @@ export class MainScene {
     renderWhenDirty: boolean = true;
     dirty: boolean = true;
     oldCampos: BABYLON.Vector3;
+    scenario: Scenario;
 
     lastRender = performance.now();
 
@@ -48,6 +50,8 @@ export class MainScene {
         window.addEventListener("resize", function () {
             engine.resize();
         });
+
+
     }
     
     updateScene(delta: number) {
