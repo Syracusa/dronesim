@@ -145,7 +145,7 @@ class TcpClient {
         while (1) {
             if (socket.closed) {
                 console.log('Try connect...');
-                socket.removeListener('connect', this.onConnect);
+                socket.removeAllListeners('connect');
                 socket.connect(12123, '127.0.0.1', this.onConnect);
             }
             await new Promise(resolve => setTimeout(resolve, 2000));
