@@ -12,14 +12,10 @@ interface KeyFrame {
 export interface ScenarioConf {
     nodeNum: number;
     keyFrames: KeyFrame[];
-    options?: any;
+    options?: {};
 }
 
 export class Scenario {
-    mainScene: MainScene;
-    nodeManager: NodeManager;
-    serverConnection: ServerConnection;
-
     nodeCurrPos: BABYLON.Vector3[] = [];
     nodeLastPosInKeyFrame: BABYLON.Vector3[] = [];
 
@@ -31,10 +27,10 @@ export class Scenario {
     lastKeyFrameIndex = 0;
 
 
-    constructor(mainScene: MainScene, nodeManager: NodeManager, serverConnection: ServerConnection) {
-        this.mainScene = mainScene;
-        this.nodeManager = nodeManager;
-        this.serverConnection = serverConnection;
+    constructor(
+        private readonly mainScene: MainScene,
+        private readonly nodeManager: NodeManager,
+        private readonly serverConnection: ServerConnection) {
 
         this.initAsync();
     }

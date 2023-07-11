@@ -18,8 +18,7 @@ export class Terrain {
     heights: number[][] = [];
     tiles: BABYLON.Mesh[] = [];
     mapsize = 200;
-    mainScene: MainScene;
-    mat;
+    mat: BABYLON.StandardMaterial;
     treeMeshParts: BABYLON.Mesh[] = [];
     stoneMeshParts: BABYLON.Mesh[] = [];
 
@@ -29,8 +28,7 @@ export class Terrain {
     treeScale = 0.3;
     treeModelScale = new BABYLON.Vector3(0.232, 1, 0.232);
 
-    constructor(mainScene: MainScene) {
-        this.mainScene = mainScene;
+    constructor(private readonly mainScene: MainScene) {
         this.mat = this.loadStdMat();
 
         this.initHeights();
@@ -65,8 +63,7 @@ export class Terrain {
         const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.mainScene.scene);
         skyboxMaterial.backFaceCulling = false;
         skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(
-            "",
-            this.mainScene.scene,
+            "", this.mainScene.scene,
             [], true, [SkyboxPx, SkyboxPy, SkyboxPz, SkyboxNx, SkyboxNy, SkyboxNz]
         );
         skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
@@ -94,24 +91,22 @@ export class Terrain {
     loadStdMat() {
         let std = new BABYLON.StandardMaterial("standard", this.mainScene.scene);
         std.diffuseTexture = new BABYLON.Texture(GrassTexture, this.mainScene.scene);
-
         std.specularColor = new BABYLON.Color3(0.04, 0.04, 0.04);
         return std;
     }
 
     drawTile(xstart: number, xend: number, ystart: number, yend: number) {
-        let paths: BABYLON.Vector3[][] = [];
+        const paths: BABYLON.Vector3[][] = [];
         for (let i = xstart; i <= xend; i++) {
             let onePath: BABYLON.Vector3[] = [];
             for (let j = ystart; j <= yend; j++) {
                 onePath.push(new BABYLON.Vector3(
-                    i,
-                    this.heights[i][j],
-                    j));
+                    i, this.heights[i][j], j));
             }
             paths.push(onePath);
         }
-        let terrain = BABYLON.MeshBuilder.CreateRibbon("ribbon",
+
+        const terrain = BABYLON.MeshBuilder.CreateRibbon("ribbon",
             { pathArray: paths, sideOrientation: BABYLON.Mesh.DOUBLESIDE },
             this.mainScene.scene);
 
@@ -154,19 +149,15 @@ export class Terrain {
         for (let i = 0; i < this.mapsize + 1; i++) {
             let xarr: number[] = [];
             for (let j = 0; j < this.mapsize + 1; j++) {
-                // xarr.push(j / 10.0);
                 xarr.push(0);
             }
             this.heights.push(xarr);
         }
     }
 
-    sigmoid(z: number) {
-        return 1 / (1 + Math.exp(-z));
-    }
-
     raiseHeightPoint(xPos: number, yPos: number, intensity: number) {
         let range = 10;
+        const sigmoid = (z:number) => 1 / (1 + Math.exp(-z));
         for (let i = xPos - range; i < xPos + range; i++) {
             for (let j = yPos - range; j < yPos + range; j++) {
                 if (i > -1 && i < this.mapsize &&
@@ -295,7 +286,7 @@ export class Terrain {
         for (let i = 0; i < this.mapsize; i++) {
             for (let j = 0; j < this.mapsize; j++) {
                 if (Math.random() > 0.01)
-                continue;
+                    continue;
                 this.createStoneAt(i, j);
                 let slope = this.getTerrainSlope(i, j);
                 for (let k = 0; k < slope * 10; k++) {

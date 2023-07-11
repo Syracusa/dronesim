@@ -155,8 +155,6 @@ export class Node {
 }
 
 export class NodeManager {
-    mainScene: MainScene;
-
     droneMesh: BABYLON.Mesh;
     nodeList: Node[] = [];
     focusedNodeList: Node[] = [];
@@ -165,9 +163,7 @@ export class NodeManager {
     pathMeshes: BABYLON.Mesh[] = [];
     simplifyModel: boolean = false;
 
-    constructor(mainScene: MainScene) {
-        this.mainScene = mainScene;
-
+    constructor(private readonly mainScene: MainScene) {
         this.loadDroneModel();
     }
 

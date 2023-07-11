@@ -3,8 +3,6 @@ import { MainScene } from "./MainScene";
 import { Controller } from "./Controller";
 
 export class ShiftHelper {
-    mainScene: MainScene;
-    controller: Controller;
     arrowOrigin: BABYLON.Mesh;
     target: BABYLON.Mesh;
     dragStartPos: BABYLON.Vector3;
@@ -13,10 +11,10 @@ export class ShiftHelper {
     multiTargetRelPos: BABYLON.Vector3[] = [];
     targets: BABYLON.Mesh[] = [];
 
-    constructor(mainScene: MainScene,
-        controller: Controller) {
-        this.mainScene = mainScene;
-        this.controller = controller;
+    constructor(
+        private readonly mainScene: MainScene,
+        private readonly controller: Controller) {
+
         this.drawArrow();
         this.releaseTarget();
     }

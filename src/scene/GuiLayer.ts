@@ -15,11 +15,6 @@ interface NodeGUI {
 }
 
 export class GuiLayer {
-    /* Dependency */
-    mainScene: MainScene;
-    nodeManager: NodeManager;
-    scenario: Scenario;
-
     /* GUIs */
     advancedTexture: GUI.AdvancedDynamicTexture;
 
@@ -42,12 +37,11 @@ export class GuiLayer {
     drawLinks: boolean = true;
     targetNodeIdx: number = -1;
 
-    constructor(mainScene: MainScene, 
-                nodeManager: NodeManager,
-                scenario: Scenario) {
-        this.mainScene = mainScene;
-        this.nodeManager = nodeManager;
-        this.scenario = scenario;
+    constructor(
+        private readonly mainScene: MainScene,
+        private readonly nodeManager: NodeManager,
+        private readonly scenario: Scenario) {
+
         this.makeControls();
         this.backgroundWork();
     }

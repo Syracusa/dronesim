@@ -7,7 +7,6 @@ import { ServerConnection } from "./ServerConnection";
 import { Scenario } from "./Scenario";
 
 export class Controller {
-    mainScene: MainScene;
     keystate: any;
     lookTarget: BABYLON.Mesh;
     camera: BABYLON.FollowCamera;
@@ -23,8 +22,7 @@ export class Controller {
     dragHandlerExist: boolean = false;
     scenario: Scenario;
 
-    constructor(mainScene: MainScene) {
-        this.mainScene = mainScene;
+    constructor(private readonly mainScene: MainScene) {
         this.scene = this.mainScene.scene;
         this.keystate = {};
         this.createCamera();

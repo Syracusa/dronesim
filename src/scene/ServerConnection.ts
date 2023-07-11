@@ -2,19 +2,16 @@ import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { NodeManager } from "./NodeManager";
 
 export class ServerConnection {
-    workerConnected = false;
-    tcpConnected = false;
-    nodeManager: NodeManager;
-    linkInfoIntervalMs: number = 2000;
+    private workerConnected = false;
+    private tcpConnected = false;
+    private readonly linkInfoIntervalMs: number = 2000;
 
-    constructor(nodeManager: NodeManager) {
+    constructor(private readonly nodeManager: NodeManager) {
         this.nodeManager = nodeManager;
         window.electronAPI.requestWorkerChannel((data: any) => {
             this.workerConnected = true;
             this.handleWorkerMessage(data);
         });
-
-        this.waitWorkerConnection();
 
         this.backgroundWork();
     }
@@ -26,15 +23,23 @@ export class ServerConnection {
         }, this.linkInfoIntervalMs);
     }
 
-    async waitWorkerConnection() {
-        while (!this.workerConnected) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
+    private handleTRxMsg(data: any) {
+        const node = this.nodeManager.nodeList[data.node];
+        node.txBytes = data.tx;
+        node.rxBytes = data.rx;
+        node.guiInfoDirty = true;
+    }
+
+    private handleRouteMsg(data: any){
+        const node = this.nodeManager.nodeList[data.node];
+        const routeEntry = node.routingTable[data.target];
+        routeEntry.hopCount = data.hopcount;
+        routeEntry.path = data.path;
+        node.guiInfoDirty = true;
     }
 
     handleWorkerMessage(data: any) {
         if (data.hasOwnProperty("type")) {
-
             switch (data.type) {
                 case "TcpOnConnect":
                     console.log("TCP connected");
@@ -45,31 +50,17 @@ export class ServerConnection {
                     this.tcpConnected = false;
                     break;
                 case "TRx":
-                    {
-                        const node = this.nodeManager.nodeList[data.node];
-                        node.txBytes = data.tx;
-                        node.rxBytes = data.rx;
-                        node.guiInfoDirty = true;
-                    }
+                    this.handleTRxMsg(data);
                     break;
                 case "Status":
                     break;
                 case "Route":
-                    {
-                        const node = this.nodeManager.nodeList[data.node];
-                        const routeEntry = node.routingTable[data.target];
-                        routeEntry.hopCount = data.hopcount;
-                        routeEntry.path = data.path;
-                        node.guiInfoDirty = true;
-
-                        // this.nodeManager.calcRelayNode();
-                    }
+                    this.handleRouteMsg(data);
                     break;
                 default:
                     console.log("Unknown message type from worker " + data.type);
                     break;
             }
-
         }
     }
 
