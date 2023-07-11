@@ -169,7 +169,6 @@ export class ShiftHelper {
 
         arrow.metadata = "arrow";
         arrow.position = BABYLON.Vector3.Zero();
-        const that = this;
 
         let arrowX = arrow.clone("arrowX");
         arrowX.rotation.z += Math.PI / 2 * 3;
@@ -179,10 +178,10 @@ export class ShiftHelper {
             type: "ShiftArrow",
             dir: "x",
             onMouseDown: () => {
-                that.arrowMouseDown();
+                this.arrowMouseDown();
             },
             onMouseDrag: () => {
-                that.arrowMouseDrag(new BABYLON.Vector3(that.arrowLength, 0, 0));
+                this.arrowMouseDrag(new BABYLON.Vector3(this.arrowLength, 0, 0));
             }
         };
 
@@ -194,10 +193,10 @@ export class ShiftHelper {
             type: "ShiftArrow",
             dir: "y",
             onMouseDown: () => {
-                that.arrowMouseDown();
+                this.arrowMouseDown();
             },
             onMouseDrag: () => {
-                that.arrowMouseDrag(new BABYLON.Vector3(0, that.arrowLength, 0));
+                this.arrowMouseDrag(new BABYLON.Vector3(0, this.arrowLength, 0));
             }
         };
 
@@ -209,10 +208,10 @@ export class ShiftHelper {
             type: "ShiftArrow",
             dir: "z",
             onMouseDown: () => {
-                that.arrowMouseDown();
+                this.arrowMouseDown();
             },
             onMouseDrag: () => {
-                that.arrowMouseDrag(new BABYLON.Vector3(0, 0, that.arrowLength));
+                this.arrowMouseDrag(new BABYLON.Vector3(0, 0, this.arrowLength));
             }
         };
         arrow.isVisible = false;
