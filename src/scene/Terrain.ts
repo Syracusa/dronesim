@@ -325,14 +325,12 @@ export class Terrain {
     }
 
     loadTerrainObjectModel(glbpath: string, callback: (ctx: Terrain, meshs: any[]) => void) {
-        const that = this;
-
         BABYLON.SceneLoader.ImportMesh("",
             glbpath.replace(glbpath.split('\\').pop().split('/').pop(), ''),
             glbpath.split('\\').pop().split('/').pop(),
             this.mainScene.scene,
-            function (newMeshes) {
-                callback(that, newMeshes);
+            (newMeshes) => {
+                callback(this, newMeshes);
             }
         );
     }

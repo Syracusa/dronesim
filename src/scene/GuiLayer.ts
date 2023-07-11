@@ -53,10 +53,9 @@ export class GuiLayer {
     }
 
     backgroundWork() {
-        const that = this;
         this.updateNodeInfo();
         setTimeout(() => {
-            that.backgroundWork();
+            this.backgroundWork();
         }, 1000);
     }
 
@@ -196,7 +195,6 @@ export class GuiLayer {
     }
 
     createNewDroneButton(buttonIdx: number) {
-        const that = this;
         let droneGUI: NodeGUI = new Object() as NodeGUI;
         droneGUI.links = [];
 
@@ -211,7 +209,7 @@ export class GuiLayer {
         card.fontSize = 10;
         card.alpha = 0.5;
         card.zIndex = 5;
-        card.onPointerUpObservable.add(() => { that.onClickDroneButton(buttonIdx); });
+        card.onPointerUpObservable.add(() => { this.onClickDroneButton(buttonIdx); });
 
         this.advancedTexture.addControl(card);
         droneGUI.nameCard = card;
@@ -366,7 +364,6 @@ export class GuiLayer {
     }
 
     makeControls() {
-        const that = this;
         const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
         this.advancedTexture = advancedTexture;
 
@@ -379,16 +376,18 @@ export class GuiLayer {
         this.dragIndicator = GuiLayer.createDragIndicator(advancedTexture);
         this.menuViewToggleBotton = GuiLayer.createMenuViewToggleButton(advancedTexture);
         this.menuViewToggleBotton.onPointerUpObservable.add(() => {
-            that.menuViewToggleButtonClicked();
+            this.menuViewToggleButtonClicked();
         });
 
-        this.createMenuButton("Start", () => { that.scenario.start(); });
+        this.createMenuButton("Start", () => { this.scenario.start(); });
+        this.createMenuButton("Pause", () => { this.scenario.pause(); });
+        this.createMenuButton("Resume", () => { this.scenario.resume(); });
         this.createMenuButton("Link", () => {
-            that.drawLinks = !that.drawLinks;
-            that.mainScene.dirty = true;
+            this.drawLinks = !this.drawLinks;
+            this.mainScene.dirty = true;
         });
-        this.createMenuButton("Save", () => { that.mainScene.saveScene(); });
-        this.createMenuButton("Load", () => { that.mainScene.loadScene(); });
+        this.createMenuButton("Save", () => { this.mainScene.saveScene(); });
+        this.createMenuButton("Load", () => { this.mainScene.loadScene(); });
 
     }
 }

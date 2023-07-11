@@ -76,10 +76,9 @@ export class Analyzer {
     }
 
     initIPC() {
-        const that = this;
         window.electronAPI.requestWorkerChannel((data: any) => {
-            that.workerConnected = true;
-            that.handleWorkerMessage(data);
+            this.workerConnected = true;
+            this.handleWorkerMessage(data);
         });
     }
 }

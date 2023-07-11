@@ -38,13 +38,11 @@ export class Controller {
 
         this.setMouseHandler();
 
-        const that = this;
         this.shiftHelper = new ShiftHelper(mainScene, this);
         this.nodeManager = new NodeManager(mainScene);
         this.serverConnection = new ServerConnection(this.nodeManager);
         this.scenario = new Scenario(mainScene, this.nodeManager, this.serverConnection);
         this.guiLayer = new GuiLayer(mainScene, this.nodeManager, this.scenario);
-
     }
 
     handleMouseDown() {
@@ -182,9 +180,8 @@ export class Controller {
     }
 
     setMouseHandler() {
-        const that = this;
         this.mainScene.scene.onPointerObservable.add((pointerInfo) => {
-            that.setMouseHandlerInContext(pointerInfo);
+            this.setMouseHandlerInContext(pointerInfo);
         });
     }
 

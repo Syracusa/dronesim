@@ -8,21 +8,20 @@ class SocketWorker {
     backendConnected: boolean = false;
 
     constructor() {
-        const that = this;
         this.jsonIo.onJsonRecv = (json) => {
-            that.ports.forEach(port => port.postMessage(json));
+            this.ports.forEach(port => port.postMessage(json));
         };
         this.jsonIo.onConnect = () => {
             console.log('Server connected');
-            that.backendConnected = true;
-            that.ports.forEach(port => {
+            this.backendConnected = true;
+            this.ports.forEach(port => {
                 port.postMessage({ type: "TcpOnConnect" })
             });
         };
         this.jsonIo.onClose = () => {
             console.log('Server closed');
-            that.backendConnected = false;
-            that.ports.forEach(port => {
+            this.backendConnected = false;
+            this.ports.forEach(port => {
                 port.postMessage({ type: "TcpOnClose" });
             });
         };
@@ -32,13 +31,13 @@ class SocketWorker {
             console.log('New socket listener.');
 
             /* Send TCP connection status to new client */
-            if (that.backendConnected) {
+            if (this.backendConnected) {
                 port.postMessage({ type: "TcpOnConnect" });
             }
-            that.ports.push(port);
+            this.ports.push(port);
 
             port.onmessage = (event) => {
-                that.jsonIo.sendJsonTcp(event.data);
+                this.jsonIo.sendJsonTcp(event.data);
             }
         });
 
@@ -61,16 +60,15 @@ class JsonIoClient {
     }
 
     constructor() {
-        const that = this;
         this.tcpClient.onData = (data) => {
-            that.recvDataCallback(data);
+            this.recvDataCallback(data);
         };
         this.tcpClient.onConnect = () => {
-            that.streambuf.read(); /* clear buffer */
-            that.onConnect();
+            this.streambuf.read(); /* clear buffer */
+            this.onConnect();
         }
         this.tcpClient.onClose = () => {
-            that.onClose();
+            this.onClose();
         }
     }
 
@@ -132,24 +130,23 @@ class TcpClient {
     }
 
     createSocket() {
-        const that = this;
         const socket = new net.Socket();
         socket.setTimeout(3000);
 
-        socket.on('timeout', function () {
+        socket.on('timeout', () => {
             console.log('Socket Timeout');
             socket.destroy();
         });
 
         socket.on('data', (data) => {
-            that.onData(data);
+            this.onData(data);
         });
 
-        socket.on('error', function (err) {
+        socket.on('error', (err) => {
             console.log('Socket Error: ' + err);
         });
 
-        socket.on('close', function () {
+        socket.on('close', () => {
             console.log('Connection closed...');
         });
 

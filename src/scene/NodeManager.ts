@@ -361,14 +361,12 @@ export class NodeManager {
     }
 
     loadDroneModel() {
-        const that = this;
-
         BABYLON.SceneLoader.ImportMesh("",
             DroneModel.replace(DroneModel.split('\\').pop().split('/').pop(), ''),
             DroneModel.split('\\').pop().split('/').pop(),
             this.mainScene.scene,
-            function (newMeshes) {
-                that.afterLoad(newMeshes);
+            (newMeshes) => {
+                this.afterLoad(newMeshes);
             }
         );
     }

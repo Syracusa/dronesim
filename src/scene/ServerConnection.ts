@@ -9,27 +9,25 @@ export class ServerConnection {
 
     constructor(nodeManager: NodeManager) {
         this.nodeManager = nodeManager;
-        const that = this;
         window.electronAPI.requestWorkerChannel((data: any) => {
-            that.workerConnected = true;
-            that.handleWorkerMessage(data);
+            this.workerConnected = true;
+            this.handleWorkerMessage(data);
         });
 
-        ServerConnection.waitWorkerConnection(this);
+        this.waitWorkerConnection();
 
         this.backgroundWork();
     }
 
     backgroundWork() {
-        const that = this;
         this.sendNodeLinkState();
         setTimeout(() => {
-            that.backgroundWork();
-        }, that.linkInfoIntervalMs);
+            this.backgroundWork();
+        }, this.linkInfoIntervalMs);
     }
 
-    static async waitWorkerConnection(that: ServerConnection) {
-        while (!that.workerConnected) {
+    async waitWorkerConnection() {
+        while (!this.workerConnected) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
     }

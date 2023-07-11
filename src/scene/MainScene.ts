@@ -75,15 +75,13 @@ export class MainScene {
 
     startRenderLoop() {
         let scene = this.scene;
-        const that = this;
-
-        this.engine.runRenderLoop(function () {
-            if (that.renderWhenDirty) {
-                if (that.dirty) {
+        this.engine.runRenderLoop(() => {
+            if (this.renderWhenDirty) {
+                if (this.dirty) {
                     scene.render();
-                    that.dirty = false;
+                    this.dirty = false;
                 } else {
-                    if (that.checkCameraMoved()) {
+                    if (this.checkCameraMoved()) {
                         scene.render();
                     }
                 }
@@ -94,9 +92,9 @@ export class MainScene {
 
             /* Calculate Time between frames */
             let curr = performance.now();
-            let delta = curr - that.lastRender;
-            that.updateScene(delta);
-            that.lastRender = curr;
+            let delta = curr - this.lastRender;
+            this.updateScene(delta);
+            this.lastRender = curr;
         });
     }
 
