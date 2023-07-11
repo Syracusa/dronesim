@@ -19,12 +19,23 @@ export interface ScenarioConf {
 export class Scenario {
     mainScene: MainScene;
     nodeManager: NodeManager;
+    serverConnection: ServerConnection;
 
     nodeCurrPos: BABYLON.Vector3[] = [];
     conf = sample1 as ScenarioConf;
+    initdone = false;
 
-    constructor(mainScene: MainScene) {
+    constructor(mainScene: MainScene, nodeManager: NodeManager, serverConnection: ServerConnection) {
+        this.mainScene = mainScene;
+        this.nodeManager = nodeManager;
+        this.serverConnection = serverConnection;
 
+        this.initAsync();
+    }
+
+    async initAsync() {
+        await this.nodeManager.createNodes(this.conf.nodeNum);
+        this.initdone = true;
     }
 
     update(timeDiff: number) {
@@ -32,11 +43,11 @@ export class Scenario {
     }
 
     start() {
+        if (!this.initdone) {
+            console.error('Scenario not initialized');
+            return;
+        }
         console.log('Start scenario');
+        this.serverConnection.sendStartSimulation();
     }
-
-    stop() {
-        console.log('Stop scenario');
-    }
-
 }

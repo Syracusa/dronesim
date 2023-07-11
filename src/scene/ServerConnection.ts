@@ -2,17 +2,17 @@ import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { NodeManager } from "./NodeManager";
 
 export class ServerConnection {
-    static workerConnected = false;
+    workerConnected = false;
+    tcpConnected = false;
     nodeManager: NodeManager;
     linkInfoIntervalMs: number = 2000;
-    shouldStart = true;
 
     constructor(nodeManager: NodeManager) {
         this.nodeManager = nodeManager;
-
+        const that = this;
         window.electronAPI.requestWorkerChannel((data: any) => {
-            ServerConnection.workerConnected = true;
-            this.handleWorkerMessage(data);
+            that.workerConnected = true;
+            that.handleWorkerMessage(data);
         });
 
         ServerConnection.waitWorkerConnection(this);
@@ -23,20 +23,15 @@ export class ServerConnection {
     backgroundWork() {
         const that = this;
         this.sendNodeLinkState();
-        if (this.shouldStart) {
-            this.sendStartSimulation();
-            this.shouldStart = false;
-        }
         setTimeout(() => {
             that.backgroundWork();
         }, that.linkInfoIntervalMs);
     }
 
     static async waitWorkerConnection(that: ServerConnection) {
-        while (!ServerConnection.workerConnected) {
+        while (!that.workerConnected) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
-        that.shouldStart = true;
     }
 
     handleWorkerMessage(data: any) {
@@ -45,7 +40,11 @@ export class ServerConnection {
             switch (data.type) {
                 case "TcpOnConnect":
                     console.log("TCP connected");
-                    this.shouldStart = true;
+                    this.tcpConnected = true;
+                    break;
+                case "TcpOnClose":
+                    console.log("TCP closed");
+                    this.tcpConnected = false;
                     break;
                 case "TRx":
                     {
@@ -77,7 +76,20 @@ export class ServerConnection {
     }
 
     sendtoServer(json: any) {
+        if (!this.tcpConnected){
+            console.log('TCP not connected, drop message');
+            console.log(json);
+            return;
+        }
+        if (!this.workerConnected) {
+            console.log('Worker not connected, drop message');
+            return;
+        }
         window.electronAPI.sendWorkerChannel(json);
+    }
+
+    sendHeartbeat() {
+        this.sendtoServer({ type: "Heartbeat" });
     }
 
     sendNodeLinkState() {

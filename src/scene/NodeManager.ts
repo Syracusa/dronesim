@@ -164,14 +164,9 @@ export class NodeManager {
     modelLoaded: boolean = false;
     pathMeshes: BABYLON.Mesh[] = [];
     simplifyModel: boolean = false;
-    onModelLoaded: () => void = () => {
-        console.log('No model load callback!');
-    };
 
-
-    constructor(mainScene: MainScene, onModelLoaded: () => void) {
+    constructor(mainScene: MainScene) {
         this.mainScene = mainScene;
-        this.onModelLoaded = onModelLoaded;
 
         this.loadDroneModel();
     }
@@ -318,11 +313,13 @@ export class NodeManager {
         }
     }
 
-    createNodes(nodeNum: number) {
-        if (!this.modelLoaded){
-            console.log('Model not loaded yet!');
-            return;
+    async createNodes(nodeNum: number) {
+        while (!this.modelLoaded) {
+            console.log('Waiting for model load...');
+            await new Promise((resolve) => setTimeout(resolve, 300));
         }
+
+        console.log('Creating nodes... ' + nodeNum + ' nodes');
 
         for (let i = 0; i < nodeNum; i++) {
             const droneInitX =
@@ -361,8 +358,6 @@ export class NodeManager {
 
         this.droneMesh = droneMesh;
         this.modelLoaded = true;
-
-        this.onModelLoaded();
     }
 
     loadDroneModel() {

@@ -382,13 +382,13 @@ export class GuiLayer {
             that.menuViewToggleButtonClicked();
         });
 
-        this.createMenuButton("Save", () => { that.mainScene.saveScene(); });
-        this.createMenuButton("Load", () => { that.mainScene.loadScene(); });
+        this.createMenuButton("Start", () => { that.scenario.start(); });
         this.createMenuButton("Link", () => {
             that.drawLinks = !that.drawLinks;
             that.mainScene.dirty = true;
         });
-        this.createMenuButton("Start", () => { that.scenario.start(); });
-        this.createMenuButton("Stop", () => { that.scenario.stop(); });
+        this.createMenuButton("Save", () => { that.mainScene.saveScene(); });
+        this.createMenuButton("Load", () => { that.mainScene.loadScene(); });
+
     }
 }

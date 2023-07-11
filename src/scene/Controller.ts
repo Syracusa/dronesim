@@ -40,12 +40,11 @@ export class Controller {
 
         const that = this;
         this.shiftHelper = new ShiftHelper(mainScene, this);
-        this.scenario = new Scenario(mainScene);
-        this.nodeManager = new NodeManager(mainScene, () => {
-            that.nodeManager.createNodes(that.scenario.conf.nodeNum);
-        });
-        this.guiLayer = new GuiLayer(mainScene, this.nodeManager, this.scenario);
+        this.nodeManager = new NodeManager(mainScene);
         this.serverConnection = new ServerConnection(this.nodeManager);
+        this.scenario = new Scenario(mainScene, this.nodeManager, this.serverConnection);
+        this.guiLayer = new GuiLayer(mainScene, this.nodeManager, this.scenario);
+
     }
 
     handleMouseDown() {

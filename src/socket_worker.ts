@@ -5,6 +5,7 @@ import stream from 'node:stream';
 class SocketWorker {
     jsonIo = new JsonIoClient();
     ports: MessagePort[] = [];
+    backendConnected: boolean = false;
 
     constructor() {
         const that = this;
@@ -13,14 +14,27 @@ class SocketWorker {
         };
         this.jsonIo.onConnect = () => {
             console.log('Server connected');
+            that.backendConnected = true;
             that.ports.forEach(port => {
                 port.postMessage({ type: "TcpOnConnect" })
             });
-        }
+        };
+        this.jsonIo.onClose = () => {
+            console.log('Server closed');
+            that.backendConnected = false;
+            that.ports.forEach(port => {
+                port.postMessage({ type: "TcpOnClose" });
+            });
+        };
 
         ipcRenderer.on('new-client', (event) => {
             const port = event.ports[0];
             console.log('New socket listener.');
+
+            /* Send TCP connection status to new client */
+            if (that.backendConnected) {
+                port.postMessage({ type: "TcpOnConnect" });
+            }
             that.ports.push(port);
 
             port.onmessage = (event) => {
@@ -42,6 +56,9 @@ class JsonIoClient {
     onConnect: () => void = () => {
         console.log('JsonIoClient - Server connected');
     };
+    onClose: () => void = () => {
+        console.log('JsonIoClient - Server closed');
+    }
 
     constructor() {
         const that = this;
@@ -51,6 +68,9 @@ class JsonIoClient {
         this.tcpClient.onConnect = () => {
             that.streambuf.read(); /* clear buffer */
             that.onConnect();
+        }
+        this.tcpClient.onClose = () => {
+            that.onClose();
         }
     }
 
@@ -99,6 +119,9 @@ class TcpClient {
     };
     onConnect: () => void = () => {
         console.log('TcpClient - Server connected');
+    };
+    onClose: () => void = () => {
+        console.log('TcpClient - Server closed');
     };
 
     constructor(serverAddr?: string, serverPort?: number) {
