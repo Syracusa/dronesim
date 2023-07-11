@@ -16,7 +16,7 @@ export class ServerConnection {
         this.backgroundWork();
     }
 
-    backgroundWork() {
+    private backgroundWork() {
         this.sendNodeLinkState();
         setTimeout(() => {
             this.backgroundWork();
@@ -38,7 +38,7 @@ export class ServerConnection {
         node.guiInfoDirty = true;
     }
 
-    handleWorkerMessage(data: any) {
+    private handleWorkerMessage(data: any) {
         if (data.hasOwnProperty("type")) {
             switch (data.type) {
                 case "TcpOnConnect":
@@ -64,24 +64,11 @@ export class ServerConnection {
         }
     }
 
-    sendtoServer(json: any) {
-        if (!this.tcpConnected){
-            console.log('TCP not connected, drop message');
-            console.log(json);
-            return;
-        }
-        if (!this.workerConnected) {
-            console.log('Worker not connected, drop message');
-            return;
-        }
-        window.electronAPI.sendWorkerChannel(json);
-    }
-
-    sendHeartbeat() {
+    private sendHeartbeat() {
         this.sendtoServer({ type: "Heartbeat" });
     }
 
-    sendNodeLinkState() {
+    private sendNodeLinkState() {
         const nodenum = this.nodeManager.nodeList.length;
         const nodeLinkInfo: number[][] = [];
         for (let i = 0; i < nodenum; i++) {
@@ -103,7 +90,20 @@ export class ServerConnection {
         this.sendtoServer(json);
     }
 
-    sendStartSimulation() {
+    public sendtoServer(json: any) {
+        if (!this.tcpConnected){
+            console.log('TCP not connected, drop message');
+            console.log(json);
+            return;
+        }
+        if (!this.workerConnected) {
+            console.log('Worker not connected, drop message');
+            return;
+        }
+        window.electronAPI.sendWorkerChannel(json);
+    }
+
+    public sendStartSimulation() {
         console.log("Send start simulation");
         let json = {
             type: "Start",

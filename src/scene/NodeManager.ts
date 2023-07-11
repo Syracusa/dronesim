@@ -168,9 +168,8 @@ export class NodeManager {
     }
 
     disposePathMeshes() {
-        for (let i = 0; i < this.pathMeshes.length; i++) {
+        for (let i = 0; i < this.pathMeshes.length; i++) 
             this.pathMeshes[i].dispose(false, true);
-        }
         this.pathMeshes = [];
     }
 
@@ -244,8 +243,6 @@ export class NodeManager {
                 path: points,
                 radiusFunction: (i, distance) => {
                     switch (i) {
-                        // case 0:
-                        //     return 0.1;
                         case points.length - 1:
                             return 0.0;
                         case points.length - 2:
@@ -311,11 +308,9 @@ export class NodeManager {
 
     async createNodes(nodeNum: number) {
         while (!this.modelLoaded) {
-            console.log('Waiting for model load...');
+            console.log('Model is being loaded');
             await new Promise((resolve) => setTimeout(resolve, 300));
         }
-
-        console.log('Creating nodes... ' + nodeNum + ' nodes');
 
         for (let i = 0; i < nodeNum; i++) {
             const droneInitX =
@@ -330,6 +325,7 @@ export class NodeManager {
             this.nodeList.push(newNode);
             this.nodeNumber++;
         }
+        this.mainScene.dirty = true;
     }
 
     afterLoad(newMeshes: BABYLON.AbstractMesh[]) {

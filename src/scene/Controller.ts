@@ -7,48 +7,36 @@ import { ServerConnection } from "./ServerConnection";
 import { Scenario } from "./Scenario";
 
 export class Controller {
-    keystate: any;
-    lookTarget: BABYLON.Mesh;
-    camera: BABYLON.FollowCamera;
-    scene: BABYLON.Scene;
-    shiftHelper: ShiftHelper;
-    dragStartX: number;
-    dragStartY: number;
-    selTarget: BABYLON.Mesh;
-    isDragging: boolean = false;
-    guiLayer: GuiLayer;
-    nodeManager: NodeManager;
-    serverConnection: ServerConnection;
-    dragHandlerExist: boolean = false;
-    scenario: Scenario;
+    private readonly shiftHelper = new ShiftHelper(this.mainScene, this);;
+    private readonly nodeManager = new NodeManager(this.mainScene);
+    private readonly serverConnection = new ServerConnection(this.nodeManager);
+    private readonly scenario = new Scenario(this.mainScene, this.nodeManager, this.serverConnection);;
+    private readonly guiLayer = new GuiLayer(this.mainScene, this.nodeManager, this.scenario);
 
+    private keystate: any = {};
+    private lookTarget: BABYLON.Mesh;
+    private camera: BABYLON.FollowCamera;
+    private selTarget: BABYLON.Mesh;
+    private isDragging: boolean = false;
+    private dragHandlerExist: boolean = false;
+    
+    public dragStartX: number;
+    public dragStartY: number;
+    
     constructor(private readonly mainScene: MainScene) {
-        this.scene = this.mainScene.scene;
-        this.keystate = {};
         this.createCamera();
-
-        window.onkeydown = (e) => {
-            this.keystate[e.key] = 1;
-        }
-        window.onkeyup = (e) => {
-            this.keystate[e.key] = 0;
-        }
-
         this.setMouseHandler();
-
-        this.shiftHelper = new ShiftHelper(mainScene, this);
-        this.nodeManager = new NodeManager(mainScene);
-        this.serverConnection = new ServerConnection(this.nodeManager);
-        this.scenario = new Scenario(mainScene, this.nodeManager, this.serverConnection);
-        this.guiLayer = new GuiLayer(mainScene, this.nodeManager, this.scenario);
+        window.onkeydown = (e) => { this.keystate[e.key] = 1; };
+        window.onkeyup = (e) => { this.keystate[e.key] = 0; };
     }
 
-    handleMouseDown() {
-        this.isDragging = true;
-        this.dragStartX = this.scene.pointerX;
-        this.dragStartY = this.scene.pointerY;
+    private handleMouseDown() {
+        const scene = this.mainScene.scene;
 
-        const scene = this.scene;
+        this.isDragging = true;
+        this.dragStartX = scene.pointerX;
+        this.dragStartY = scene.pointerY;
+
         const ray = scene.createPickingRay(scene.pointerX, scene.pointerY,
             BABYLON.Matrix.Identity(), this.camera, false);
         const hit = scene.pickWithRay(ray);
@@ -60,9 +48,8 @@ export class Controller {
                 this.selTarget = mesh as BABYLON.Mesh;
                 if (meta.onMouseDown)
                     meta.onMouseDown();
-                if (meta.draggable) {
+                if (meta.draggable) 
                     this.shiftHelper.setTarget(mesh as BABYLON.Mesh);
-                }
 
                 if (meta.type) {
                     if (meta.type == 'terrain') {
@@ -84,26 +71,27 @@ export class Controller {
         }
     }
 
-    getDraggedNodes(): Node[] {
-        let draggedNodes: Node[] = [];
-        let nodeList = this.nodeManager.nodeList;
+    private getDraggedNodes(): Node[] {
+        const scene = this.mainScene.scene;
+        const draggedNodes: Node[] = [];
+        const nodeList = this.nodeManager.nodeList;
         for (let i = 0; i < nodeList.length; i++) {
             let clientPos = this.mainScene.worldVec3toClient(
                 nodeList[i].clonePosition());
 
             let x1, x2, y1, y2;
-            if (this.dragStartX < this.scene.pointerX) {
+            if (this.dragStartX < scene.pointerX) {
                 x1 = this.dragStartX;
-                x2 = this.scene.pointerX;
+                x2 = scene.pointerX;
             } else {
-                x1 = this.scene.pointerX;
+                x1 = scene.pointerX;
                 x2 = this.dragStartX;
             }
-            if (this.dragStartY < this.scene.pointerY) {
+            if (this.dragStartY < scene.pointerY) {
                 y1 = this.dragStartY;
-                y2 = this.scene.pointerY;
+                y2 = scene.pointerY;
             } else {
-                y1 = this.scene.pointerY;
+                y1 = scene.pointerY;
                 y2 = this.dragStartY;
             }
 
@@ -115,7 +103,7 @@ export class Controller {
         return draggedNodes;
     }
 
-    handleMouseUp() {
+    private handleMouseUp() {
         this.isDragging = false;
 
         if (!this.dragHandlerExist) {
@@ -132,7 +120,7 @@ export class Controller {
         this.guiLayer.updateDragIndicator(0, 0, 0, 0);
     }
 
-    handleMouseMove() {
+    private handleMouseMove() {
         this.dragHandlerExist = false;
         if (this.selTarget) {
             if (this.selTarget.metadata) {
@@ -143,57 +131,53 @@ export class Controller {
             }
         }
 
+        const scene = this.mainScene.scene;
         if (!this.dragHandlerExist && this.isDragging) {
             this.guiLayer.updateDragIndicator(
                 this.dragStartX, this.dragStartY,
-                this.scene.pointerX, this.scene.pointerY);
+                scene.pointerX, scene.pointerY);
         }
     }
 
-    setMouseHandlerInContext(pointerInfo: BABYLON.PointerInfo) {
-        switch (pointerInfo.type) {
-            case BABYLON.PointerEventTypes.POINTERDOWN:
-                this.handleMouseDown();
-                break;
-            case BABYLON.PointerEventTypes.POINTERUP:
-                this.handleMouseUp();
-                break;
-            case BABYLON.PointerEventTypes.POINTERMOVE:
-                this.handleMouseMove();
-                break;
-            case BABYLON.PointerEventTypes.POINTERWHEEL:
-
-                break;
-            case BABYLON.PointerEventTypes.POINTERPICK:
-
-                break;
-            case BABYLON.PointerEventTypes.POINTERTAP:
-
-                break;
-            case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
-
-                break;
-        }
-        this.mainScene.dirty = true;
-    }
-
-    setMouseHandler() {
+    private setMouseHandler() {
         this.mainScene.scene.onPointerObservable.add((pointerInfo) => {
-            this.setMouseHandlerInContext(pointerInfo);
+            switch (pointerInfo.type) {
+                case BABYLON.PointerEventTypes.POINTERDOWN:
+                    this.handleMouseDown();
+                    break;
+                case BABYLON.PointerEventTypes.POINTERUP:
+                    this.handleMouseUp();
+                    break;
+                case BABYLON.PointerEventTypes.POINTERMOVE:
+                    this.handleMouseMove();
+                    break;
+                case BABYLON.PointerEventTypes.POINTERWHEEL:
+    
+                    break;
+                case BABYLON.PointerEventTypes.POINTERPICK:
+    
+                    break;
+                case BABYLON.PointerEventTypes.POINTERTAP:
+    
+                    break;
+                case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
+    
+                    break;
+            }
+            this.mainScene.dirty = true;
         });
     }
 
-    createLookTarget() {
+    private createLookTarget() {
         const sphere = BABYLON.MeshBuilder.CreateSphere("sphere",
             { diameter: 1, segments: 16 },
             this.mainScene.scene);
         sphere.position = new BABYLON.Vector3(90, 10, 90);
-        // sphere.position = new BABYLON.Vector3(0, 10, 0);
         sphere.isVisible = false;
         this.lookTarget = sphere;
     }
 
-    createCamera() {
+    private createCamera() {
         this.createLookTarget();
 
         let campos = this.lookTarget.position.clone();
@@ -215,7 +199,7 @@ export class Controller {
         this.camera = camera;
     }
 
-    camUpdate(delta: number) {
+    private camUpdate(delta: number) {
         let lookXZDir = this.lookTarget.position.clone()
             .subtractInPlace(this.camera.position);
         lookXZDir.y = 0;
@@ -274,13 +258,8 @@ export class Controller {
         if (this.isKeyPressed("PageDown"))
             this.camera.heightOffset -= 0.06 * delta;
     }
-
-    update(delta: number) {
-        this.guiLayer.update();
-        this.camUpdate(delta);
-    }
-
-    isKeyPressed(key: string) {
+    
+    private isKeyPressed(key: string) {
         if (key in this.keystate) {
             if (this.keystate[key] == 1) {
                 this.mainScene.dirty = true;
@@ -292,5 +271,9 @@ export class Controller {
             return false;
         }
     }
-
+    
+    public update(delta: number) {
+        this.guiLayer.update();
+        this.camUpdate(delta);
+    }
 }

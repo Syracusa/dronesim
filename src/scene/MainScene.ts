@@ -1,64 +1,47 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { Terrain } from './Terrain';
 import { Controller } from "./Controller";
-import { Scenario } from "./Scenario";
 
 export class MainScene {
-    canvas: HTMLCanvasElement;
-    engine: BABYLON.Engine;
-    scene: BABYLON.Scene;
-    controller: Controller;
-    terrain: Terrain;
-    highlightLayer: BABYLON.HighlightLayer;
-    shadowGenerator: BABYLON.ShadowGenerator;
+    /* Don't change order */
+    private readonly canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
+    public readonly engine = new BABYLON.Engine(this.canvas, true, {stencil: true});
+    public readonly scene = new BABYLON.Scene(this.engine);
+    public readonly highlightLayer = new BABYLON.HighlightLayer("highlightLayer", this.scene);
+    private readonly controller = new Controller(this);
+    readonly terrain = new Terrain(this);
 
-    renderWhenDirty: boolean = true;
-    dirty: boolean = true;
-    oldCampos: BABYLON.Vector3;
-    scenario: Scenario;
-
-    lastRender = performance.now();
+    private readonly renderWhenDirty: boolean = true;
+    private readonly useOptimzer: boolean = false;
+    private oldCampos: BABYLON.Vector3;
+    private lastRender = performance.now();
+    
+    public shadowGenerator: BABYLON.ShadowGenerator;
+    public dirty: boolean = true;
 
     constructor() {
-        const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
-        this.canvas = canvas;
-        const engine = new BABYLON.Engine(canvas, true, {stencil: true});
-        this.engine = engine;
-        const scene = new BABYLON.Scene(engine);
-        this.scene = scene;
-        const highlightLayer = new BABYLON.HighlightLayer("highlightLayer", scene);
-        this.highlightLayer = highlightLayer;
-
-        const USE_OPTIMIZER = false;
-        if (USE_OPTIMIZER) {
+        if (this.useOptimzer) {
             const options = new BABYLON.SceneOptimizerOptions();
             options.addOptimization(new BABYLON.HardwareScalingOptimization(0, 1));
-
-            const optimizer = new BABYLON.SceneOptimizer(scene, options);
-            optimizer.start();
+            new BABYLON.SceneOptimizer(this.scene, options).start();
         }
 
+        this.scene.autoClear = false;
+        this.scene.autoClearDepthAndStencil = false;
+        
         this.createLight();
-
-        this.terrain = new Terrain(this);
-        this.controller = new Controller(this);
-
-        scene.autoClear = false;
-        scene.autoClearDepthAndStencil = false;
         this.startRenderLoop();
 
-        window.addEventListener("resize", function () {
-            engine.resize();
+        window.addEventListener("resize", () => {
+            this.engine.resize();
         });
-
-
     }
     
-    updateScene(delta: number) {
+    private updateScene(delta: number) {
         this.controller.update(delta);
     }
 
-    checkCameraMoved() {
+    private checkCameraMoved() {
         const campos = this.scene.activeCamera.position;
         if (!this.oldCampos) {
             this.oldCampos = campos;
@@ -73,8 +56,8 @@ export class MainScene {
         return false;
     }
 
-    startRenderLoop() {
-        let scene = this.scene;
+    private startRenderLoop() {
+        const scene = this.scene;
         this.engine.runRenderLoop(() => {
             if (this.renderWhenDirty) {
                 if (this.dirty) {
@@ -98,7 +81,7 @@ export class MainScene {
         });
     }
 
-    createLight() {
+    private createLight() {
         const light = new BABYLON.DirectionalLight("DirectionalLight",
             new BABYLON.Vector3(0, -1, 0.1), this.scene);
         light.intensity = 1.5;
@@ -116,7 +99,7 @@ export class MainScene {
         ambientLight.intensity = 0.2;
     };
 
-    worldVec3toClient(vec3: BABYLON.Vector3): BABYLON.Vector3 {
+    public worldVec3toClient(vec3: BABYLON.Vector3): BABYLON.Vector3 {
         const scene = this.scene;
         const camera = scene.activeCamera;
         const transform = BABYLON.Vector3.Project(
@@ -131,8 +114,8 @@ export class MainScene {
         return transform;
     }
 
-    download(filename: string, contents: string) {
-        var element = document.createElement('a');
+    private download(filename: string, contents: string) {
+        const element = document.createElement('a');
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(contents));
         element.setAttribute('download', filename);
         element.style.display = 'none';
@@ -142,7 +125,7 @@ export class MainScene {
         document.body.removeChild(element);
     }
 
-    saveScene() {
+    public saveScene() {
         console.log('Save Scene');
         const terr = JSON.stringify(this.terrain.heights);
 
@@ -152,7 +135,7 @@ export class MainScene {
             + '.dat', terr);
     }
 
-    loadScene() {
+    public loadScene() {
         console.log('Load Scene');
         const input = document.createElement('input') as HTMLInputElement;
         input.type = 'file';

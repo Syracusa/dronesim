@@ -4,38 +4,37 @@ import * as GUI from "@babylonjs/gui/Legacy/legacy";
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { Scenario } from "./Scenario";
 
-interface DroneLink {
+interface NodeLink {
     linkLine: GUI.Line;
     linkText: GUI.TextBlock;
 }
 
 interface NodeGUI {
     nameCard: GUI.Button;
-    links: DroneLink[];
+    links: NodeLink[];
 }
 
 export class GuiLayer {
     /* GUIs */
-    advancedTexture: GUI.AdvancedDynamicTexture;
+    private readonly advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
-    nodeGUIs: NodeGUI[] = [];
-    menuButtons: GUI.Button[] = [];
+    private nodeGUIs: NodeGUI[] = [];
+    private menuButtons: GUI.Button[] = [];
 
-    infoPanel: GUI.TextBlock;
-    nodeInfo: GUI.TextBlock;
-    dragIndicator: GUI.Rectangle;
-    menuViewToggleBotton: GUI.Button;
+    private infoPanel: GUI.TextBlock;
+    private nodeInfo: GUI.TextBlock;
+    private dragIndicator: GUI.Rectangle;
 
     /* Update Interval */
-    useUpdateInterval: boolean = true;
-    updateIntervalMs: number = 20;
-    lastUpdate = 0;
+    private readonly useUpdateInterval: boolean = true;
+    private readonly updateIntervalMs: number = 20;
+    private lastUpdate = 0;
 
     /* ETC */
-    menuButtonOffset: number = 12;
-    menuOpened: boolean = true;
-    drawLinks: boolean = true;
-    targetNodeIdx: number = -1;
+    private menuButtonOffset: number = 12;
+    private menuOpened: boolean = true;
+    private drawLinks: boolean = true;
+    private targetNodeIdx: number = -1;
 
     constructor(
         private readonly mainScene: MainScene,
@@ -46,14 +45,14 @@ export class GuiLayer {
         this.backgroundWork();
     }
 
-    backgroundWork() {
+    private backgroundWork() {
         this.updateNodeInfo();
         setTimeout(() => {
             this.backgroundWork();
         }, 1000);
     }
 
-    update() {
+    public update() {
         if (this.useUpdateInterval) {
             if (performance.now() - this.lastUpdate < this.updateIntervalMs)
                 return;
@@ -65,12 +64,12 @@ export class GuiLayer {
         this.updateDroneLinkLines();
     }
 
-    static createNewLink(advancedTexture: GUI.AdvancedDynamicTexture) {
-        const link = new Object() as DroneLink;
+    private createNewLink() {
+        const link = new Object() as NodeLink;
         link.linkLine = new GUI.Line();
         link.linkLine.lineWidth = 1.0;
         link.linkLine.color = "white";
-        advancedTexture.addControl(link.linkLine);
+        this.advancedTexture.addControl(link.linkLine);
 
         link.linkText = new GUI.TextBlock();
         link.linkText.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
@@ -83,12 +82,12 @@ export class GuiLayer {
         link.linkText.height = "15px";
         link.linkText.alpha = 0.5;
         link.linkText.fontSize = 10;
-        advancedTexture.addControl(link.linkText);
+        this.advancedTexture.addControl(link.linkText);
 
         return link;
     }
 
-    updateLink(linkLine: GUI.Line, linkText: GUI.TextBlock,
+    private updateLink(linkLine: GUI.Line, linkText: GUI.TextBlock,
         clipos1: BABYLON.Vector3,
         clipos2: BABYLON.Vector3,
         distance: number) {
@@ -114,7 +113,7 @@ export class GuiLayer {
         }
     }
 
-    updateOneDroneLinkLine(nodeidx1: number, nodeidx2: number) {
+    private updateOneDroneLinkLine(nodeidx1: number, nodeidx2: number) {
         const nodes = this.nodeManager.nodeList;
         const node1 = nodes[nodeidx1];
         const node2 = nodes[nodeidx2];
@@ -141,13 +140,13 @@ export class GuiLayer {
         this.updateLink(linkLine, linkText, clientDrone1Pos, clientDrone2Pos, nodeDistance);
     }
 
-    updateDroneLinkLines() {
+    private updateDroneLinkLines() {
         const nodes = this.nodeManager.nodeList;
         for (let i = 0; i < nodes.length; i++) {
             for (let j = i + 1; j < nodes.length; j++) {
                 if (this.nodeGUIs[i].links.length < j - i) {
                     for (let k = this.nodeGUIs[i].links.length; k < j - i; k++) {
-                        this.nodeGUIs[i].links.push(GuiLayer.createNewLink(this.advancedTexture));
+                        this.nodeGUIs[i].links.push(this.createNewLink());
                     }
                 }
                 this.updateOneDroneLinkLine(i, j);
@@ -155,7 +154,7 @@ export class GuiLayer {
         }
     }
 
-    updateNodeInfo() {
+    private updateNodeInfo() {
         const targetNodeIdx = this.targetNodeIdx;
         if (targetNodeIdx < 0)
             return;
@@ -181,17 +180,14 @@ export class GuiLayer {
         }
     }
 
-    onClickDroneButton(i: number) {
+    private onClickDroneButton(i: number) {
         this.nodeManager.disposePathMeshes();
         this.targetNodeIdx = i;
         this.updateNodeInfo();
         this.drawLinks = false;
     }
 
-    createNewDroneButton(buttonIdx: number) {
-        let droneGUI: NodeGUI = new Object() as NodeGUI;
-        droneGUI.links = [];
-
+    private createNewDroneButton(buttonIdx: number) {
         let card = GUI.Button.CreateSimpleButton("but " + buttonIdx, "Drone " + buttonIdx);
         card.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
         card.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
@@ -206,11 +202,10 @@ export class GuiLayer {
         card.onPointerUpObservable.add(() => { this.onClickDroneButton(buttonIdx); });
 
         this.advancedTexture.addControl(card);
-        droneGUI.nameCard = card;
-        this.nodeGUIs.push(droneGUI);
+        this.nodeGUIs.push({nameCard: card, links: []});
     }
 
-    createNewDroneButtonsIfNeeded() {
+    private createNewDroneButtonsIfNeeded() {
         const nodes = this.nodeManager.nodeList;
 
         if (this.nodeGUIs.length < nodes.length) {
@@ -220,7 +215,7 @@ export class GuiLayer {
         }
     }
 
-    updateDroneButtons() {
+    private updateDroneButtons() {
         this.createNewDroneButtonsIfNeeded();
 
         const nodes = this.nodeManager.nodeList;
@@ -240,7 +235,7 @@ export class GuiLayer {
         }
     }
 
-    updatePanelText() {
+    private updatePanelText() {
         let text = "";
         text += "FPS: " + this.mainScene.engine.getFps().toFixed() + "\n";
         text += "Pointer: "
@@ -248,31 +243,14 @@ export class GuiLayer {
         this.infoPanel.text = text;
     }
 
-    updateDragIndicator(x1: number, y1: number, x2: number, y2: number) {
-        if (x1 > x2) {
-            let tmp = x1;
-            x1 = x2;
-            x2 = tmp;
-        }
-        if (y1 > y2) {
-            let tmp = y1;
-            y1 = y2;
-            y2 = tmp;
-        }
-        this.dragIndicator.left = x1 + "px";
-        this.dragIndicator.top = y1 + "px";
-        this.dragIndicator.width = (x2 - x1) + "px";
-        this.dragIndicator.height = (y2 - y1) + "px";
-    }
-
-    menuViewToggleButtonClicked() {
+    private menuViewToggleButtonClicked() {
         this.menuOpened = !this.menuOpened;
-        for (let i = 0; i < this.menuButtons.length; i++) {
+        for (let i = 0; i < this.menuButtons.length; i++)
             this.menuButtons[i].isVisible = this.menuOpened;
-        }
+        this.mainScene.dirty = true;
     }
 
-    createMenuButton(name: string, callback: () => void) {
+    private createMenuButton(name: string, callback: () => void) {
         const sceneSaveButton = GUI.Button.CreateSimpleButton("but", name);
         sceneSaveButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
         sceneSaveButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
@@ -286,7 +264,7 @@ export class GuiLayer {
         sceneSaveButton.alpha = 1.0
         sceneSaveButton.zIndex = 5;
         sceneSaveButton.isVisible = this.menuOpened;
-        sceneSaveButton.onPointerUpObservable.add(function () {
+        sceneSaveButton.onPointerUpObservable.add(() => {
             callback();
         });
 
@@ -295,7 +273,7 @@ export class GuiLayer {
         this.menuButtonOffset += 12;
     }
 
-    static createInfoPanel(advancedTexture: GUI.AdvancedDynamicTexture) {
+    private createInfoPanel() {
         const infoPanel = new GUI.TextBlock();
         infoPanel.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
         infoPanel.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
@@ -305,12 +283,11 @@ export class GuiLayer {
         infoPanel.color = "white";
         infoPanel.height = "300px";
         infoPanel.fontSize = 10;
-        advancedTexture.addControl(infoPanel);
-
-        return infoPanel;
+        this.advancedTexture.addControl(infoPanel);
+        this.infoPanel = infoPanel;
     }
 
-    static createNodeInfoPanel(advancedTexture: GUI.AdvancedDynamicTexture) {
+    private createNodeInfoPanel() {
         const nodeInfo = new GUI.TextBlock();
         nodeInfo.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
         nodeInfo.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_BOTTOM;
@@ -320,11 +297,11 @@ export class GuiLayer {
         nodeInfo.color = "white";
         nodeInfo.resizeToFit = true;
         nodeInfo.fontSize = 10;
-        advancedTexture.addControl(nodeInfo);
-        return nodeInfo;
+        this.advancedTexture.addControl(nodeInfo);
+        this.nodeInfo = nodeInfo;
     }
 
-    static createDragIndicator(advancedTexture: GUI.AdvancedDynamicTexture) {
+    private createDragIndicator() {
         const dragIndicator = new GUI.Rectangle();
         dragIndicator.width = "1px";
         dragIndicator.height = "1px";
@@ -336,11 +313,11 @@ export class GuiLayer {
         dragIndicator.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
         dragIndicator.isPointerBlocker = false;
         dragIndicator.isVisible = true;
-        advancedTexture.addControl(dragIndicator);
-        return dragIndicator;
+        this.advancedTexture.addControl(dragIndicator);
+        this.dragIndicator = dragIndicator;
     }
 
-    static createMenuViewToggleButton(advancedTexture: GUI.AdvancedDynamicTexture) {
+    private createMenuViewToggleButton() {
         const menuViewToggleButton = GUI.Button.CreateSimpleButton("but", "Menu");
         menuViewToggleButton.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
         menuViewToggleButton.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
@@ -352,36 +329,43 @@ export class GuiLayer {
         menuViewToggleButton.fontSize = 10;
         menuViewToggleButton.alpha = 1.0
         menuViewToggleButton.zIndex = 5;
-
-        advancedTexture.addControl(menuViewToggleButton);
-        return menuViewToggleButton;
-    }
-
-    makeControls() {
-        const advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        this.advancedTexture = advancedTexture;
-
-        const style = advancedTexture.createStyle();
-        style.fontSize = 3;
-        style.fontStyle = "bold";
-
-        this.infoPanel = GuiLayer.createInfoPanel(advancedTexture);
-        this.nodeInfo = GuiLayer.createNodeInfoPanel(advancedTexture);
-        this.dragIndicator = GuiLayer.createDragIndicator(advancedTexture);
-        this.menuViewToggleBotton = GuiLayer.createMenuViewToggleButton(advancedTexture);
-        this.menuViewToggleBotton.onPointerUpObservable.add(() => {
+        menuViewToggleButton.onPointerUpObservable.add(() => {
             this.menuViewToggleButtonClicked();
         });
+
+        this.advancedTexture.addControl(menuViewToggleButton);
+    }
+
+    private makeControls() {
+        this.createInfoPanel();
+        this.createNodeInfoPanel();
+        this.createDragIndicator();
+        this.createMenuViewToggleButton();
 
         this.createMenuButton("Start", () => { this.scenario.start(); });
         this.createMenuButton("Pause", () => { this.scenario.pause(); });
         this.createMenuButton("Resume", () => { this.scenario.resume(); });
         this.createMenuButton("Link", () => {
             this.drawLinks = !this.drawLinks;
+            this.updateDroneLinkLines();
             this.mainScene.dirty = true;
         });
         this.createMenuButton("Save", () => { this.mainScene.saveScene(); });
         this.createMenuButton("Load", () => { this.mainScene.loadScene(); });
-
     }
+
+    public updateDragIndicator(x1: number, y1: number, x2: number, y2: number) {
+        if (x1 > x2)
+            [x1, x2] = [x2, x1];
+
+        if (y1 > y2)
+            [y1, y2] = [y2, y1];
+            
+        const dragIndicator = this.dragIndicator;
+        dragIndicator.left = x1 + "px";
+        dragIndicator.top = y1 + "px";
+        dragIndicator.width = (x2 - x1) + "px";
+        dragIndicator.height = (y2 - y1) + "px";
+    }
+
 }
