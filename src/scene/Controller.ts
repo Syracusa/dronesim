@@ -38,11 +38,9 @@ export class Controller {
 
         this.setMouseHandler();
         this.shiftHelper = new ShiftHelper(mainScene, this);
-
-
-
+        this.scenario = new Scenario(mainScene);
+        this.nodeManager = new NodeManager(mainScene, this.scenario);
         this.guiLayer = new GuiLayer(mainScene, this.nodeManager);
-
         this.serverConnection = new ServerConnection(this.nodeManager);
     }
 

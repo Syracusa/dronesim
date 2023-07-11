@@ -23,7 +23,7 @@ export class Scenario {
     conf = sample1 as ScenarioConf;
 
     constructor(mainScene: MainScene) {        
-        this.nodeManager = new NodeManager(mainScene, this);
+        
     }
     
     update(timeDiff: number) {
