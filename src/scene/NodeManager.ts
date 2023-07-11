@@ -351,7 +351,6 @@ export class NodeManager {
             NodeManager.simplifyMeshes(newMeshes);
 
         droneMesh.position = new BABYLON.Vector3(0, 0, 0);
-        droneMesh.scaling = new BABYLON.Vector3(0.2, 0.2, 0.2);
         droneMesh.rotation.y = Math.PI / 2;
         droneMesh.rotation.x = Math.PI / 2;
         droneMesh.rotation.z = Math.PI / 2;
