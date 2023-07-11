@@ -3,13 +3,13 @@ import { MainScene } from "./MainScene";
 import { Controller } from "./Controller";
 
 export class ShiftHelper {
-    arrowOrigin: BABYLON.Mesh;
-    target: BABYLON.Mesh;
-    dragStartPos: BABYLON.Vector3;
-    arrowLength: number = 4;
-    isMultiTarget: boolean = false;
-    multiTargetRelPos: BABYLON.Vector3[] = [];
-    targets: BABYLON.Mesh[] = [];
+    private arrowOrigin: BABYLON.Mesh;
+    private target: BABYLON.Mesh;
+    private dragStartPos: BABYLON.Vector3;
+    private readonly arrowLength: number = 4;
+    private isMultiTarget: boolean = false;
+    private multiTargetRelPos: BABYLON.Vector3[] = [];
+    private targets: BABYLON.Mesh[] = [];
 
     constructor(
         private readonly mainScene: MainScene,
@@ -19,58 +19,7 @@ export class ShiftHelper {
         this.releaseTarget();
     }
 
-    setMultiTarget(targets: BABYLON.Mesh[]) {
-        this.targets = targets;
-        this.isMultiTarget = true;
-        let childs = this.arrowOrigin.getChildren();
-        for (let i = 0; i < childs.length; i++) {
-            let onechild = childs[i] as BABYLON.Mesh;
-            onechild.isVisible = true;
-        }
-        let targetPos = BABYLON.Vector3.Zero();
-        for (let i = 0; i < targets.length; i++) {
-            let oneTarget = targets[i];
-            targetPos.addInPlace(oneTarget.position);
-        }
-        targetPos.scaleInPlace(1 / targets.length);
-        this.arrowOrigin.position = targetPos;
-        this.target = null;
-
-        // calc relative pos
-        this.multiTargetRelPos = [];
-        for (let i = 0; i < targets.length; i++) {
-            let oneTarget = targets[i];
-            this.multiTargetRelPos.push(oneTarget.position.subtract(targetPos));
-        }
-    }
-
-    setTarget(target: BABYLON.Mesh) {
-        this.isMultiTarget = false;
-        let childs = this.arrowOrigin.getChildren();
-        for (let i = 0; i < childs.length; i++) {
-            let onechild = childs[i] as BABYLON.Mesh;
-            onechild.isVisible = true;
-        }
-        this.arrowOrigin.position = target.position;
-        this.target = target;
-    }
-
-    releaseTarget() {
-        let childs = this.arrowOrigin.getChildren();
-        for (let i = 0; i < childs.length; i++) {
-            let onechild = childs[i] as BABYLON.Mesh;
-            onechild.isVisible = false;
-        }
-        this.target = null;
-        this.isMultiTarget = false;
-        this.multiTargetRelPos = [];
-    }
-
-    arrowMouseDown() {
-        this.dragStartPos = this.arrowOrigin.position.clone();
-    }
-
-    arrowMouseDrag(arrowVec: BABYLON.Vector3) {
+    private arrowMouseDrag(arrowVec: BABYLON.Vector3) {
         const scene = this.mainScene.scene;
 
         const arrowStartClient = this.mainScene.worldVec3toClient(this.dragStartPos);
@@ -87,14 +36,14 @@ export class ShiftHelper {
                 arrowEndClient.subtract(arrowStartClient),
                 1);
 
-        let cspoint = this.closestPointOnRay(
+        const cspoint = this.closestPointOnRay(
             cameraProjectedArrowRay,
             new BABYLON.Vector3(
                 this.controller.dragStartX,
                 this.controller.dragStartY,
                 0));
 
-        let ccpoint = this.closestPointOnRay(
+        const ccpoint = this.closestPointOnRay(
             cameraProjectedArrowRay,
             new BABYLON.Vector3(
                 clientX,
@@ -106,7 +55,7 @@ export class ShiftHelper {
 
         const dot = BABYLON.Vector3.Dot(ccpoint.subtract(cspoint),
             arrowEndClient.subtract(arrowStartClient));
-        let worldDist = dist / arrowDistClient * this.arrowLength;
+        const worldDist = dist / arrowDistClient;
         if (dot > 0) {
             this.arrowOrigin.position =
                 this.dragStartPos.add(arrowVec.normalize().scale(worldDist));
@@ -121,14 +70,37 @@ export class ShiftHelper {
 
         if (this.isMultiTarget) {
             for (let i = 0; i < this.targets.length; i++) {
-                let oneTarget = this.targets[i];
+                const oneTarget = this.targets[i];
                 oneTarget.position = this.arrowOrigin.position.add(this.multiTargetRelPos[i]);
             }
         }
-
     }
 
-    drawArrow() {
+    private createArrowMeshMeta(dir: string) {
+        const arrowDirvec = new BABYLON.Vector3(0, 0, 0);
+        switch (dir) {
+            case "x":
+                arrowDirvec.x = this.arrowLength;
+                break;
+            case "y":
+                arrowDirvec.y = this.arrowLength;
+                break;
+            case "z":
+                arrowDirvec.z = this.arrowLength;
+                break;
+            default:
+                console.log("getArrowMeshMeta: invalid dir: " + dir);
+                return {};
+        }
+        return {
+            type: "ShiftArrow",
+            dir: dir,
+            onMouseDown: () => { this.dragStartPos = this.arrowOrigin.position.clone(); },
+            onMouseDrag: () => { this.arrowMouseDrag(arrowDirvec); }
+        }
+    }
+
+    private drawArrow() {
         const allowLen = this.arrowLength;
         const scene = this.mainScene.scene;
 
@@ -172,46 +144,19 @@ export class ShiftHelper {
         arrowX.rotation.z += Math.PI / 2 * 3;
         arrowX.position.x += allowLen / 2;
         arrowX.material = matRed;
-        arrowX.metadata = {
-            type: "ShiftArrow",
-            dir: "x",
-            onMouseDown: () => {
-                this.arrowMouseDown();
-            },
-            onMouseDrag: () => {
-                this.arrowMouseDrag(new BABYLON.Vector3(this.arrowLength, 0, 0));
-            }
-        };
+        arrowX.metadata = this.createArrowMeshMeta("x");
 
         let arrowY = arrow.clone("arrowY");
         arrowY.rotation.y += Math.PI / 2;
         arrowY.position.y += allowLen / 2;
         arrowY.material = matGreen;
-        arrowY.metadata = {
-            type: "ShiftArrow",
-            dir: "y",
-            onMouseDown: () => {
-                this.arrowMouseDown();
-            },
-            onMouseDrag: () => {
-                this.arrowMouseDrag(new BABYLON.Vector3(0, this.arrowLength, 0));
-            }
-        };
+        arrowY.metadata = this.createArrowMeshMeta("y");
 
         let arrowZ = arrow.clone("arrowZ");
         arrowZ.rotation.x = Math.PI / 2;
         arrowZ.position.z += allowLen / 2;
         arrowZ.material = matBlue;
-        arrowZ.metadata = {
-            type: "ShiftArrow",
-            dir: "z",
-            onMouseDown: () => {
-                this.arrowMouseDown();
-            },
-            onMouseDrag: () => {
-                this.arrowMouseDrag(new BABYLON.Vector3(0, 0, this.arrowLength));
-            }
-        };
+        arrowZ.metadata = this.createArrowMeshMeta("z");
         arrow.isVisible = false;
 
         const arrowOrigin = BABYLON.MeshBuilder.CreateSphere("sphere",
@@ -230,11 +175,60 @@ export class ShiftHelper {
         this.arrowOrigin = arrowOrigin;
     }
 
-    closestPointOnRay(ray: BABYLON.Ray, point: BABYLON.Vector3): BABYLON.Vector3 {
+    private closestPointOnRay(ray: BABYLON.Ray, point: BABYLON.Vector3): BABYLON.Vector3 {
         const rayDir = ray.direction.normalize();
         const v = point.subtract(ray.origin);
         const d = BABYLON.Vector3.Dot(v, rayDir);
         const p = ray.origin.add(rayDir.scale(d));
         return p;
     }
+
+
+    public setMultiTarget(targets: BABYLON.Mesh[]) {
+        this.targets = targets;
+        this.isMultiTarget = true;
+        let childs = this.arrowOrigin.getChildren();
+        for (let i = 0; i < childs.length; i++) {
+            let onechild = childs[i] as BABYLON.Mesh;
+            onechild.isVisible = true;
+        }
+        let targetPos = BABYLON.Vector3.Zero();
+        for (let i = 0; i < targets.length; i++) {
+            let oneTarget = targets[i];
+            targetPos.addInPlace(oneTarget.position);
+        }
+        targetPos.scaleInPlace(1 / targets.length);
+        this.arrowOrigin.position = targetPos;
+        this.target = null;
+
+        // calc relative pos
+        this.multiTargetRelPos = [];
+        for (let i = 0; i < targets.length; i++) {
+            let oneTarget = targets[i];
+            this.multiTargetRelPos.push(oneTarget.position.subtract(targetPos));
+        }
+    }
+
+    public setTarget(target: BABYLON.Mesh) {
+        this.isMultiTarget = false;
+        let childs = this.arrowOrigin.getChildren();
+        for (let i = 0; i < childs.length; i++) {
+            let onechild = childs[i] as BABYLON.Mesh;
+            onechild.isVisible = true;
+        }
+        this.arrowOrigin.position = target.position;
+        this.target = target;
+    }
+
+    public releaseTarget() {
+        let childs = this.arrowOrigin.getChildren();
+        for (let i = 0; i < childs.length; i++) {
+            let onechild = childs[i] as BABYLON.Mesh;
+            onechild.isVisible = false;
+        }
+        this.target = null;
+        this.isMultiTarget = false;
+        this.multiTargetRelPos = [];
+    }
+
 }
