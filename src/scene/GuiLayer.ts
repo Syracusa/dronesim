@@ -2,6 +2,7 @@ import { NodeManager, Node } from "./NodeManager";
 import { MainScene } from "./MainScene";
 import * as GUI from "@babylonjs/gui/Legacy/legacy";
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
+import { Scenario } from "./Scenario";
 
 interface DroneLink {
     linkLine: GUI.Line;
@@ -17,6 +18,7 @@ export class GuiLayer {
     /* Dependency */
     mainScene: MainScene;
     nodeManager: NodeManager;
+    scenario: Scenario;
 
     /* GUIs */
     advancedTexture: GUI.AdvancedDynamicTexture;
@@ -40,9 +42,12 @@ export class GuiLayer {
     drawLinks: boolean = true;
     targetNodeIdx: number = -1;
 
-    constructor(mainScene: MainScene, nodeManager: NodeManager) {
+    constructor(mainScene: MainScene, 
+                nodeManager: NodeManager,
+                scenario: Scenario) {
         this.mainScene = mainScene;
         this.nodeManager = nodeManager;
+        this.scenario = scenario;
         this.makeControls();
         this.backgroundWork();
     }
@@ -383,5 +388,7 @@ export class GuiLayer {
             that.drawLinks = !that.drawLinks;
             that.mainScene.dirty = true;
         });
+        this.createMenuButton("Start", () => { that.scenario.start(); });
+        this.createMenuButton("Stop", () => { that.scenario.stop(); });
     }
 }

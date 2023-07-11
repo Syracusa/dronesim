@@ -37,10 +37,14 @@ export class Controller {
         }
 
         this.setMouseHandler();
+
+        const that = this;
         this.shiftHelper = new ShiftHelper(mainScene, this);
         this.scenario = new Scenario(mainScene);
-        this.nodeManager = new NodeManager(mainScene, this.scenario);
-        this.guiLayer = new GuiLayer(mainScene, this.nodeManager);
+        this.nodeManager = new NodeManager(mainScene, () => {
+            that.nodeManager.createNodes(that.scenario.conf.nodeNum);
+        });
+        this.guiLayer = new GuiLayer(mainScene, this.nodeManager, this.scenario);
         this.serverConnection = new ServerConnection(this.nodeManager);
     }
 

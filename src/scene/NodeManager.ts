@@ -3,7 +3,6 @@ import "@babylonjs/loaders/glTF";
 
 import { MainScene } from './MainScene';
 import DroneModel from '../static/glb/Drone2.glb';
-import { Scenario } from "./Scenario";
 
 export interface RouteEntry {
     hopCount: number;
@@ -157,8 +156,7 @@ export class Node {
 
 export class NodeManager {
     mainScene: MainScene;
-    scenario: Scenario;
-    
+
     droneMesh: BABYLON.Mesh;
     nodeList: Node[] = [];
     focusedNodeList: Node[] = [];
@@ -166,11 +164,14 @@ export class NodeManager {
     modelLoaded: boolean = false;
     pathMeshes: BABYLON.Mesh[] = [];
     simplifyModel: boolean = false;
+    onModelLoaded: () => void = () => {
+        console.log('No model load callback!');
+    };
 
 
-    constructor(mainScene: MainScene, scenario: Scenario) {
+    constructor(mainScene: MainScene, onModelLoaded: () => void) {
         this.mainScene = mainScene;
-        this.scenario = scenario;
+        this.onModelLoaded = onModelLoaded;
 
         this.loadDroneModel();
     }
@@ -317,6 +318,27 @@ export class NodeManager {
         }
     }
 
+    createNodes(nodeNum: number) {
+        if (!this.modelLoaded){
+            console.log('Model not loaded yet!');
+            return;
+        }
+
+        for (let i = 0; i < nodeNum; i++) {
+            const droneInitX =
+                100 + ((4 + this.nodeNumber * 1.3) * Math.sin(Math.PI * this.nodeNumber / 5));
+            const droneInitY = 5 + this.nodeNumber / 3;
+            const droneInitZ =
+                100 + ((4 + this.nodeNumber * 1.3) * Math.cos(Math.PI * this.nodeNumber / 5));
+            const initPos = new BABYLON.Vector3(droneInitX, droneInitY, droneInitZ);
+            const newNode: Node = new Node(this.mainScene, this.droneMesh, initPos);
+            newNode.idx = this.nodeNumber;
+
+            this.nodeList.push(newNode);
+            this.nodeNumber++;
+        }
+    }
+
     afterLoad(newMeshes: BABYLON.AbstractMesh[]) {
         
         let droneMesh = newMeshes[0] as BABYLON.Mesh;
@@ -339,19 +361,8 @@ export class NodeManager {
 
         this.droneMesh = droneMesh;
         this.modelLoaded = true;
-        for (let i = 0; i < this.scenario.conf.nodeNum; i++) {
-            const droneInitX =
-                100 + ((4 + this.nodeNumber * 1.3) * Math.sin(Math.PI * this.nodeNumber / 5));
-            const droneInitY = 5 + this.nodeNumber / 3;
-            const droneInitZ =
-                100 + ((4 + this.nodeNumber * 1.3) * Math.cos(Math.PI * this.nodeNumber / 5));
-            const initPos = new BABYLON.Vector3(droneInitX, droneInitY, droneInitZ);
-            const newNode: Node = new Node(this.mainScene, droneMesh, initPos);
-            newNode.idx = this.nodeNumber;
 
-            this.nodeList.push(newNode);
-            this.nodeNumber++;
-        }
+        this.onModelLoaded();
     }
 
     loadDroneModel() {

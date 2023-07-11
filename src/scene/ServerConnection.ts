@@ -103,7 +103,7 @@ export class ServerConnection {
     }
 
     sendStartSimulation() {
-        console.log("send start simulation");
+        console.log("Send start simulation");
         let json = {
             type: "Start",
             nodenum: this.nodeManager.nodeList.length
