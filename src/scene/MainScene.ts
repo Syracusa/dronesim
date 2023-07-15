@@ -12,7 +12,7 @@ export class MainScene {
     readonly terrain = new Terrain(this);
 
     private readonly renderWhenDirty: boolean = true;
-    private readonly useOptimzer: boolean = false;
+    private readonly useOptimizer: boolean = false;
     private oldCampos: BABYLON.Vector3;
     private lastRender = performance.now();
     
@@ -20,7 +20,7 @@ export class MainScene {
     public dirty: boolean = true;
 
     constructor() {
-        if (this.useOptimzer) {
+        if (this.useOptimizer) {
             const options = new BABYLON.SceneOptimizerOptions();
             options.addOptimization(new BABYLON.HardwareScalingOptimization(0, 1));
             new BABYLON.SceneOptimizer(this.scene, options).start();
