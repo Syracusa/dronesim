@@ -5,7 +5,7 @@ import stream from 'node:stream';
 class SocketWorker {
     jsonIo = new JsonIoClient();
     ports: MessagePort[] = [];
-    backendConnected: boolean = false;
+    backendConnected = false;
 
     constructor() {
         this.jsonIo.onJsonRecv = (json) => {
@@ -49,8 +49,8 @@ class JsonIoClient {
     tcpClient = new TcpClient();
     streambuf = new stream.PassThrough();
 
-    onJsonRecv: (json: any) => void = (d) => {
-        console.log('No JSON handler');
+    onJsonRecv: (json: object) => void = (d) => {
+        console.log('No JSON handler', d);
     };
     onConnect: () => void = () => {
         console.log('JsonIoClient - Server connected');
@@ -76,7 +76,7 @@ class JsonIoClient {
         this.tcpClient.start();
     }
 
-    sendJsonTcp(json: any) {
+    sendJsonTcp(json: object) {
         const jsonstr = JSON.stringify(json);
         const buf = Buffer.alloc(2);
         buf.writeUInt16BE(jsonstr.length);
@@ -90,11 +90,11 @@ class JsonIoClient {
         streambuf.write(data);
 
         while (streambuf.readableLength >= 2) {
-            let buf = streambuf.read(2);
-            let len = buf.readUInt16BE();
+            const buf = streambuf.read(2);
+            const len = buf.readUInt16BE();
             if (streambuf.readableLength >= len) {
                 try {
-                    let json = JSON.parse(streambuf.read(len));
+                    const json = JSON.parse(streambuf.read(len));
                     this.onJsonRecv(json);
                 }
                 catch (e) {
@@ -110,10 +110,10 @@ class JsonIoClient {
 
 class TcpClient {
     socket: net.Socket = this.createSocket();
-    serverAddr: string = '127.0.0.1';
-    serverPort: number = 12123;
-    onData: (data: any) => void = (d) => {
-        console.log('No data handler');
+    serverAddr = '127.0.0.1';
+    serverPort = 12123;
+    onData: (data: Buffer) => void = (d) => {
+        console.log('No data handler', d);
     };
     onConnect: () => void = () => {
         console.log('TcpClient - Server connected');
@@ -162,7 +162,8 @@ class TcpClient {
 
     async start() {
         const socket = this.socket;
-        while (1) {
+        const loop = true;
+        while (loop) {
             if (socket.closed) {
                 console.log('Try connect...');
                 socket.removeAllListeners('connect');

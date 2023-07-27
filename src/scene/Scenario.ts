@@ -6,13 +6,13 @@ import { ServerConnection } from "./ServerConnection";
 
 interface KeyFrame {
     time: number;
-    nodePostions?: {};
+    nodePostions?: object;
 }
 
 export interface ScenarioConf {
     nodeNum: number;
     keyFrames: KeyFrame[];
-    options?: {};
+    options?: object;
 }
 
 export class Scenario {
@@ -62,11 +62,11 @@ export class Scenario {
             this.lastKeyFrameIndex = keyFrameIndex;
             this.nodeLastPosInKeyFrame = this.nodeCurrPos;
         }
-        const keyFrame = keyFrames[keyFrameIndex];
-        const nextKeyFrame = keyFrames[keyFrameIndex + 1];
-        const ratio = (this.scenarioTime - keyFrame.time) / (nextKeyFrame.time - keyFrame.time);
-        const nodePostions = keyFrame.nodePostions;
-        const nextNodePostions = nextKeyFrame.nodePostions;
+        // const keyFrame = keyFrames[keyFrameIndex];
+        // const nextKeyFrame = keyFrames[keyFrameIndex + 1];
+        // const ratio = (this.scenarioTime - keyFrame.time) / (nextKeyFrame.time - keyFrame.time);
+        // const nodePostions = keyFrame.nodePostions;
+        // const nextNodePostions = nextKeyFrame.nodePostions;
         for (let i = 0; i < this.conf.nodeNum; i++) {
             // const node = this.nodeManager.nodeList[i];
             // const nodePos = nodePostions[i];

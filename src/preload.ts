@@ -1,27 +1,37 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
+interface ElectronAPI {
+    requestWorkerChannel: (callback: (data: object) => void) => void;
+    sendWorkerChannel: (data: object) => void;
+}
+
+declare global {
+    interface Window {
+        electronAPI: ElectronAPI;
+    }
+}
 
 let workerChannel: MessagePort;
-let workerCallback: (data: any) => any = (d) => {
-    console.log("No worker callback")
+let workerCallback: (data: object) => object | void = (d) => {
+    console.log("No worker callback", d)
 };
 
 ipcRenderer.on('provide-worker-channel', (event) => {
     workerChannel = event.ports[0];
     workerChannel.onmessage = (event: MessageEvent) => {
-        let reply = workerCallback(event.data);
+        const reply = workerCallback(event.data);
         if (reply)
             workerChannel.postMessage(reply);
     };
 });
 
 contextBridge.exposeInMainWorld('electronAPI', {
-    requestWorkerChannel: (callback: (data: any) => void
+    requestWorkerChannel: (callback: (data: object) => void
     ) => {
         ipcRenderer.send('request-worker-channel');
         workerCallback = callback;
     },
-    sendWorkerChannel: (data: any) => {
+    sendWorkerChannel: (data: object) => {
         if (workerChannel)
             workerChannel.postMessage(data);
     }

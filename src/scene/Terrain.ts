@@ -10,7 +10,6 @@ import SkyboxPy from '../static/skybox/skybox_py.jpg';
 import SkyboxPz from '../static/skybox/skybox_pz.jpg';
 
 import TreeModel from '../static/glb/Tree2.glb';
-import StoneModel from '../static/glb/Stone.glb';
 import StoneModel2 from '../static/glb/Stone2.glb';
 
 
@@ -89,7 +88,7 @@ export class Terrain {
     }
 
     loadStdMat() {
-        let std = new BABYLON.StandardMaterial("standard", this.mainScene.scene);
+        const std = new BABYLON.StandardMaterial("standard", this.mainScene.scene);
         std.diffuseTexture = new BABYLON.Texture(GrassTexture, this.mainScene.scene);
         std.specularColor = new BABYLON.Color3(0.04, 0.04, 0.04);
         return std;
@@ -98,7 +97,7 @@ export class Terrain {
     drawTile(xstart: number, xend: number, ystart: number, yend: number) {
         const paths: BABYLON.Vector3[][] = [];
         for (let i = xstart; i <= xend; i++) {
-            let onePath: BABYLON.Vector3[] = [];
+            const onePath: BABYLON.Vector3[] = [];
             for (let j = ystart; j <= yend; j++) {
                 onePath.push(new BABYLON.Vector3(
                     i, this.heights[i][j], j));
@@ -147,7 +146,7 @@ export class Terrain {
 
     initHeights() {
         for (let i = 0; i < this.mapsize + 1; i++) {
-            let xarr: number[] = [];
+            const xarr: number[] = [];
             for (let j = 0; j < this.mapsize + 1; j++) {
                 xarr.push(0);
             }
@@ -156,17 +155,17 @@ export class Terrain {
     }
 
     raiseHeightPoint(xPos: number, yPos: number, intensity: number) {
-        let range = 10;
-        const sigmoid = (z:number) => 1 / (1 + Math.exp(-z));
+        const range = 10;
+        const sigmoid = (z: number) => 1 / (1 + Math.exp(-z));
         for (let i = xPos - range; i < xPos + range; i++) {
             for (let j = yPos - range; j < yPos + range; j++) {
                 if (i > -1 && i < this.mapsize &&
                     j > -1 && j < this.mapsize) {
 
-                    let xdiff = Math.abs(xPos - i);
-                    let ydiff = Math.abs(yPos - j);
+                    const xdiff = Math.abs(xPos - i);
+                    const ydiff = Math.abs(yPos - j);
 
-                    let diff = Math.sqrt(xdiff * xdiff + ydiff * ydiff);
+                    const diff = Math.sqrt(xdiff * xdiff + ydiff * ydiff);
 
                     // this.heights[i][j] += intensity * ((this.sigmoid(diff * -1 - 10)) + 0.5);
                     this.heights[i][j] += Math.cos(diff / 15 * 2 / Math.PI) * intensity;
@@ -179,9 +178,9 @@ export class Terrain {
         if (x < 0 || x > this.mapsize || y < 0 || y > this.mapsize)
             return 0;
 
-        let x1 = Math.floor(x);
+        const x1 = Math.floor(x);
+        const y1 = Math.floor(y);
         let x2 = Math.ceil(x);
-        let y1 = Math.floor(y);
         let y2 = Math.ceil(y);
 
         if ((x | 0) == x)
@@ -189,15 +188,15 @@ export class Terrain {
         if ((y | 0) == y)
             y2 += 1;
 
-        let heights = [
+        const heights = [
             this.heights[x1][y1],
             this.heights[x2][y1],
             this.heights[x2][y2],
             this.heights[x1][y2]
         ];
 
-        let min = Math.min(...heights);
-        let max = Math.max(...heights);
+        const min = Math.min(...heights);
+        const max = Math.max(...heights);
 
         return max - min;
     }
@@ -206,16 +205,16 @@ export class Terrain {
         if (x < 0 || x > this.mapsize || y < 0 || y > this.mapsize)
             return 0;
 
-        let x1 = Math.floor(x);
-        let x2 = Math.ceil(x);
-        let y1 = Math.floor(y);
-        let y2 = Math.ceil(y);
+        const x1 = Math.floor(x);
+        const x2 = Math.ceil(x);
+        const y1 = Math.floor(y);
+        const y2 = Math.ceil(y);
 
-        let xdiff = x - x1;
-        let ydiff = y - y1;
+        const xdiff = x - x1;
+        const ydiff = y - y1;
 
-        let h1 = this.heights[x1][y1] * (1 - xdiff) + this.heights[x2][y1] * xdiff;
-        let h2 = this.heights[x1][y2] * (1 - xdiff) + this.heights[x2][y2] * xdiff;
+        const h1 = this.heights[x1][y1] * (1 - xdiff) + this.heights[x2][y1] * xdiff;
+        const h2 = this.heights[x1][y2] * (1 - xdiff) + this.heights[x2][y2] * xdiff;
 
         return h1 * (1 - ydiff) + h2 * ydiff;
     }
@@ -288,7 +287,7 @@ export class Terrain {
                 if (Math.random() > 0.01)
                     continue;
                 this.createStoneAt(i, j);
-                let slope = this.getTerrainSlope(i, j);
+                const slope = this.getTerrainSlope(i, j);
                 for (let k = 0; k < slope * 10; k++) {
                     this.createStoneAt(
                         i + (Math.random() - 0.5) * (Math.random() * k),

@@ -1,5 +1,6 @@
 import { NodeInfoDiv } from "./NodeInfoDiv";
 import DummyConfigHtmlResource from "./dummyconfig.html.resource";
+import { TRxMsg, RouteMsg } from "../JsonMsg";
 
 export class Analyzer {
     nodeInfoDivArray = new Array<NodeInfoDiv>(128).fill(null);
@@ -41,35 +42,36 @@ export class Analyzer {
         return infoDiv;
     }
 
-    handleTRxInfo(data: any) {
+    handleTRxInfo(data: TRxMsg) {
         const infoDiv = this.getNodeInfoDiv(data.node);
         infoDiv.txbytes = data.tx;
         infoDiv.rxbytes = data.rx;
         infoDiv.updateText();
     }
 
-    handleRouteInfo(data: any) {
-        const infoDiv = this.getNodeInfoDiv(data.node);
+    handleRouteInfo(data: RouteMsg) {
         /* Do something */
+        // const infoDiv = this.getNodeInfoDiv(data.node);
     }
 
-    handleWorkerMessage(data: any) {
-        if (data.hasOwnProperty("type")) {
-            switch (data.type) {
+    handleWorkerMessage(data: object) {
+        if (Object.prototype.hasOwnProperty.call(data, "type")) {
+            const typed = data as { type: string };
+            switch (typed.type) {
                 case "TcpOnConnect":
                     console.log("TCP connected");
                     break;
                 case "TRx":
-                    this.handleTRxInfo(data);
+                    this.handleTRxInfo(data as TRxMsg);
                     break;
                 case "Status":
                     // Do nothing
                     break;
                 case "Route":
-                    this.handleRouteInfo(data);
+                    this.handleRouteInfo(data as RouteMsg);
                     break;
                 default:
-                    console.log("Unknown message type from worker " + data.type);
+                    console.log("Unknown message type from worker " + typed.type);
                     break;
             }
         }

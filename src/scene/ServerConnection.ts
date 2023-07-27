@@ -1,5 +1,6 @@
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { NodeManager } from "./NodeManager";
+import { TRxMsg, RouteMsg } from "../JsonMsg";
 
 export class ServerConnection {
     private workerConnected = false;
@@ -8,7 +9,7 @@ export class ServerConnection {
 
     constructor(private readonly nodeManager: NodeManager) {
         this.nodeManager = nodeManager;
-        window.electronAPI.requestWorkerChannel((data: any) => {
+        window.electronAPI.requestWorkerChannel((data: object) => {
             this.workerConnected = true;
             this.handleWorkerMessage(data);
         });
@@ -23,14 +24,14 @@ export class ServerConnection {
         }, this.linkInfoIntervalMs);
     }
 
-    private handleTRxMsg(data: any) {
+    private handleTRxMsg(data: TRxMsg) {
         const node = this.nodeManager.nodeList[data.node];
         node.txBytes = data.tx;
         node.rxBytes = data.rx;
         node.guiInfoDirty = true;
     }
 
-    private handleRouteMsg(data: any){
+    private handleRouteMsg(data: RouteMsg){
         const node = this.nodeManager.nodeList[data.node];
         const routeEntry = node.routingTable[data.target];
         routeEntry.hopCount = data.hopcount;
@@ -38,9 +39,10 @@ export class ServerConnection {
         node.guiInfoDirty = true;
     }
 
-    private handleWorkerMessage(data: any) {
-        if (data.hasOwnProperty("type")) {
-            switch (data.type) {
+    private handleWorkerMessage(data: object) {
+        if (Object.prototype.hasOwnProperty.call(data, "type")) {
+            const typed = data as { type: string };
+            switch (typed.type) {
                 case "TcpOnConnect":
                     console.log("TCP connected");
                     this.tcpConnected = true;
@@ -50,15 +52,15 @@ export class ServerConnection {
                     this.tcpConnected = false;
                     break;
                 case "TRx":
-                    this.handleTRxMsg(data);
+                    this.handleTRxMsg(data as TRxMsg);
                     break;
                 case "Status":
                     break;
                 case "Route":
-                    this.handleRouteMsg(data);
+                    this.handleRouteMsg(data as RouteMsg);
                     break;
                 default:
-                    console.log("Unknown message type from worker " + data.type);
+                    console.log("Unknown message type from worker " + typed.type);
                     break;
             }
         }
@@ -72,7 +74,7 @@ export class ServerConnection {
         const nodenum = this.nodeManager.nodeList.length;
         const nodeLinkInfo: number[][] = [];
         for (let i = 0; i < nodenum; i++) {
-            let oneNodeLinkInfo: number[] = [];
+            const oneNodeLinkInfo: number[] = [];
             for (let j = i + 1; j < nodenum; j++) {
                 const node1 = this.nodeManager.nodeList[i];
                 const node2 = this.nodeManager.nodeList[j];
@@ -83,14 +85,14 @@ export class ServerConnection {
             }
             nodeLinkInfo.push(oneNodeLinkInfo);
         }
-        let json = {
+        const json = {
             type: "LinkInfo",
             links: nodeLinkInfo
         }
         this.sendtoServer(json);
     }
 
-    public sendtoServer(json: any) {
+    public sendtoServer(json: object) {
         if (!this.tcpConnected){
             console.log('TCP not connected, drop message');
             console.log(json);
@@ -105,7 +107,7 @@ export class ServerConnection {
 
     public sendStartSimulation() {
         console.log("Send start simulation");
-        let json = {
+        const json = {
             type: "Start",
             nodenum: this.nodeManager.nodeList.length
         }

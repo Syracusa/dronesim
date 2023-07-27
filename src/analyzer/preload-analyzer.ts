@@ -2,24 +2,24 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 let workerChannel: MessagePort;
-let workerCallback: (data: any) => any;
+let workerCallback: (data: object) => void|object;
 
 ipcRenderer.on('provide-worker-channel', (event) => {
     workerChannel = event.ports[0];
     workerChannel.onmessage = (event: MessageEvent) => {
-        let reply = workerCallback(event.data);
+        const reply = workerCallback(event.data);
         if (reply)
             workerChannel.postMessage(reply);
     };
 });
 
 contextBridge.exposeInMainWorld('electronAPI', {
-    requestWorkerChannel: (callback: (data: any) => void
+    requestWorkerChannel: (callback: (data: object) => void
     ) => {
         ipcRenderer.send('request-worker-channel');
         workerCallback = callback;
     },
-    sendWorkerChannel: (data: any) => {
+    sendWorkerChannel: (data: object) => {
         if (workerChannel)
             workerChannel.postMessage(data);
     }

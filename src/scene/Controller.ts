@@ -7,18 +7,18 @@ import { ServerConnection } from "./ServerConnection";
 import { Scenario } from "./Scenario";
 
 export class Controller {
-    private readonly shiftHelper = new ShiftHelper(this.mainScene, this);;
+    private readonly shiftHelper = new ShiftHelper(this.mainScene, this);
     private readonly nodeManager = new NodeManager(this.mainScene);
     private readonly serverConnection = new ServerConnection(this.nodeManager);
-    private readonly scenario = new Scenario(this.mainScene, this.nodeManager, this.serverConnection);;
+    private readonly scenario = new Scenario(this.mainScene, this.nodeManager, this.serverConnection);
     private readonly guiLayer = new GuiLayer(this.mainScene, this.nodeManager, this.scenario);
 
-    private keystate: any = {};
+    private keystate: { [key: string]: number } = {};
     private lookTarget: BABYLON.Mesh;
     private camera: BABYLON.FollowCamera;
     private selTarget: BABYLON.Mesh;
-    private isDragging: boolean = false;
-    private dragHandlerExist: boolean = false;
+    private isDragging = false;
+    private dragHandlerExist = false;
     
     public dragStartX: number;
     public dragStartY: number;
@@ -43,7 +43,7 @@ export class Controller {
 
         const mesh = hit.pickedMesh as BABYLON.Mesh;
         if (mesh) {
-            let meta = mesh.metadata;
+            const meta = mesh.metadata;
             if (meta) {
                 this.selTarget = mesh as BABYLON.Mesh;
                 if (meta.onMouseDown)
@@ -76,7 +76,7 @@ export class Controller {
         const draggedNodes: Node[] = [];
         const nodeList = this.nodeManager.nodeList;
         for (let i = 0; i < nodeList.length; i++) {
-            let clientPos = this.mainScene.worldVec3toClient(
+            const clientPos = this.mainScene.worldVec3toClient(
                 nodeList[i].clonePosition());
 
             let x1, x2, y1, y2;
@@ -107,7 +107,7 @@ export class Controller {
         this.isDragging = false;
 
         if (!this.dragHandlerExist) {
-            let draggedNodes = this.getDraggedNodes();
+            const draggedNodes = this.getDraggedNodes();
             if (draggedNodes.length > 0) {
                 this.shiftHelper.setMultiTarget(draggedNodes.map((n)=>{
                     return n.rootMesh;
@@ -180,7 +180,7 @@ export class Controller {
     private createCamera() {
         this.createLookTarget();
 
-        let campos = this.lookTarget.position.clone();
+        const campos = this.lookTarget.position.clone();
         campos.addInPlace(new BABYLON.Vector3(3, 3, 3));
 
         const camera = new BABYLON.FollowCamera(
@@ -200,13 +200,13 @@ export class Controller {
     }
 
     private camUpdate(delta: number) {
-        let lookXZDir = this.lookTarget.position.clone()
+        const lookXZDir = this.lookTarget.position.clone()
             .subtractInPlace(this.camera.position);
         lookXZDir.y = 0;
         lookXZDir.normalize();
 
-        let angle = Math.atan2(lookXZDir.z, lookXZDir.x) + Math.PI / 2;
-        let sideDir = new BABYLON.Vector3(Math.cos(angle), 0, Math.sin(angle));
+        const angle = Math.atan2(lookXZDir.z, lookXZDir.x) + Math.PI / 2;
+        const sideDir = new BABYLON.Vector3(Math.cos(angle), 0, Math.sin(angle));
 
         if (this.isKeyPressed("w") || this.isKeyPressed("W"))
             this.lookTarget.position.addInPlace(lookXZDir.scale(0.03 * delta));

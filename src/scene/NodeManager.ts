@@ -85,7 +85,7 @@ export class Node {
         this.rootMesh.addChild(selIndicator);
         this.selectionIndicator = selIndicator;
 
-        let childMeshes = nodeMesh.getChildMeshes();
+        const childMeshes = nodeMesh.getChildMeshes();
 
         for (let meshidx = 1; meshidx < childMeshes.length; meshidx++) {
             const child = childMeshes[meshidx] as BABYLON.Mesh;
@@ -113,7 +113,7 @@ export class Node {
     initRoutingTable() {
         this.routingTable = [];
         for (let i = 0; i < 128; i++) {
-            let entry = { hopCount: 0, path: [] } as RouteEntry;
+            const entry = { hopCount: 0, path: [] } as RouteEntry;
             this.routingTable.push(entry);
         }
     }
@@ -158,17 +158,17 @@ export class NodeManager {
     droneMesh: BABYLON.Mesh;
     nodeList: Node[] = [];
     focusedNodeList: Node[] = [];
-    nodeNumber: number = 0;
-    modelLoaded: boolean = false;
+    nodeNumber = 0;
+    modelLoaded = false;
     pathMeshes: BABYLON.Mesh[] = [];
-    simplifyModel: boolean = false;
+    simplifyModel = false;
 
     constructor(private readonly mainScene: MainScene) {
         this.loadDroneModel();
     }
 
     disposePathMeshes() {
-        for (let i = 0; i < this.pathMeshes.length; i++) 
+        for (let i = 0; i < this.pathMeshes.length; i++)
             this.pathMeshes[i].dispose(false, true);
         this.pathMeshes = [];
     }
@@ -241,17 +241,19 @@ export class NodeManager {
             'RouteLine',
             {
                 path: points,
-                radiusFunction: (i, distance) => {
+                radiusFunction: (i) => {
                     switch (i) {
                         case points.length - 1:
                             return 0.0;
                         case points.length - 2:
                             return 0.1;
                         default:
-                            let r = 0.06 * ((i + 1) / points.length);
-                            if (r < 0.01)
-                                r = 0.01;
-                            return r;
+                            {
+                                let r = 0.06 * ((i + 1) / points.length);
+                                if (r < 0.01)
+                                    r = 0.01;
+                                return r;
+                            }
                     }
                 },
                 instance: null,
@@ -290,9 +292,10 @@ export class NodeManager {
         this.focusedNodeList = [];
     }
 
-    static simplifyMeshes(meshes: any[]) {
+    static simplifyMeshes(meshes: unknown[]) {
         for (let i = 1; i < meshes.length; i++) {
-            let mesh = meshes[i] as any;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const mesh = meshes[i] as any;
             if (mesh._geometry._totalVertices > 500) {
                 mesh.simplify([
                     {
@@ -329,8 +332,7 @@ export class NodeManager {
     }
 
     afterLoad(newMeshes: BABYLON.AbstractMesh[]) {
-        
-        let droneMesh = newMeshes[0] as BABYLON.Mesh;
+        const droneMesh = newMeshes[0] as BABYLON.Mesh;
         for (let i = 0; i < newMeshes.length; i++) {
             const oneMesh = newMeshes[i] as BABYLON.Mesh;
 

@@ -1,6 +1,6 @@
 import { NodeManager, Node } from "./NodeManager";
 import { MainScene } from "./MainScene";
-import * as GUI from "@babylonjs/gui/Legacy/legacy";
+import * as GUI from "@babylonjs/gui/legacy/legacy";
 import * as BABYLON from "@babylonjs/core/Legacy/legacy";
 import { Scenario } from "./Scenario";
 
@@ -31,10 +31,10 @@ export class GuiLayer {
     private lastUpdate = 0;
 
     /* ETC */
-    private menuButtonOffset: number = 12;
-    private menuOpened: boolean = true;
-    private drawLinks: boolean = true;
-    private targetNodeIdx: number = -1;
+    private menuButtonOffset = 12;
+    private menuOpened = true;
+    private drawLinks = true;
+    private targetNodeIdx = -1;
 
     constructor(
         private readonly mainScene: MainScene,
@@ -188,7 +188,7 @@ export class GuiLayer {
     }
 
     private createNewDroneButton(buttonIdx: number) {
-        let card = GUI.Button.CreateSimpleButton("but " + buttonIdx, "Drone " + buttonIdx);
+        const card = GUI.Button.CreateSimpleButton("but " + buttonIdx, "Drone " + buttonIdx);
         card.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
         card.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
         card.color = "black";

@@ -17,7 +17,7 @@ export class MainScene {
     private lastRender = performance.now();
     
     public shadowGenerator: BABYLON.ShadowGenerator;
-    public dirty: boolean = true;
+    public dirty = true;
 
     constructor() {
         if (this.useOptimizer) {
@@ -74,8 +74,8 @@ export class MainScene {
             }
 
             /* Calculate Time between frames */
-            let curr = performance.now();
-            let delta = curr - this.lastRender;
+            const curr = performance.now();
+            const delta = curr - this.lastRender;
             this.updateScene(delta);
             this.lastRender = curr;
         });
@@ -97,7 +97,7 @@ export class MainScene {
         const ambientLight = new BABYLON.HemisphericLight("ambientLight",
             new BABYLON.Vector3(0, 1, 0), this.scene);
         ambientLight.intensity = 0.2;
-    };
+    }
 
     public worldVec3toClient(vec3: BABYLON.Vector3): BABYLON.Vector3 {
         const scene = this.scene;
@@ -139,11 +139,11 @@ export class MainScene {
         console.log('Load Scene');
         const input = document.createElement('input') as HTMLInputElement;
         input.type = 'file';
-        input.onchange = _this => {
+        input.onchange = () => {
             const files = Array.from(input.files);
             files[0].text().then(text => {
                 console.log(text);
-                let heights = JSON.parse(text);
+                const heights = JSON.parse(text);
                 this.terrain.heights = heights;
                 this.terrain.drawTerrain();
             });

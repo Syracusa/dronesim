@@ -1,4 +1,4 @@
-import { app, BrowserWindow, MessageChannelMain, Tray, Menu, nativeImage, NativeImage } from 'electron';
+import { app, BrowserWindow, MessageChannelMain, Tray, Menu, nativeImage } from 'electron';
 import IconResource from './static/icon.resource';
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
@@ -30,7 +30,7 @@ const createWindow = (): void => {
     mainWindow.webContents.openDevTools();
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
-    mainWindow.on('close', (event) => {
+    mainWindow.on('close', () => {
         analyzerWindow.destroy();
         worker.destroy();
         app.exit();
