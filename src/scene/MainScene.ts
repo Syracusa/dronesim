@@ -106,7 +106,6 @@ export class MainScene {
             vec3,
             BABYLON.Matrix.Identity(),
             scene.getTransformMatrix(),
-            // camera.getTransformationMatrix(),
             camera.viewport.toGlobal(
                 scene.getEngine().getRenderWidth(true),
                 scene.getEngine().getRenderHeight(true)));

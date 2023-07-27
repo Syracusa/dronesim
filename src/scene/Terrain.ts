@@ -156,7 +156,7 @@ export class Terrain {
 
     raiseHeightPoint(xPos: number, yPos: number, intensity: number) {
         const range = 10;
-        const sigmoid = (z: number) => 1 / (1 + Math.exp(-z));
+        // const sigmoid = (z: number) => 1 / (1 + Math.exp(-z));
         for (let i = xPos - range; i < xPos + range; i++) {
             for (let j = yPos - range; j < yPos + range; j++) {
                 if (i > -1 && i < this.mapsize &&
@@ -314,7 +314,10 @@ export class Terrain {
         ctx.createStones();
     }
 
-    loadTerrainObjectModel(glbpath: string, callback: (ctx: Terrain, meshs: any[]) => void) {
+    loadTerrainObjectModel(
+        glbpath: string,
+        callback: (ctx: Terrain, meshs: BABYLON.AbstractMesh[]) => void) {
+            
         BABYLON.SceneLoader.ImportMesh("",
             glbpath.replace(glbpath.split('\\').pop().split('/').pop(), ''),
             glbpath.split('\\').pop().split('/').pop(),

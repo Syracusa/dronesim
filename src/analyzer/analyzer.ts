@@ -49,6 +49,7 @@ export class Analyzer {
         infoDiv.updateText();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     handleRouteInfo(data: RouteMsg) {
         /* Do something */
         // const infoDiv = this.getNodeInfoDiv(data.node);
@@ -78,7 +79,7 @@ export class Analyzer {
     }
 
     initIPC() {
-        window.electronAPI.requestWorkerChannel((data: any) => {
+        window.electronAPI.requestWorkerChannel((data) => {
             this.workerConnected = true;
             this.handleWorkerMessage(data);
         });
