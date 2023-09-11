@@ -80,7 +80,7 @@ export class ServerConnection {
                 const node2 = this.nodeManager.nodeList[j];
                 const distance = BABYLON.Vector3.Distance(
                     node1.getPosition(),
-                    node2.getPosition());
+                    node2.getPosition()) * 66.6;
                 oneNodeLinkInfo.push(parseFloat(distance.toFixed(2)));
             }
             nodeLinkInfo.push(oneNodeLinkInfo);
